@@ -1,0 +1,11 @@
+name: DynamicMazes
+author: Schmoller
+
+version: 1.0
+
+main: au.com.mineauz.dynmazes.DynamicMazePlugin
+
+commands:
+  maze:
+  mazeTemplate:
+    usage: /command <width> <height> <length>
