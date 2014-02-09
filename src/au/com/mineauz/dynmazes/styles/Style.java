@@ -23,7 +23,7 @@ public class Style
 	
 	public Style(String name, byte size, byte height)
 	{
-		Validate.isTrue(size == 4 || size == 6 || size == 8 || size == 10);
+		Validate.isTrue(size >= 4 && size <= 10);
 		Validate.isTrue(height > 1);
 		
 		mPieceSize = size;
@@ -42,6 +42,16 @@ public class Style
 	public Piece getPiece(PieceType type)
 	{
 		return mPieces[type.ordinal()];
+	}
+	
+	public int getHeight()
+	{
+		return mHeight;
+	}
+	
+	public int getPieceSize()
+	{
+		return mPieceSize;
 	}
 	
 	public void save(File file)

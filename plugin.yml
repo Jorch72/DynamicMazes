@@ -5,7 +5,13 @@ version: 1.0
 
 main: au.com.mineauz.dynmazes.DynamicMazePlugin
 
+permissions:
+  dynamicmazes.command.maze:
+    default: true
+  dynamicmazes.command.maze.style:
+    default: op
+
 commands:
-  maze:
-  mazeTemplate:
-    usage: /command <width> <height> <length>
+  dynmaze:
+    permission: dynamicmazes.command.maze
+    aliases: [maze, dmaze]
