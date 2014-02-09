@@ -1,8 +1,5 @@
 package au.com.mineauz.dynmazes.styles;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -20,7 +17,10 @@ import org.bukkit.block.Jukebox;
 import org.bukkit.block.NoteBlock;
 import org.bukkit.block.Sign;
 import org.bukkit.block.Skull;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
+import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.ItemStack;
 
 @SuppressWarnings( "deprecation" )
 public class StoredBlock
@@ -32,7 +32,8 @@ public class StoredBlock
 	
 	public StoredBlock()
 	{
-		
+		mType = Material.AIR;
+		mData = 0;
 	}
 	
 	public StoredBlock(BlockState state)
@@ -42,6 +43,18 @@ public class StoredBlock
 		
 		mExtra = new HashMap<String, Object>();
 
+		if(state instanceof InventoryHolder)
+		{
+			ItemStack[] copy = ((InventoryHolder)state).getInventory().getContents().clone();
+			for(int i = 0; i < copy.length; ++i)
+			{
+				if(copy[i] != null)
+					copy[i] = copy[i].clone();
+			}
+			
+			mExtra.put("inventory", copy);
+		}
+		
 		if(state instanceof BrewingStand)
 			mExtra.put("brewTime", ((BrewingStand) state).getBrewingTime());
 		
@@ -99,6 +112,9 @@ public class StoredBlock
 		
 		BlockState state = block.getState();
 		
+		if(state instanceof InventoryHolder)
+			((InventoryHolder) state).getInventory().setContents((ItemStack[])mExtra.get("inventory"));
+		
 		if(state instanceof BrewingStand)
 			((BrewingStand) state).setBrewingTime((Integer)mExtra.get("brewTime"));
 		
@@ -147,73 +163,86 @@ public class StoredBlock
 		}
 	}
 	
-	public void write(DataOutput output) throws IOException
+	public void save(ConfigurationSection parent)
 	{
-		output.writeUTF(mType.name());
-		output.writeByte(mData);
+		parent.set("id", mType.name());
+		if(mData != 0)
+			parent.set("data", mData);
 		
 		if(mExtra != null)
 		{
-			output.writeByte(mExtra.size());
-			
+			ConfigurationSection extra = parent.createSection("extra");
 			for(Entry<String, Object> entry : mExtra.entrySet())
 			{
-				output.writeUTF(entry.getKey());
-				
-				if(entry.getValue() instanceof String)
+				if(entry.getValue() instanceof ItemStack[])
 				{
-					output.writeByte(0);
-					output.writeUTF((String)entry.getValue());
+					ConfigurationSection list = extra.createSection("L" + entry.getKey());
+					ItemStack[] stacks = (ItemStack[])entry.getValue();
+					
+					list.set("size", stacks.length);
+					
+					for(int i = 0; i < stacks.length; ++i)
+					{
+						if(stacks[i] != null)
+							list.set(String.valueOf(i), stacks[i]);
+					}
 				}
-				else if(entry.getValue() instanceof Short)
-				{
-					output.writeByte(1);
-					output.writeShort((Short)entry.getValue());
-				}
-				else if(entry.getValue() instanceof Integer)
-				{
-					output.writeByte(2);
-					output.writeInt((Integer)entry.getValue());
-				}
+				else if(entry.getValue() instanceof String)
+					extra.set("S" + entry.getKey(), entry.getValue());
 				else
-					throw new IllegalArgumentException("Bad type " + entry.getValue().getClass().getName());
+					extra.set("I" + entry.getKey(), entry.getValue());
 			}
 		}
-		else
-			output.writeByte(0);
 	}
 	
-	public void read(DataInput input) throws IOException
+	public void read(ConfigurationSection parent)
 	{
-		mType = Material.getMaterial(input.readUTF());
-		mData = input.readByte() & 15;
+		mType = Material.valueOf(parent.getString("id"));
+		mData = (byte)parent.getInt("data", 0);
 		
-		int count = input.readByte();
-		
-		if(count > 0)
+		if(parent.isConfigurationSection("extra"))
 		{
+			ConfigurationSection extra = parent.getConfigurationSection("extra");
 			mExtra = new HashMap<String, Object>();
-			for(int i = 0; i < count; ++i)
+			for(String key : extra.getKeys(false))
 			{
-				String name = input.readUTF();
-				int type = input.readByte();
+				String name = key.substring(1);
+				char type = key.charAt(0);
+				
 				switch(type)
 				{
-				case 0: // String
-					mExtra.put(name, input.readUTF());
+				case 'L':
+				{
+					ConfigurationSection list = extra.getConfigurationSection(key);
+					int len = list.getInt("size");
+					ItemStack[] items = new ItemStack[len];
+					
+					for(String idStr : list.getKeys(false))
+					{
+						if(idStr.equals("size"))
+							continue;
+						
+						int id = Integer.parseInt(idStr);
+						items[id] = list.getItemStack(idStr);
+					}
+					mExtra.put(name, items);
 					break;
-				case 1: // Short
-					mExtra.put(name, input.readShort());
+				}
+				case 'S':
+					mExtra.put(name, extra.getString(key));
 					break;
-				case 2: // Int
-					mExtra.put(name, input.readInt());
+				case 'I':
+					mExtra.put(name, extra.getInt(key));
 					break;
-				default:
-					throw new IllegalArgumentException("Bad type " + type);
 				}
 			}
 		}
 		else
 			mExtra = null;
+	}
+
+	public boolean isAir()
+	{
+		return mType == Material.AIR;
 	}
 }

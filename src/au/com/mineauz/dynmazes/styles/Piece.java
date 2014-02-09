@@ -1,27 +1,19 @@
 package au.com.mineauz.dynmazes.styles;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
+import java.util.Arrays;
 
 import org.bukkit.Location;
+import org.bukkit.configuration.ConfigurationSection;
 
 public class Piece
 {
-	private PieceType mType;
 	private byte mSize;
 	private byte mHeight;
 	
 	private StoredBlock[] mBlocks;
 	
-	public Piece()
+	public Piece(byte size, byte height)
 	{
-		
-	}
-	
-	public Piece(byte size, byte height, PieceType type)
-	{
-		mType = type;
 		mSize = size;
 		mHeight = height;
 		
@@ -35,7 +27,7 @@ public class Piece
 			for(int x = 0; x < mSize; ++x)
 			{
 				for(int z = 0; z < mSize; ++z)
-					mBlocks[x + z * (mSize) + y * (mSize * mSize)] = new StoredBlock(minCorner.getWorld().getBlockAt(minCorner.getBlockX() + x, minCorner.getBlockX() + y, minCorner.getBlockX() + z).getState());
+					mBlocks[x + z * (mSize) + y * (mSize * mSize)] = new StoredBlock(minCorner.getWorld().getBlockAt(minCorner.getBlockX() + x, minCorner.getBlockY() + y, minCorner.getBlockZ() + z).getState());
 			}
 		}
 	}
@@ -47,35 +39,31 @@ public class Piece
 			for(int x = 0; x < mSize; ++x)
 			{
 				for(int z = 0; z < mSize; ++z)
-					mBlocks[x + z * (mSize) + y * (mSize * mSize)].apply(minCorner.getWorld().getBlockAt(minCorner.getBlockX() + x, minCorner.getBlockX() + y, minCorner.getBlockX() + z));
+					mBlocks[x + z * (mSize) + y * (mSize * mSize)].apply(minCorner.getWorld().getBlockAt(minCorner.getBlockX() + x, minCorner.getBlockY() + y, minCorner.getBlockZ() + z));
 			}
 		}
 	}
 	
-	public void write(DataOutput output) throws IOException
+	public void save(ConfigurationSection parent)
 	{
-		output.writeByte(0); // Reserved for if 3D sets are made
-		output.writeByte(mType.ordinal());
-		output.writeByte(mSize);
-		output.writeByte(mHeight);
-		
 		for(int i = 0; i < mBlocks.length; ++i)
-			mBlocks[i].write(output);
+		{
+			if(mBlocks[i].isAir())
+				continue;
+			
+			ConfigurationSection block = parent.createSection(String.valueOf(i));
+			mBlocks[i].save(block);
+		}
 	}
 	
-	public void read(DataInput input) throws IOException
+	public void read(ConfigurationSection parent)
 	{
-		input.readByte(); // Reserved
-		mType = PieceType.values()[input.readByte()];
-		mSize = input.readByte();
-		mHeight = input.readByte();
-		
-		int blocks = mSize * mSize * mHeight;
-		mBlocks = new StoredBlock[blocks];
-		for(int i = 0; i < blocks; ++i)
+		Arrays.fill(mBlocks, new StoredBlock());
+		for(String key : parent.getKeys(false))
 		{
-			mBlocks[i] = new StoredBlock();
-			mBlocks[i].read(input);
+			int id = Integer.parseInt(key);
+			
+			mBlocks[id].read(parent.getConfigurationSection(key));
 		}
 	}
 }

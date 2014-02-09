@@ -1,13 +1,12 @@
 package au.com.mineauz.dynmazes.styles;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 
 import org.apache.commons.lang.Validate;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.file.YamlConfiguration;
 
 public class Style
 {
@@ -63,17 +62,20 @@ public class Style
 	{
 		try
 		{
-			DataOutputStream out = new DataOutputStream(new FileOutputStream(file));
+			YamlConfiguration out = new YamlConfiguration();
+			out.set("name", mName);
+			out.set("size", mPieceSize);
+			out.set("height", mHeight);
 			
-			out.writeUTF(mName);
-			out.writeByte(mPieceSize);
-			out.writeByte(mHeight);
+			ConfigurationSection pieces = out.createSection("pieces");
 			
-			for(Piece piece : mPieces)
-				piece.write(out);
-
-			out.flush();
-			out.close();
+			for(PieceType type : PieceType.values())
+			{
+				ConfigurationSection piece = pieces.createSection(type.name());
+				mPieces[type.ordinal()].save(piece);
+			}
+			
+			out.save(file);
 		}
 		catch(IOException e)
 		{
@@ -81,30 +83,36 @@ public class Style
 		}
 	}
 	
-	public void read(File file)
+	public boolean read(File file)
 	{
-		Validate.isTrue(file.isFile());
-		Validate.isTrue(file.exists());
-		
 		try
 		{
-			DataInputStream input = new DataInputStream(new FileInputStream(file));
+			YamlConfiguration input = new YamlConfiguration();
+			input.load(file);
 			
-			mName = input.readUTF();
-			mPieceSize = input.readByte();
-			mHeight = input.readByte();
+			mName = input.getString("name");
+			mPieceSize = (byte)input.getInt("size");
+			mHeight = (byte)input.getInt("height");
+			
+			ConfigurationSection pieces = input.getConfigurationSection("pieces");
 			
 			for(PieceType type : PieceType.values())
 			{
-				mPieces[type.ordinal()] = new Piece();
-				mPieces[type.ordinal()].read(input);
+				mPieces[type.ordinal()] = new Piece(mPieceSize, mHeight);
+				mPieces[type.ordinal()].read(pieces.getConfigurationSection(type.name()));
 			}
 			
-			input.close();
+			return true;
 		}
 		catch(IOException e)
 		{
 			e.printStackTrace();
 		}
+		catch(InvalidConfigurationException e)
+		{
+			e.printStackTrace();
+		}
+		
+		return false;
 	}
 }

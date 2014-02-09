@@ -283,7 +283,7 @@ public class DesignManager implements Listener
 		
 		for(PieceType type : PieceType.values())
 		{
-			Piece piece = new Piece((byte)mStyle.getPieceSize(), (byte)mStyle.getHeight(), type);
+			Piece piece = new Piece((byte)mStyle.getPieceSize(), (byte)mStyle.getHeight());
 			piece.setFrom(mPieceLocations[type.ordinal()]);
 			mStyle.setPiece(type, piece);
 		}

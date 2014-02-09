@@ -31,7 +31,7 @@ public class StyleManager
 	{
 		Validate.notNull(style.getName());
 		
-		File dest = new File(mStyleFolder, style.getName() + ".style");
+		File dest = new File(mStyleFolder, style.getName() + ".yml");
 		style.save(dest);
 		
 		mLoadedStyles.put(style.getName(), style);
@@ -47,8 +47,9 @@ public class StyleManager
 			return style;
 		
 		style = new Style();
-		File file = new File(mStyleFolder, name + ".style");
-		style.read(file);
+		File file = new File(mStyleFolder, name + ".yml");
+		if(!style.read(file))
+			return null;
 		
 		mLoadedStyles.put(style.getName(), style);
 		return style;
@@ -60,7 +61,7 @@ public class StyleManager
 		
 		mLoadedStyles.remove(name);
 		
-		Files.delete(new File(mStyleFolder, name + ".style").toPath());
+		Files.delete(new File(mStyleFolder, name + ".yml").toPath());
 	}
 	
 	public static boolean styleExists(String name)
@@ -68,7 +69,7 @@ public class StyleManager
 		if(mLoadedStyles.containsKey(name))
 			return true;
 		
-		return new File(mStyleFolder, name + ".style").exists();
+		return new File(mStyleFolder, name + ".yml").exists();
 	}
 	
 }
