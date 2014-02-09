@@ -21,6 +21,9 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.material.Attachable;
+import org.bukkit.material.MaterialData;
+import org.bukkit.util.BlockVector;
 
 @SuppressWarnings( "deprecation" )
 public class StoredBlock
@@ -29,6 +32,8 @@ public class StoredBlock
 	private int mData;
 	
 	private Map<String, Object> mExtra;
+	
+	private BlockVector mLocation;
 	
 	public StoredBlock()
 	{
@@ -161,6 +166,8 @@ public class StoredBlock
 
 			((Skull) state).setSkullType(SkullType.valueOf((String)mExtra.get("type")));
 		}
+		
+		state.update(true, false);
 	}
 	
 	public void save(ConfigurationSection parent)
@@ -240,9 +247,87 @@ public class StoredBlock
 		else
 			mExtra = null;
 	}
+	
+	public BlockFace getDependantFace()
+	{
+		if(mType.hasGravity())
+			return BlockFace.DOWN;
+		
+		MaterialData data = mType.getNewData((byte)mData);
+		if(data instanceof Attachable)
+			return ((Attachable)data).getAttachedFace();
+		
+		switch(mType)
+		{
+		case RAILS:
+		case POWERED_RAIL:
+		case DETECTOR_RAIL:
+		case ACTIVATOR_RAIL:
+		case SIGN_POST:
+		case SAPLING:
+		case LONG_GRASS:
+		case DEAD_BUSH:
+		case YELLOW_FLOWER:
+		case RED_ROSE:
+		case RED_MUSHROOM:
+		case BROWN_MUSHROOM:
+		case REDSTONE_WIRE:
+		case CROPS:
+		case WOODEN_DOOR:
+		case STONE_PLATE:
+		case WOOD_PLATE:
+		case IRON_DOOR_BLOCK:
+		case CACTUS:
+		case SUGAR_CANE_BLOCK:
+		case DIODE_BLOCK_OFF:
+		case DIODE_BLOCK_ON:
+		case PUMPKIN_STEM:
+		case MELON_STEM:
+		case WATER_LILY:
+		case NETHER_WARTS:
+		case FLOWER_POT:
+		case CARROT:
+		case POTATO:
+		case REDSTONE_COMPARATOR_OFF:
+		case REDSTONE_COMPARATOR_ON:
+		case CARPET:
+		case IRON_PLATE:
+		case GOLD_PLATE:
+		case DRAGON_EGG:
+		case DOUBLE_PLANT:
+			return BlockFace.DOWN;
+			
+		case VINE:
+			return BlockFace.UP;
+	
+		default:
+			return BlockFace.SELF;
+		}
+	}
+	
+	public BlockVector getLocation()
+	{
+		return mLocation;
+	}
+	
+	public BlockVector getLocationRelative(BlockFace face)
+	{
+		return new BlockVector(mLocation.getBlockX() + face.getModX(), mLocation.getBlockY() + face.getModY(), mLocation.getBlockZ() + face.getModZ());
+	}
+	
+	public void setLocation(BlockVector location)
+	{
+		mLocation = location;
+	}
 
 	public boolean isAir()
 	{
 		return mType == Material.AIR;
+	}
+	
+	@Override
+	public String toString()
+	{
+		return mType + ":" + mData;
 	}
 }

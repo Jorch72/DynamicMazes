@@ -71,7 +71,7 @@ public class EditDesignCommand implements ICommand
 			DesignManager.beingDesigning((Player)sender, style);
 			sender.sendMessage(ChatColor.GREEN + "You are now in design mode!"); 
 			sender.sendMessage(ChatColor.WHITE + "Use " + ChatColor.YELLOW + "/dynmaze design save [<name>]" + ChatColor.WHITE + " to save changes.");
-			sender.sendMessage(ChatColor.WHITE + "Use " + ChatColor.RED + " /dynmaze design end" + ChatColor.WHITE + " to end designing.");
+			sender.sendMessage(ChatColor.WHITE + "Use " + ChatColor.RED + "/dynmaze design end" + ChatColor.WHITE + " to end designing.");
 		}
 		catch(IllegalStateException e)
 		{
