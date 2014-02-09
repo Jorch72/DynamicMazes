@@ -28,7 +28,7 @@ public class GridMaze extends MazeGenerator
 	}
 	
 	@Override
-	protected void clearSpace()
+	protected void prepareArea()
 	{
 		for(int x = mMinCorner.getBlockX(); x <= mMinCorner.getBlockX() + mWidth * 2; ++x)
 		{
@@ -50,7 +50,7 @@ public class GridMaze extends MazeGenerator
 	}
 	
 	@Override
-	protected void clearNode(INode node)
+	protected void placeNode(INode node)
 	{
 		Location loc = node.toLocation();
 		loc.getBlock().getRelative(BlockFace.UP, 1).setType(Material.GRAVEL);

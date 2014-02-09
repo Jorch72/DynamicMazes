@@ -1,6 +1,9 @@
 package au.com.mineauz.dynmazes;
 
+import org.bukkit.Location;
 import org.bukkit.block.BlockFace;
+import org.bukkit.util.BlockVector;
+import org.bukkit.util.Vector;
 
 public class Util
 {
@@ -57,5 +60,22 @@ public class Util
 		}
 		
 		return BlockFace.SOUTH;
+	}
+	
+	public static BlockFace fromDiff(Location origin, Location dest)
+	{
+		Vector vec = dest.toVector().subtract(origin.toVector());
+		vec.normalize();
+		
+		BlockVector block = vec.toBlockVector();
+		
+		for(BlockFace dir : mDirOrderSimpler)
+		{
+			if(dir.getModX() == block.getBlockX() && dir.getModZ() == block.getBlockZ())
+				return dir;
+		}
+		
+		return BlockFace.SELF;
+		
 	}
 }

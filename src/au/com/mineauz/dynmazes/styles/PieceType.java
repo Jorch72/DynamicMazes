@@ -1,5 +1,6 @@
 package au.com.mineauz.dynmazes.styles;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -24,21 +25,21 @@ public enum PieceType
 	EndS(BlockFace.SOUTH),
 	EndW(BlockFace.WEST);
 	
-	private BlockFace[] mConnections;
+	private Collection<BlockFace> mConnections;
 	
 	private PieceType(BlockFace... connections)
 	{
-		mConnections = connections;
+		mConnections = Arrays.asList(connections);
 	}
 	
-	public BlockFace[] getConnections()
+	public Collection<BlockFace> getConnections()
 	{
 		return mConnections;
 	}
 	
 	public Collection<BlockFace> getConnection(BlockFace from)
 	{
-		if(mConnections.length <= 1)
+		if(mConnections.size() <= 1)
 			return Collections.emptyList();
 		
 		LinkedList<BlockFace> others = new LinkedList<BlockFace>();

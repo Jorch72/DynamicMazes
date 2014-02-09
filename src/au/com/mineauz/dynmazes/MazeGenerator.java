@@ -7,7 +7,7 @@ import java.util.Random;
 import java.util.Stack;
 
 
-public abstract class MazeGenerator
+public abstract class MazeGenerator<T extends INode>
 {
 	protected Random mRand;
 
@@ -18,32 +18,32 @@ public abstract class MazeGenerator
 
 	public void generate()
 	{
-		clearSpace();
+		prepareArea();
 		
-		INode end = null;
+		T end = null;
 	
 		// Find a start point
 		findExit();
 		end = findExit();
 		
-		HashSet<INode> visited = new HashSet<INode>();
-		Stack<INode> next = new Stack<INode>();
+		HashSet<T> visited = new HashSet<T>();
+		Stack<T> next = new Stack<T>();
 		
 		next.push(end);
 		
 		while(!next.isEmpty())
 		{
-			INode node = next.peek();
+			T node = next.peek();
 			visited.add(node);
-			clearNode(node);
 			
-			ArrayList<INode> neighbours = new ArrayList<INode>(Arrays.asList(node.getNeighbours()));
+			@SuppressWarnings( "unchecked" )
+			ArrayList<T> neighbours = new ArrayList<T>(Arrays.asList((T[])node.getNeighbours()));
 			boolean added = false;
 			
 			while(!neighbours.isEmpty())
 			{
 				int index = mRand.nextInt(neighbours.size());
-				INode neighbour = neighbours.get(index);
+				T neighbour = neighbours.get(index);
 				if(visited.contains(neighbour))
 					neighbours.remove(index);
 				else
@@ -52,8 +52,6 @@ public abstract class MazeGenerator
 					next.push(neighbour);
 					
 					added = true;
-					
-					clearBetween(node, neighbour);
 					break;
 				}
 			}
@@ -61,14 +59,19 @@ public abstract class MazeGenerator
 			if(!added)
 				next.pop();
 		}
+		
+		System.out.println("Generation finished");
+		
+		for(T node : visited)
+			placeNode(node);
 	}
 	
-	protected abstract INode findExit();
+	protected abstract T findExit();
 
-	protected abstract void clearBetween( INode nodeA, INode nodeB );
+	protected abstract void clearBetween( T nodeA, T nodeB );
 
-	protected abstract void clearNode( INode node );
+	protected abstract void placeNode( T node );
 
-	protected abstract void clearSpace();
+	protected abstract void prepareArea();
 
 }
