@@ -5,6 +5,7 @@ import java.util.HashMap;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
@@ -14,6 +15,7 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.util.BlockVector;
 
 import au.com.mineauz.dynmazes.styles.Piece;
 import au.com.mineauz.dynmazes.styles.PieceType;
@@ -24,10 +26,12 @@ public class DesignManager implements Listener
 	private static HashMap<Player, DesignManager> mCurrentManagers = new HashMap<Player, DesignManager>();
 	private Style mStyle;
 	private Player mPlayer;
-	private Location mSource;
 	
-	private int mWidth;
-	private int mLength;
+	private Location[] mPieceLocations;
+	
+	private BlockVector mMin;
+	private BlockVector mMax;
+	private World mWorld;
 	
 	public static DesignManager beingDesigning(Player player, Style style) throws IllegalStateException
 	{
@@ -51,45 +55,146 @@ public class DesignManager implements Listener
 		mPlayer = player;
 	}
 	
-	private void drawBoard(Location loc)
+	private void fixBB(BlockVector min, BlockVector max)
 	{
-		for(int x = loc.getBlockX(); x < loc.getBlockX() + mLength; ++x)
+		int val;
+		if(max.getBlockX() < min.getBlockX())
 		{
-			for(int z = loc.getBlockZ(); z < loc.getBlockZ() + mWidth; ++z)
-				mPlayer.getWorld().getBlockAt(x, loc.getBlockY(), z).setType(Material.BEDROCK);
+			val = max.getBlockX();
+			max.setX(min.getBlockX());
+			min.setX(val);
 		}
+		
+		if(max.getBlockY() < min.getBlockY())
+		{
+			val = max.getBlockY();
+			max.setY(min.getBlockY());
+			min.setY(val);
+		}
+		
+		if(max.getBlockZ() < min.getBlockZ())
+		{
+			val = max.getBlockZ();
+			max.setZ(min.getBlockZ());
+			min.setZ(val);
+		}
+	}
+	
+	private void setupBoard()
+	{
+		// Get the 'front' direction
+		BlockFace front, left;
+		double yaw = mPlayer.getEyeLocation().getYaw();
+		Location loc = mPlayer.getLocation();
+		
+		if(yaw >= 180)
+			yaw -= 360;
+
+		if(yaw >= -45 && yaw <= 45) // south
+		{
+			front = BlockFace.SOUTH;
+			left = BlockFace.EAST;
+		}
+		else if(yaw > 45 && yaw < 135) // west
+		{
+			front = BlockFace.WEST;
+			left = BlockFace.SOUTH;
+		}
+		else if(yaw > -135 && yaw < -45) // east
+		{
+			front = BlockFace.EAST;
+			left = BlockFace.NORTH;
+		}
+		else // north
+		{
+			front = BlockFace.NORTH;
+			left = BlockFace.WEST;
+		}
+		
+		mPieceLocations = new Location[PieceType.values().length];
+		
+		int rows = (int)Math.ceil(PieceType.values().length / 8D);
+		int width = 8 * (mStyle.getPieceSize() + 2);
+		int length = rows * (mStyle.getPieceSize() + 2);
+		
+		BlockVector minCorner = new BlockVector(loc.getBlockX() - (left.getModX() * (width / 2)) - (front.getModX() * (length / 2)), loc.getBlockY(), loc.getBlockZ() - (left.getModZ() * (width / 2)) - (front.getModZ() * (length / 2)));
+		BlockVector maxCorner = new BlockVector(loc.getBlockX() + (left.getModX() * (width / 2)) + (front.getModX() * (length / 2)), loc.getBlockY() + mStyle.getHeight() + 2, loc.getBlockZ() + (left.getModZ() * (width / 2)) + (front.getModZ() * (length / 2)));
+	
+		fixBB(minCorner, maxCorner);
 		
 		int xx = 0;
 		int zz = 0;
 		for(PieceType type : PieceType.values())
 		{
-			int minX = (loc.getBlockX() + 1 + xx * (mStyle.getPieceSize() + 2));
-			int minZ = (loc.getBlockZ() + 1 + zz * (mStyle.getPieceSize() + 2));
+			int minX = (minCorner.getBlockX() + 1 + xx * (mStyle.getPieceSize() + 2));
+			int minZ = (minCorner.getBlockZ() + 1 + zz * (mStyle.getPieceSize() + 2));
+			
+			mPieceLocations[type.ordinal()] = new Location(mPlayer.getWorld(), minX, minCorner.getBlockY()+1, minZ);
+			
+			if(front == BlockFace.NORTH || front == BlockFace.SOUTH)
+			{
+				++xx;
+				if(xx >= 8)
+				{
+					xx = 0;
+					++zz;
+				}
+			}
+			else
+			{
+				++zz;
+				if(zz >= 8)
+				{
+					zz = 0;
+					++xx;
+				}
+			}
+		}
+		
+		mMin = minCorner;
+		mMax = maxCorner;
+	}
+	
+	private void drawBoard()
+	{
+		mWorld = mPlayer.getWorld();
+		for(int x = mMin.getBlockX(); x < mMax.getBlockX(); ++x)
+		{
+			for(int z = mMin.getBlockZ(); z < mMax.getBlockZ(); ++z)
+				mWorld.getBlockAt(x, mMin.getBlockY(), z).setType(Material.BEDROCK);
+		}
+		
+		for(PieceType type : PieceType.values())
+		{
+			Location loc = mPieceLocations[type.ordinal()];
+			
+			int minX = loc.getBlockX();
+			int minZ = loc.getBlockZ();
 			int maxX = minX + mStyle.getPieceSize() - 1;
 			int maxZ = minZ + mStyle.getPieceSize() - 1;
 			
 			// Print the piece if any
 			Piece piece = mStyle.getPiece(type);
 			if(piece != null)
-				piece.place(new Location(loc.getWorld(), minX, loc.getBlockY() + 1, minZ));
+				piece.place(loc);
 			
 			// Print the area borders
 			for(int i = 0; i < mStyle.getPieceSize(); ++i)
 			{
-				loc.getWorld().getBlockAt(minX + i, loc.getBlockY(), minZ).setType(Material.GOLD_BLOCK);
-				loc.getWorld().getBlockAt(minX + i, loc.getBlockY(), maxZ).setType(Material.GOLD_BLOCK);
+				loc.getWorld().getBlockAt(minX + i, loc.getBlockY()-1, minZ).setType(Material.GOLD_BLOCK);
+				loc.getWorld().getBlockAt(minX + i, loc.getBlockY()-1, maxZ).setType(Material.GOLD_BLOCK);
 				
-				loc.getWorld().getBlockAt(minX, loc.getBlockY(), minZ + i).setType(Material.GOLD_BLOCK);
-				loc.getWorld().getBlockAt(maxX, loc.getBlockY(), minZ + i).setType(Material.GOLD_BLOCK);
+				loc.getWorld().getBlockAt(minX, loc.getBlockY()-1, minZ + i).setType(Material.GOLD_BLOCK);
+				loc.getWorld().getBlockAt(maxX, loc.getBlockY()-1, minZ + i).setType(Material.GOLD_BLOCK);
 			}
 			
 			for(int i = 0; i < mStyle.getPieceSize(); ++i)
 			{
-				loc.getWorld().getBlockAt(minX + i, loc.getBlockY() + mStyle.getHeight() + 1, minZ).setType(Material.GOLD_BLOCK);
-				loc.getWorld().getBlockAt(minX + i, loc.getBlockY() + mStyle.getHeight() + 1, maxZ).setType(Material.GOLD_BLOCK);
+				loc.getWorld().getBlockAt(minX + i, loc.getBlockY() + mStyle.getHeight(), minZ).setType(Material.GOLD_BLOCK);
+				loc.getWorld().getBlockAt(minX + i, loc.getBlockY() + mStyle.getHeight(), maxZ).setType(Material.GOLD_BLOCK);
 				
-				loc.getWorld().getBlockAt(minX, loc.getBlockY() + mStyle.getHeight() + 1, minZ + i).setType(Material.GOLD_BLOCK);
-				loc.getWorld().getBlockAt(maxX, loc.getBlockY() + mStyle.getHeight() + 1, minZ + i).setType(Material.GOLD_BLOCK);
+				loc.getWorld().getBlockAt(minX, loc.getBlockY() + mStyle.getHeight(), minZ + i).setType(Material.GOLD_BLOCK);
+				loc.getWorld().getBlockAt(maxX, loc.getBlockY() + mStyle.getHeight(), minZ + i).setType(Material.GOLD_BLOCK);
 			}
 			
 			int centerX = (minX + maxX) / 2;
@@ -103,19 +208,12 @@ public class DesignManager implements Listener
 				
 				do
 				{
-					loc.getWorld().getBlockAt(x, loc.getBlockY(), z).setType(Material.LAPIS_BLOCK);
+					loc.getWorld().getBlockAt(x, loc.getBlockY()-1, z).setType(Material.LAPIS_BLOCK);
 					
 					x += con.getModX();
 					z += con.getModZ();
 				}
 				while(x >= minX - 1 && x <= maxX + 1 && z >= minZ - 1 && z <= maxZ + 1);
-			}
-			
-			++xx;
-			if(xx >= 8)
-			{
-				xx = 0;
-				++zz;
 			}
 		}
 	}
@@ -124,51 +222,51 @@ public class DesignManager implements Listener
 	{
 		mStyle = existing;
 		
-		mLength = (mStyle.getPieceSize() + 2) * 8;
-		mWidth = (mStyle.getPieceSize() + 2) * 2;
+		setupBoard();
 		
-		Location loc = mPlayer.getLocation();
-		
-		for(int x = loc.getBlockX(); x < loc.getBlockX() + mLength; ++x)
+		for(int x = mMin.getBlockX(); x < mMax.getBlockX(); ++x)
 		{
-			for(int z = loc.getBlockZ(); z < loc.getBlockZ() + mWidth; ++z)
+			for(int z = mMin.getBlockZ(); z < mMax.getBlockZ(); ++z)
 			{
-				for(int y = loc.getBlockY(); y < loc.getBlockY() + mStyle.getHeight() + 2; ++y)
+				for(int y = mMin.getBlockY(); y < mMax.getBlockY(); ++y)
 				{
 					Block block = mPlayer.getWorld().getBlockAt(x, y, z);
 					if(!block.isEmpty())
+					{
+						mMin = null;
+						mMax = null;
+						mPieceLocations = null;
 						throw new IllegalStateException("Design area is not empty.");
+					}
 				}
 			}
 		}
 		
 		Bukkit.getPluginManager().registerEvents(this, DynamicMazePlugin.getInstance());
 		
-		drawBoard(loc);
+		drawBoard();
 		
-		mSource = loc.clone();
-		mPlayer.teleport(loc.add(0, 1, 0));
+		mPlayer.teleport(mPlayer.getLocation().add(0, 1, 0));
 	}
 	
 	public void end()
 	{
 		mCurrentManagers.remove(mPlayer);
 
-		if(mSource == null)
+		if(mMin == null)
 			return;
 		
-		// TODO: Save
-		
-		for(int y = mSource.getBlockY() + mStyle.getHeight() + 1; y >= mSource.getBlockY(); --y)
+		for(int y = mMax.getBlockY() - 1; y >= mMin.getBlockY(); --y)
 		{
-			for(int x = mSource.getBlockX(); x < mSource.getBlockX() + mLength; ++x)
+			for(int x = mMin.getBlockX(); x < mMax.getBlockX(); ++x)
 			{
-				for(int z = mSource.getBlockZ(); z < mSource.getBlockZ() + mWidth; ++z)
+				for(int z = mMin.getBlockZ(); z < mMax.getBlockZ(); ++z)
 					mPlayer.getWorld().getBlockAt(x, y, z).setType(Material.AIR);
 			}
 		}
 		
-		mSource = null;
+		mMin = mMax = null;
+		mPieceLocations = null;
 		
 		HandlerList.unregisterAll(this);
 	}
@@ -176,16 +274,14 @@ public class DesignManager implements Listener
 	@EventHandler(priority=EventPriority.HIGHEST, ignoreCancelled=true)
 	private void onBlockBreak(BlockBreakEvent event)
 	{
-		if(mSource == null || event.getBlock().getWorld() != mSource.getWorld())
+		if(mMin == null || event.getBlock().getWorld() != mWorld)
 			return;
 		
-		if(event.getBlock().getX() >= mSource.getBlockX() && event.getBlock().getX() < mSource.getBlockX() + mLength && 
-			event.getBlock().getZ() >= mSource.getBlockZ() && event.getBlock().getZ() < mSource.getBlockZ() + mWidth &&
-			event.getBlock().getY() >= mSource.getBlockY() && event.getBlock().getY() < mSource.getBlockY() + mStyle.getHeight() + 2)
+		if(event.getBlock().getLocation().toVector().isInAABB(mMin, mMax))
 		{
-			if(event.getBlock().getY() == mSource.getBlockY())
+			if(event.getBlock().getY() == mMin.getBlockY())
 				event.setCancelled(true);
-			else if(event.getBlock().getY() == mSource.getBlockY() + mStyle.getHeight() + 1)
+			else if(event.getBlock().getY() == mMax.getBlockY()-1)
 				event.setCancelled(true);
 		}
 	}
@@ -193,16 +289,14 @@ public class DesignManager implements Listener
 	@EventHandler(priority=EventPriority.HIGHEST, ignoreCancelled=true)
 	private void onBlockPlace(BlockPlaceEvent event)
 	{
-		if(mSource == null || event.getBlock().getWorld() != mSource.getWorld())
+		if(mMin == null || event.getBlock().getWorld() != mWorld)
 			return;
 		
-		if(event.getBlock().getX() >= mSource.getBlockX() && event.getBlock().getX() < mSource.getBlockX() + mLength && 
-			event.getBlock().getZ() >= mSource.getBlockZ() && event.getBlock().getZ() < mSource.getBlockZ() + mWidth &&
-			event.getBlock().getY() >= mSource.getBlockY() && event.getBlock().getY() < mSource.getBlockY() + mStyle.getHeight() + 2)
+		if(event.getBlock().getLocation().toVector().isInAABB(mMin, mMax))
 		{
-			if(event.getBlock().getY() == mSource.getBlockY())
+			if(event.getBlock().getY() == mMin.getBlockY())
 				event.setCancelled(true);
-			else if(event.getBlock().getY() == mSource.getBlockY() + mStyle.getHeight() + 1)
+			else if(event.getBlock().getY() == mMax.getBlockY()-1)
 				event.setCancelled(true);
 		}
 	}
