@@ -39,7 +39,7 @@ public class NewDesignCommand implements ICommand
 	@Override
 	public String getUsageString( String label, CommandSender sender )
 	{
-		return label + " <name> <size> <height>";
+		return label + " [name] <size> <height>";
 	}
 
 	@Override
@@ -57,17 +57,19 @@ public class NewDesignCommand implements ICommand
 	@Override
 	public boolean onCommand( CommandSender sender, String label, String[] args )
 	{
-		if(args.length != 3)
+		if(args.length != 2 && args.length != 3)
 			return false;
 		
-		String name = args[0];
+		String name = null;
+		if(args.length == 3)
+			name = args[0];
 		
 		int size;
 		int height;
 		
 		try
 		{
-			size = Integer.parseInt(args[1]);
+			size = Integer.parseInt(args[args.length - 2]);
 			if(size < 4 || size > 10)
 			{
 				sender.sendMessage(ChatColor.RED + "Piece size is out of range. Allowed range is 4 - 10 inclusive.");
@@ -82,7 +84,7 @@ public class NewDesignCommand implements ICommand
 		
 		try
 		{
-			height = Integer.parseInt(args[2]);
+			height = Integer.parseInt(args[args.length - 1]);
 			if(height < 4 || height > 100)
 			{
 				sender.sendMessage(ChatColor.RED + "Piece height is out of range. Allowed range is 4 - 100 inclusive.");
@@ -98,6 +100,9 @@ public class NewDesignCommand implements ICommand
 		try
 		{
 			DesignManager.beingDesigning((Player)sender, new Style(name, (byte)size, (byte)height));
+			sender.sendMessage(ChatColor.GREEN + "You are now in design mode!"); 
+			sender.sendMessage(ChatColor.WHITE + "Use " + ChatColor.YELLOW + "/dynmaze design save [<name>]" + ChatColor.WHITE + " to save changes.");
+			sender.sendMessage(ChatColor.WHITE + "Use " + ChatColor.RED + " /dynmaze design end" + ChatColor.WHITE + " to end designing.");
 		}
 		catch(IllegalStateException e)
 		{

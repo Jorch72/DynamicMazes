@@ -70,8 +70,7 @@ public class EndDesignCommand implements ICommand
 	}
 
 	@Override
-	public List<String> onTabComplete( CommandSender sender, String label,
-			String[] args )
+	public List<String> onTabComplete( CommandSender sender, String label, String[] args )
 	{
 		return null;
 	}

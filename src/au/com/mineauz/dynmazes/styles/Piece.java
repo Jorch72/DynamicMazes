@@ -35,7 +35,7 @@ public class Piece
 			for(int x = 0; x < mSize; ++x)
 			{
 				for(int z = 0; z < mSize; ++z)
-					mBlocks[x + z * (mSize) + y * (mSize * mHeight)] = new StoredBlock(minCorner.getWorld().getBlockAt(minCorner.getBlockX() + x, minCorner.getBlockX() + y, minCorner.getBlockX() + z).getState());
+					mBlocks[x + z * (mSize) + y * (mSize * mSize)] = new StoredBlock(minCorner.getWorld().getBlockAt(minCorner.getBlockX() + x, minCorner.getBlockX() + y, minCorner.getBlockX() + z).getState());
 			}
 		}
 	}
@@ -47,7 +47,7 @@ public class Piece
 			for(int x = 0; x < mSize; ++x)
 			{
 				for(int z = 0; z < mSize; ++z)
-					mBlocks[x + z * (mSize) + y * (mSize * mHeight)].apply(minCorner.getWorld().getBlockAt(minCorner.getBlockX() + x, minCorner.getBlockX() + y, minCorner.getBlockX() + z));
+					mBlocks[x + z * (mSize) + y * (mSize * mSize)].apply(minCorner.getWorld().getBlockAt(minCorner.getBlockX() + x, minCorner.getBlockX() + y, minCorner.getBlockX() + z));
 			}
 		}
 	}

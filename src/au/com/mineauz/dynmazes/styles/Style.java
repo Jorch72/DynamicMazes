@@ -44,6 +44,11 @@ public class Style
 		return mPieces[type.ordinal()];
 	}
 	
+	public String getName()
+	{
+		return mName;
+	}
+	
 	public int getHeight()
 	{
 		return mHeight;
@@ -56,8 +61,6 @@ public class Style
 	
 	public void save(File file)
 	{
-		Validate.isTrue(file.isFile());
-		
 		try
 		{
 			DataOutputStream out = new DataOutputStream(new FileOutputStream(file));

@@ -17,9 +17,8 @@ public class DesignCommandRoot extends CommandDispatcher implements ICommand
 	
 		registerCommand(new NewDesignCommand());
 		registerCommand(new EndDesignCommand());
-		// maze design edit <name>
-		// maze design save
-		// maze design end
+		registerCommand(new SaveDesignCommand());
+		registerCommand(new EditDesignCommand());
 	}
 	@Override
 	public String getName()

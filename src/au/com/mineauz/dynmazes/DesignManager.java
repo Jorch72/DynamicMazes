@@ -20,6 +20,7 @@ import org.bukkit.util.BlockVector;
 import au.com.mineauz.dynmazes.styles.Piece;
 import au.com.mineauz.dynmazes.styles.PieceType;
 import au.com.mineauz.dynmazes.styles.Style;
+import au.com.mineauz.dynmazes.styles.StyleManager;
 
 public class DesignManager implements Listener
 {
@@ -82,6 +83,7 @@ public class DesignManager implements Listener
 	
 	private void setupBoard()
 	{
+		int columns = 4;
 		// Get the 'front' direction
 		BlockFace front, left;
 		double yaw = mPlayer.getEyeLocation().getYaw();
@@ -113,8 +115,8 @@ public class DesignManager implements Listener
 		
 		mPieceLocations = new Location[PieceType.values().length];
 		
-		int rows = (int)Math.ceil(PieceType.values().length / 8D);
-		int width = 8 * (mStyle.getPieceSize() + 2);
+		int rows = (int)Math.ceil(PieceType.values().length / (double)columns);
+		int width = columns * (mStyle.getPieceSize() + 2);
 		int length = rows * (mStyle.getPieceSize() + 2);
 		
 		BlockVector minCorner = new BlockVector(loc.getBlockX() - (left.getModX() * (width / 2)) - (front.getModX() * (length / 2)), loc.getBlockY(), loc.getBlockZ() - (left.getModZ() * (width / 2)) - (front.getModZ() * (length / 2)));
@@ -134,7 +136,7 @@ public class DesignManager implements Listener
 			if(front == BlockFace.NORTH || front == BlockFace.SOUTH)
 			{
 				++xx;
-				if(xx >= 8)
+				if(xx >= columns)
 				{
 					xx = 0;
 					++zz;
@@ -143,7 +145,7 @@ public class DesignManager implements Listener
 			else
 			{
 				++zz;
-				if(zz >= 8)
+				if(zz >= columns)
 				{
 					zz = 0;
 					++xx;
@@ -269,6 +271,29 @@ public class DesignManager implements Listener
 		mPieceLocations = null;
 		
 		HandlerList.unregisterAll(this);
+	}
+	
+	public void save(String name)
+	{
+		if(name != null)
+			mStyle = new Style(name, (byte)mStyle.getPieceSize(), (byte)mStyle.getHeight());
+		
+		if(mStyle.getName() == null)
+			throw new IllegalArgumentException("Cannot save this without a name");
+		
+		for(PieceType type : PieceType.values())
+		{
+			Piece piece = new Piece((byte)mStyle.getPieceSize(), (byte)mStyle.getHeight(), type);
+			piece.setFrom(mPieceLocations[type.ordinal()]);
+			mStyle.setPiece(type, piece);
+		}
+		
+		StyleManager.saveStyle(mStyle);
+	}
+	
+	public Style getStyle()
+	{
+		return mStyle;
 	}
 	
 	@EventHandler(priority=EventPriority.HIGHEST, ignoreCancelled=true)
