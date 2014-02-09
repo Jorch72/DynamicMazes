@@ -1,69 +1,37 @@
 package au.com.mineauz.dynmazes;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Stack;
+import java.util.Collection;
+import au.com.mineauz.dynmazes.algorithm.Algorithm;
+import au.com.mineauz.dynmazes.algorithm.DepthFirstAlgorithm;
+import au.com.mineauz.dynmazes.algorithm.PrimsAlgorithm;
 
 
 public abstract class MazeGenerator<T extends INode>
 {
-	protected Random mRand;
-
+	private Algorithm mAlgorithm;
+	
 	public MazeGenerator()
 	{
 		super();
+		mAlgorithm = new PrimsAlgorithm(-1);
 	}
 
+	@SuppressWarnings( "unchecked" )
 	public void generate()
 	{
 		prepareArea();
 		
-		T end = null;
-	
-		// Find a start point
-		findExit();
-		end = findExit();
+		T end = findExit();
+		T start = findExit();
 		
-		HashSet<T> visited = new HashSet<T>();
-		Stack<T> next = new Stack<T>();
-		
-		next.push(end);
-		
-		while(!next.isEmpty())
-		{
-			T node = next.peek();
-			visited.add(node);
-			
-			@SuppressWarnings( "unchecked" )
-			ArrayList<T> neighbours = new ArrayList<T>(Arrays.asList((T[])node.getNeighbours()));
-			boolean added = false;
-			
-			while(!neighbours.isEmpty())
-			{
-				int index = mRand.nextInt(neighbours.size());
-				T neighbour = neighbours.get(index);
-				if(visited.contains(neighbour))
-					neighbours.remove(index);
-				else
-				{
-					node.addChild(neighbour);
-					next.push(neighbour);
-					
-					added = true;
-					break;
-				}
-			}
-			
-			if(!added)
-				next.pop();
-		}
+		Collection<INode> allNodes = mAlgorithm.generate(start, end);
 		
 		System.out.println("Generation finished");
 		
-		for(T node : visited)
-			placeNode(node);
+		for(INode node : allNodes)
+			placeNode((T)node);
+		
+		System.out.println("Placement finished");
 	}
 	
 	protected abstract T findExit();

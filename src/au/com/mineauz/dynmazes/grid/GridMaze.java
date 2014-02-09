@@ -18,6 +18,8 @@ public class GridMaze extends MazeGenerator
 	private int mWidth;
 	private int mLength;
 	
+	private Random mRand;
+	
 	public GridMaze(Location loc, int width, int length)
 	{
 		mMinCorner = loc;

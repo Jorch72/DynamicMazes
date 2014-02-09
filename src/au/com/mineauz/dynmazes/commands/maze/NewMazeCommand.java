@@ -53,7 +53,7 @@ public class NewMazeCommand implements ICommand
 	@Override
 	public boolean onCommand( CommandSender sender, String label, String[] args )
 	{
-		ModuleMaze maze = new ModuleMaze(StyleManager.getStyle("Test"), ((Player)sender).getLocation(), 30, 30, BlockFace.NORTH);
+		ModuleMaze maze = new ModuleMaze(StyleManager.getStyle("Test"), ((Player)sender).getLocation(), 10, 10, BlockFace.NORTH);
 		maze.generate();
 		return true;
 	}

@@ -23,6 +23,8 @@ public class ModuleMaze extends MazeGenerator<ModuleNode>
 	int mWidth;
 	int mLength;
 	
+	private Random mRand;
+	
 	public ModuleMaze(Style style, Location loc, int width, int length, BlockFace facing)
 	{
 		mMinCorner = loc;
