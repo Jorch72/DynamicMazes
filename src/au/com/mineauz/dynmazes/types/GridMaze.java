@@ -11,6 +11,7 @@ import org.bukkit.block.BlockFace;
 
 import au.com.mineauz.dynmazes.INode;
 import au.com.mineauz.dynmazes.MazeGenerator;
+import au.com.mineauz.dynmazes.algorithm.PrimsAlgorithm;
 
 public class GridMaze extends MazeGenerator
 {
@@ -22,6 +23,7 @@ public class GridMaze extends MazeGenerator
 	
 	public GridMaze(Location loc, int width, int length)
 	{
+		super(new PrimsAlgorithm(-1));
 		mMinCorner = loc;
 		mWidth = width;
 		mLength = length;

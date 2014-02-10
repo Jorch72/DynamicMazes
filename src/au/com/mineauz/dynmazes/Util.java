@@ -1,5 +1,7 @@
 package au.com.mineauz.dynmazes;
 
+import java.nio.file.Files;
+
 import org.bukkit.Location;
 import org.bukkit.block.BlockFace;
 import org.bukkit.util.BlockVector;
@@ -77,5 +79,16 @@ public class Util
 		
 		return BlockFace.SELF;
 		
+	}
+	
+	public static boolean isNameOk(String name)
+	{
+		for(char c : name.toCharArray())
+		{
+			if(!Character.isLetterOrDigit(c) && c != '_')
+				return false;
+		}
+		
+		return true;
 	}
 }

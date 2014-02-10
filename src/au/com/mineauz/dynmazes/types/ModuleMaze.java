@@ -9,11 +9,16 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.entity.Player;
 
 import au.com.mineauz.dynmazes.INode;
 import au.com.mineauz.dynmazes.MazeGenerator;
+import au.com.mineauz.dynmazes.MazeManager.MazeCommand;
+import au.com.mineauz.dynmazes.Util;
+import au.com.mineauz.dynmazes.algorithm.PrimsAlgorithm;
 import au.com.mineauz.dynmazes.styles.PieceType;
 import au.com.mineauz.dynmazes.styles.Style;
+import au.com.mineauz.dynmazes.styles.StyleManager;
 
 public class ModuleMaze extends MazeGenerator<ModuleNode>
 {
@@ -30,6 +35,7 @@ public class ModuleMaze extends MazeGenerator<ModuleNode>
 	
 	public ModuleMaze(Style style, Location loc, int width, int length, BlockFace facing)
 	{
+		super(new PrimsAlgorithm(-1));
 		mMinCorner = loc;
 		mWidth = width;
 		mLength = length;
@@ -123,6 +129,43 @@ public class ModuleMaze extends MazeGenerator<ModuleNode>
 		}
 		
 		return node;
+	}
+	
+	@MazeCommand( command="new" )
+	public static ModuleMaze newMaze(Player player, String name, String[] args) throws IllegalArgumentException, NoSuchFieldException
+	{
+		if(args.length != 3)
+			throw new NoSuchFieldException("<style> <width> <length>");
+		
+		Style style = StyleManager.getStyle(args[0]);
+		if(style == null)
+			throw new IllegalArgumentException("Cannot find style " + args[0]);
+		
+		int width, length;
+		
+		try
+		{
+			width = Integer.parseInt(args[1]);
+			if(width <= 1)
+				throw new IllegalArgumentException("Width cannot be less than 2");
+		}
+		catch(NumberFormatException e)
+		{
+			throw new IllegalArgumentException("Width must be a whole number larger than 1");
+		}
+		
+		try
+		{
+			length = Integer.parseInt(args[1]);
+			if(length <= 1)
+				throw new IllegalArgumentException("Length cannot be less than 2");
+		}
+		catch(NumberFormatException e)
+		{
+			throw new IllegalArgumentException("Length must be a whole number larger than 1");
+		}
+		
+		return new ModuleMaze(style, player.getLocation(), width, length, Util.toFacingSimplest(player.getEyeLocation().getYaw()));
 	}
 }
 
@@ -287,7 +330,6 @@ class ModuleNode implements INode
 	{
 		return mTerminus;
 	}
-	
 }
 
 

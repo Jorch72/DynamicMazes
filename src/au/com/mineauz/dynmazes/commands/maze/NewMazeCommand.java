@@ -1,16 +1,18 @@
 package au.com.mineauz.dynmazes.commands.maze;
 
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 
-import org.bukkit.block.BlockFace;
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import au.com.mineauz.dynmazes.MazeGenerator;
+import au.com.mineauz.dynmazes.MazeManager;
+import au.com.mineauz.dynmazes.Util;
 import au.com.mineauz.dynmazes.commands.CommandSenderType;
 import au.com.mineauz.dynmazes.commands.ICommand;
-import au.com.mineauz.dynmazes.styles.StyleManager;
-import au.com.mineauz.dynmazes.types.ModuleMaze;
 
 public class NewMazeCommand implements ICommand
 {
@@ -35,7 +37,7 @@ public class NewMazeCommand implements ICommand
 	@Override
 	public String getUsageString( String label, CommandSender sender )
 	{
-		return label + " <type> <options>";
+		return label + " <name> <type> <options>";
 	}
 
 	@Override
@@ -53,8 +55,32 @@ public class NewMazeCommand implements ICommand
 	@Override
 	public boolean onCommand( CommandSender sender, String label, String[] args )
 	{
-		ModuleMaze maze = new ModuleMaze(StyleManager.getStyle("Test"), ((Player)sender).getLocation(), 10, 10, BlockFace.NORTH);
-		maze.generate();
+		if(args.length <= 1)
+			return false;
+		
+		String name = args[0];
+		if(!Util.isNameOk(name))
+		{
+			sender.sendMessage(ChatColor.RED + "Name has invalid characters in it. Only letters, numbers, and _ may be used.");
+			return true;
+		}
+
+		try
+		{
+			MazeGenerator<?> generator = MazeManager.createMaze((Player)sender, name, args[1], Arrays.copyOfRange(args, 2, args.length));
+			generator.generate();
+			
+			sender.sendMessage(ChatColor.GREEN + "Maze generated");
+		}
+		catch(IllegalArgumentException e)
+		{
+			sender.sendMessage(ChatColor.RED + e.getMessage());
+		}
+		catch(NoSuchFieldException e)
+		{
+			sender.sendMessage(ChatColor.RED + "Usage: /dynmaze " + label + " <name> " + args[1] + " " + e.getMessage());
+		}
+
 		return true;
 	}
 

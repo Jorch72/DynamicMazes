@@ -2,17 +2,16 @@ package au.com.mineauz.dynmazes;
 
 import java.util.Collection;
 import au.com.mineauz.dynmazes.algorithm.Algorithm;
-import au.com.mineauz.dynmazes.algorithm.PrimsAlgorithm;
 
 
 public abstract class MazeGenerator<T extends INode>
 {
 	private Algorithm mAlgorithm;
 	
-	public MazeGenerator()
+	public MazeGenerator(Algorithm algorithm)
 	{
 		super();
-		mAlgorithm = new PrimsAlgorithm(-1);
+		mAlgorithm = algorithm;
 	}
 
 	@SuppressWarnings( "unchecked" )
