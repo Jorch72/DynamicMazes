@@ -2,7 +2,6 @@ package au.com.mineauz.dynmazes;
 
 import java.util.Collection;
 import au.com.mineauz.dynmazes.algorithm.Algorithm;
-import au.com.mineauz.dynmazes.algorithm.DepthFirstAlgorithm;
 import au.com.mineauz.dynmazes.algorithm.PrimsAlgorithm;
 
 
@@ -21,12 +20,12 @@ public abstract class MazeGenerator<T extends INode>
 	{
 		prepareArea();
 		
-		T end = findExit();
-		T start = findExit();
-		
-		Collection<INode> allNodes = mAlgorithm.generate(start, end);
+		T root = findStart();
+		Collection<INode> allNodes = mAlgorithm.generate(root);
 		
 		System.out.println("Generation finished");
+
+		onGenerateComplete(root, (Collection<T>)allNodes);
 		
 		for(INode node : allNodes)
 			placeNode((T)node);
@@ -34,12 +33,27 @@ public abstract class MazeGenerator<T extends INode>
 		System.out.println("Placement finished");
 	}
 	
-	protected abstract T findExit();
+	protected abstract void prepareArea();
+	
+	protected abstract T findStart();
 
-	protected abstract void clearBetween( T nodeA, T nodeB );
-
+	protected void onGenerateComplete(T root, Collection<T> nodes) {};
+	
 	protected abstract void placeNode( T node );
 
-	protected abstract void prepareArea();
+	
+	
+	
+	protected int getDepth(INode node)
+	{
+		int depth = -1;
+		while(node != null)
+		{
+			++depth;
+			node = node.getParent();
+		}
+		
+		return depth;
+	}
 
 }

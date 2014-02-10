@@ -6,5 +6,5 @@ import au.com.mineauz.dynmazes.INode;
 
 public interface Algorithm
 {
-	public Collection<INode> generate(INode from, INode to);
+	public Collection<INode> generate(INode from);
 }

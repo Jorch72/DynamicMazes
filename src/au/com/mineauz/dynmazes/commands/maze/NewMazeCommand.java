@@ -9,8 +9,8 @@ import org.bukkit.entity.Player;
 
 import au.com.mineauz.dynmazes.commands.CommandSenderType;
 import au.com.mineauz.dynmazes.commands.ICommand;
-import au.com.mineauz.dynmazes.grid.ModuleMaze;
 import au.com.mineauz.dynmazes.styles.StyleManager;
+import au.com.mineauz.dynmazes.types.ModuleMaze;
 
 public class NewMazeCommand implements ICommand
 {

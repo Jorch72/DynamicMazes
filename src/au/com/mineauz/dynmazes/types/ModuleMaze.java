@@ -1,5 +1,6 @@
-package au.com.mineauz.dynmazes.grid;
+package au.com.mineauz.dynmazes.types;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
@@ -8,7 +9,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.Sign;
 
 import au.com.mineauz.dynmazes.INode;
 import au.com.mineauz.dynmazes.MazeGenerator;
@@ -24,6 +24,9 @@ public class ModuleMaze extends MazeGenerator<ModuleNode>
 	int mLength;
 	
 	private Random mRand;
+	
+	private ModuleNode mEntrance;
+	private ModuleNode mExit;
 	
 	public ModuleMaze(Style style, Location loc, int width, int length, BlockFace facing)
 	{
@@ -55,45 +58,69 @@ public class ModuleMaze extends MazeGenerator<ModuleNode>
 	}
 	
 	@Override
+	protected void onGenerateComplete( ModuleNode root, Collection<ModuleNode> nodes )
+	{
+		ModuleNode highest = null;
+		int score = 0;
+		
+		for(ModuleNode node : nodes)
+		{
+			if(node.getX() == 0 || node.getY() == 0 || node.getX() == mWidth-1 || node.getY() == mLength-1)
+			{
+				int depth = getDepth(node);
+				if(depth > score)
+				{
+					highest = node;
+					score = depth;
+				}
+			}
+		}
+		
+		mEntrance.addChild(root);
+		
+		if(highest.getX() == 0)
+			mExit = new ModuleNode(this, -1, highest.getY(), true);
+		else if(highest.getX() == mWidth - 1)
+			mExit = new ModuleNode(this, mWidth, highest.getY(), true);
+		else if(highest.getY() == 0)
+			mExit = new ModuleNode(this, highest.getX(), -1, true);
+		else
+			mExit = new ModuleNode(this, highest.getX(), mLength, true);
+		
+		highest.addChild(mExit);
+	}
+	
+	@Override
 	protected void placeNode(ModuleNode node)
 	{
-		mStyle.getPiece(node.getType()).place(node.toLocation());
+		if(!node.isTerminus())
+			mStyle.getPiece(node.getType()).place(node.toLocation());
 	}
 	
 	@Override
-	protected void clearBetween(ModuleNode nodeA, ModuleNode nodeB)
-	{
-	}
-	
-	@Override
-	protected ModuleNode findExit()
+	protected ModuleNode findStart()
 	{
 		int side = mRand.nextInt(4);
 		ModuleNode node = null;
-		Block b = null;
 		switch(side)
 		{
 		case 0:
 			node = new ModuleNode(this, 0, mRand.nextInt(mLength));
-			b = node.toLocation().getBlock().getRelative(BlockFace.WEST);
+			mEntrance = new ModuleNode(this, -1, node.getY(), true);
 			break;
 		case 1:
 			node = new ModuleNode(this, mWidth - 1, mRand.nextInt(mLength));
-			b = node.toLocation().getBlock().getRelative(BlockFace.EAST);
+			mEntrance = new ModuleNode(this, mWidth, node.getY(), true);
 			break;
 		case 2:
 			node = new ModuleNode(this, mRand.nextInt(mWidth), 0);
-			b = node.toLocation().getBlock().getRelative(BlockFace.NORTH);
+			mEntrance = new ModuleNode(this, node.getX(), -1, true);
 			break;
 		case 3:
 			node = new ModuleNode(this, mRand.nextInt(mWidth), mLength - 1);
-			b = node.toLocation().getBlock().getRelative(BlockFace.SOUTH);
+			mEntrance = new ModuleNode(this, node.getX(), mLength, true);
 			break;
 		}
-		
-		b.getRelative(BlockFace.UP, 1).setType(Material.GRAVEL);
-		for(int i = 0; i < 3; ++i)
-			b.getRelative(BlockFace.UP, 2 + i).setType(Material.AIR);
 		
 		return node;
 	}
@@ -111,6 +138,8 @@ class ModuleNode implements INode
 	
 	private ModuleMaze mMaze;
 	
+	private boolean mTerminus = false;
+	
 	public ModuleNode(ModuleMaze maze, int x, int y)
 	{
 		mMaze = maze;
@@ -120,9 +149,18 @@ class ModuleNode implements INode
 		mChildren = new HashSet<INode>();
 	}
 	
+	public ModuleNode(ModuleMaze maze, int x, int y, boolean terminus)
+	{
+		this(maze, x, y);
+		mTerminus = terminus;
+	}
+	
 	@Override
 	public INode[] getNeighbours()
 	{
+		if(mTerminus)
+			return new INode[0];
+		
 		if(mX == 0)
 		{
 			if(mY == 0)
@@ -233,6 +271,21 @@ class ModuleNode implements INode
 		}
 		
 		return PieceType.Cross;
+	}
+	
+	public int getX()
+	{
+		return mX;
+	}
+	
+	public int getY()
+	{
+		return mY;
+	}
+	
+	public boolean isTerminus()
+	{
+		return mTerminus;
 	}
 	
 }

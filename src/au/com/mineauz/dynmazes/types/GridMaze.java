@@ -1,4 +1,4 @@
-package au.com.mineauz.dynmazes.grid;
+package au.com.mineauz.dynmazes.types;
 
 import java.util.HashSet;
 import java.util.Random;
@@ -60,7 +60,6 @@ public class GridMaze extends MazeGenerator
 			loc.getBlock().getRelative(BlockFace.UP, 2 + i).setType(Material.AIR);
 	}
 	
-	@Override
 	protected void clearBetween(INode nodeA, INode nodeB)
 	{
 		Location a = nodeA.toLocation();
@@ -73,7 +72,7 @@ public class GridMaze extends MazeGenerator
 	}
 	
 	@Override
-	protected INode findExit()
+	protected INode findStart()
 	{
 		int side = mRand.nextInt(4);
 		INode node = null;

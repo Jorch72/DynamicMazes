@@ -18,7 +18,7 @@ public class PrimsAlgorithm implements Algorithm
 	}
 	
 	@Override
-	public Collection<INode> generate( INode from, INode to )
+	public Collection<INode> generate( INode from )
 	{
 		ArrayList<INode> waiting = new ArrayList<INode>();
 		HashSet<INode> visited = new HashSet<INode>();
