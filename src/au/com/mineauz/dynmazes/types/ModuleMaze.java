@@ -15,7 +15,6 @@ import au.com.mineauz.dynmazes.INode;
 import au.com.mineauz.dynmazes.MazeGenerator;
 import au.com.mineauz.dynmazes.MazeManager.MazeCommand;
 import au.com.mineauz.dynmazes.Util;
-import au.com.mineauz.dynmazes.algorithm.PrimsAlgorithm;
 import au.com.mineauz.dynmazes.styles.PieceType;
 import au.com.mineauz.dynmazes.styles.Style;
 import au.com.mineauz.dynmazes.styles.StyleManager;
@@ -28,20 +27,16 @@ public class ModuleMaze extends MazeGenerator<ModuleNode>
 	int mWidth;
 	int mLength;
 	
-	private Random mRand;
-	
 	private ModuleNode mEntrance;
 	private ModuleNode mExit;
 	
-	public ModuleMaze(Style style, Location loc, int width, int length, BlockFace facing)
+	public ModuleMaze(String name, Style style, Location loc, int width, int length, BlockFace facing)
 	{
-		super(new PrimsAlgorithm(-1));
+		super(name, loc, loc.clone().add(width * style.getPieceSize(), style.getHeight(), length * style.getPieceSize()));
 		mMinCorner = loc;
 		mWidth = width;
 		mLength = length;
 		mStyle = style;
-		
-		mRand = new Random();
 	}
 	
 	@Override
@@ -106,24 +101,26 @@ public class ModuleMaze extends MazeGenerator<ModuleNode>
 	@Override
 	protected ModuleNode findStart()
 	{
-		int side = mRand.nextInt(4);
+		Random rand = getAlgorithm().getRandom();
+		
+		int side = rand.nextInt(4);
 		ModuleNode node = null;
 		switch(side)
 		{
 		case 0:
-			node = new ModuleNode(this, 0, mRand.nextInt(mLength));
+			node = new ModuleNode(this, 0, rand.nextInt(mLength));
 			mEntrance = new ModuleNode(this, -1, node.getY(), true);
 			break;
 		case 1:
-			node = new ModuleNode(this, mWidth - 1, mRand.nextInt(mLength));
+			node = new ModuleNode(this, mWidth - 1, rand.nextInt(mLength));
 			mEntrance = new ModuleNode(this, mWidth, node.getY(), true);
 			break;
 		case 2:
-			node = new ModuleNode(this, mRand.nextInt(mWidth), 0);
+			node = new ModuleNode(this, rand.nextInt(mWidth), 0);
 			mEntrance = new ModuleNode(this, node.getX(), -1, true);
 			break;
 		case 3:
-			node = new ModuleNode(this, mRand.nextInt(mWidth), mLength - 1);
+			node = new ModuleNode(this, rand.nextInt(mWidth), mLength - 1);
 			mEntrance = new ModuleNode(this, node.getX(), mLength, true);
 			break;
 		}
@@ -165,7 +162,7 @@ public class ModuleMaze extends MazeGenerator<ModuleNode>
 			throw new IllegalArgumentException("Length must be a whole number larger than 1");
 		}
 		
-		return new ModuleMaze(style, player.getLocation(), width, length, Util.toFacingSimplest(player.getEyeLocation().getYaw()));
+		return new ModuleMaze(name, style, player.getLocation(), width, length, Util.toFacingSimplest(player.getEyeLocation().getYaw()));
 	}
 }
 

@@ -67,4 +67,15 @@ public class GrowingTreeAlgorithm implements Algorithm
 		return visited;
 	}
 
+	@Override
+	public Random getRandom()
+	{
+		return mRand;
+	}
+	
+	@Override
+	public void setSeed( long seed )
+	{
+		mRand.setSeed(seed);
+	}
 }

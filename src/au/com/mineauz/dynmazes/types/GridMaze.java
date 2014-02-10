@@ -13,6 +13,7 @@ import au.com.mineauz.dynmazes.INode;
 import au.com.mineauz.dynmazes.MazeGenerator;
 import au.com.mineauz.dynmazes.algorithm.PrimsAlgorithm;
 
+// TODO: This whole class is to be redone
 public class GridMaze extends MazeGenerator
 {
 	private Location mMinCorner;
@@ -21,9 +22,9 @@ public class GridMaze extends MazeGenerator
 	
 	private Random mRand;
 	
-	public GridMaze(Location loc, int width, int length)
+	public GridMaze(String name, Location loc, int width, int length)
 	{
-		super(new PrimsAlgorithm(-1));
+		super(name, loc, loc.clone().add(width * 2, 4, length * 2));
 		mMinCorner = loc;
 		mWidth = width;
 		mLength = length;
