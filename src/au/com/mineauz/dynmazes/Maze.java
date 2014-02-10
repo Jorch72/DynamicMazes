@@ -12,7 +12,7 @@ import au.com.mineauz.dynmazes.algorithm.Algorithm;
 import au.com.mineauz.dynmazes.algorithm.DepthFirstAlgorithm;
 
 
-public abstract class MazeGenerator<T extends INode>
+public abstract class Maze<T extends INode>
 {
 	private Algorithm mAlgorithm;
 	private String mName;
@@ -28,7 +28,7 @@ public abstract class MazeGenerator<T extends INode>
 	private boolean mIsGenerating = false;
 	private boolean mIsDrawing = false;
 	
-	public MazeGenerator(String name, Location min, Location max)
+	public Maze(String name, Location min, Location max)
 	{
 		mAlgorithm = new DepthFirstAlgorithm(-1);
 		

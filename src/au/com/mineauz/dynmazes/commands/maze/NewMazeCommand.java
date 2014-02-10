@@ -8,7 +8,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import au.com.mineauz.dynmazes.MazeGenerator;
+import au.com.mineauz.dynmazes.Maze;
 import au.com.mineauz.dynmazes.MazeManager;
 import au.com.mineauz.dynmazes.Util;
 import au.com.mineauz.dynmazes.commands.CommandSenderType;
@@ -67,7 +67,7 @@ public class NewMazeCommand implements ICommand
 
 		try
 		{
-			MazeGenerator<?> generator = MazeManager.createMaze((Player)sender, name, args[1], Arrays.copyOfRange(args, 2, args.length));
+			Maze<?> generator = MazeManager.createMaze((Player)sender, name, args[1], Arrays.copyOfRange(args, 2, args.length));
 			generator.generate();
 			
 			sender.sendMessage(ChatColor.GREEN + "Maze generated");

@@ -10,11 +10,11 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 
 import au.com.mineauz.dynmazes.INode;
-import au.com.mineauz.dynmazes.MazeGenerator;
+import au.com.mineauz.dynmazes.Maze;
 import au.com.mineauz.dynmazes.algorithm.PrimsAlgorithm;
 
 // TODO: This whole class is to be redone
-public class GridMaze extends MazeGenerator
+public class GridMaze extends Maze
 {
 	private Location mMinCorner;
 	private int mWidth;

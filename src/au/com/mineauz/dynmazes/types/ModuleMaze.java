@@ -12,14 +12,14 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 
 import au.com.mineauz.dynmazes.INode;
-import au.com.mineauz.dynmazes.MazeGenerator;
+import au.com.mineauz.dynmazes.Maze;
 import au.com.mineauz.dynmazes.MazeManager.MazeCommand;
 import au.com.mineauz.dynmazes.Util;
 import au.com.mineauz.dynmazes.styles.PieceType;
 import au.com.mineauz.dynmazes.styles.Style;
 import au.com.mineauz.dynmazes.styles.StyleManager;
 
-public class ModuleMaze extends MazeGenerator<ModuleNode>
+public class ModuleMaze extends Maze<ModuleNode>
 {
 	Style mStyle;
 	Location mMinCorner;

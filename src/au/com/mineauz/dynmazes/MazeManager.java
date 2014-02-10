@@ -21,7 +21,7 @@ public class MazeManager
 {
 	private static HashMap<String, MazeDefinition> mMazeTypes = new HashMap<String, MazeDefinition>();
 	
-	public static void registerType(String name, Class<? extends MazeGenerator<?>> clazz)
+	public static void registerType(String name, Class<? extends Maze<?>> clazz)
 	{
 		Validate.isTrue(!name.contains(" "), "Cannot use spaces in type names");
 		
@@ -33,7 +33,7 @@ public class MazeManager
 		
 	}
 	
-	public static MazeGenerator<?> createMaze(Player player, String name, String type, String[] args) throws IllegalArgumentException, NoSuchFieldException
+	public static Maze<?> createMaze(Player player, String name, String type, String[] args) throws IllegalArgumentException, NoSuchFieldException
 	{
 		MazeDefinition def = mMazeTypes.get(type.toLowerCase());
 		if(def == null)
@@ -61,7 +61,7 @@ public class MazeManager
 	private static class MazeDefinition
 	{
 		private String mName;
-		public MazeDefinition(String name, Class<? extends MazeGenerator<?>> clazz)
+		public MazeDefinition(String name, Class<? extends Maze<?>> clazz)
 		{
 			mName = name;
 			for(Method method : clazz.getMethods())
@@ -75,7 +75,7 @@ public class MazeManager
 				{
 					if(command.command().equals("new"))
 					{
-						if(!MazeGenerator.class.isAssignableFrom(method.getReturnType()))
+						if(!Maze.class.isAssignableFrom(method.getReturnType()))
 							throw new IllegalArgumentException(method.getName() + " must return an instance of MazeGenerator");
 						
 						if(method.getParameterTypes().length != 3 || 
@@ -100,11 +100,11 @@ public class MazeManager
 		}
 		
 		private Method mNewMaze;
-		public MazeGenerator<?> newMaze(Player player, String name, String[] args) throws IllegalArgumentException, NoSuchFieldException
+		public Maze<?> newMaze(Player player, String name, String[] args) throws IllegalArgumentException, NoSuchFieldException
 		{
 			try
 			{
-				return (MazeGenerator<?>)mNewMaze.invoke(null, player, name, args);
+				return (Maze<?>)mNewMaze.invoke(null, player, name, args);
 			}
 			catch ( IllegalAccessException e )
 			{
