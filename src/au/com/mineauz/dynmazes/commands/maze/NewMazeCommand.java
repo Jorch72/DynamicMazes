@@ -52,7 +52,7 @@ public class NewMazeCommand implements ICommand
 	}
 
 	@Override
-	public boolean onCommand( CommandSender sender, String label, String[] args )
+	public boolean onCommand( CommandSender sender, String parent, String label, String[] args )
 	{
 		if(args.length <= 1)
 			return false;
@@ -68,7 +68,7 @@ public class NewMazeCommand implements ICommand
 		{
 			MazeManager.createMaze((Player)sender, name, args[1], Arrays.copyOfRange(args, 2, args.length));
 			
-			sender.sendMessage(ChatColor.GREEN + "Maze created. Use " + ChatColor.YELLOW + "/dynmaze generate " + name + ChatColor.GREEN + " to build it.");
+			sender.sendMessage(ChatColor.GREEN + "Maze created. Use " + ChatColor.YELLOW + parent + "generate " + name + ChatColor.GREEN + " to build it.");
 		}
 		catch(IllegalArgumentException e)
 		{
@@ -76,14 +76,14 @@ public class NewMazeCommand implements ICommand
 		}
 		catch(NoSuchFieldException e)
 		{
-			sender.sendMessage(ChatColor.RED + "Usage: /dynmaze " + label + " <name> " + args[1] + " " + e.getMessage());
+			sender.sendMessage(ChatColor.RED + "Usage: " + parent + label + " <name> " + args[1] + " " + e.getMessage());
 		}
 
 		return true;
 	}
 
 	@Override
-	public List<String> onTabComplete( CommandSender sender, String label, String[] args )
+	public List<String> onTabComplete( CommandSender sender, String parent, String label, String[] args )
 	{
 		return null;
 	}

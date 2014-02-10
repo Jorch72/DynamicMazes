@@ -53,7 +53,7 @@ public class EditDesignCommand implements ICommand
 	}
 
 	@Override
-	public boolean onCommand( CommandSender sender, String label, String[] args )
+	public boolean onCommand( CommandSender sender, String parent, String label, String[] args )
 	{
 		if(args.length != 1)
 			return false;
@@ -70,8 +70,8 @@ public class EditDesignCommand implements ICommand
 		{
 			DesignManager.beingDesigning((Player)sender, style);
 			sender.sendMessage(ChatColor.GREEN + "You are now in design mode!"); 
-			sender.sendMessage(ChatColor.WHITE + "Use " + ChatColor.YELLOW + "/dynmaze design save [<name>]" + ChatColor.WHITE + " to save changes.");
-			sender.sendMessage(ChatColor.WHITE + "Use " + ChatColor.RED + "/dynmaze design end" + ChatColor.WHITE + " to end designing.");
+			sender.sendMessage(ChatColor.WHITE + "Use " + ChatColor.YELLOW + parent + "save [<name>]" + ChatColor.WHITE + " to save changes.");
+			sender.sendMessage(ChatColor.WHITE + "Use " + ChatColor.RED + parent + "end" + ChatColor.WHITE + " to end designing.");
 		}
 		catch(IllegalStateException e)
 		{
@@ -82,7 +82,7 @@ public class EditDesignCommand implements ICommand
 	}
 
 	@Override
-	public List<String> onTabComplete( CommandSender sender, String label, String[] args )
+	public List<String> onTabComplete( CommandSender sender, String parent, String label, String[] args )
 	{
 		return null;
 	}

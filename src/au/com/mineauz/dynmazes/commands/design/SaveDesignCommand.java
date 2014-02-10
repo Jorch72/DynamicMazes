@@ -51,7 +51,7 @@ public class SaveDesignCommand implements ICommand
 	}
 
 	@Override
-	public boolean onCommand( CommandSender sender, String label, String[] args )
+	public boolean onCommand( CommandSender sender, String parent, String label, String[] args )
 	{
 		if(args.length > 1)
 			return false;
@@ -81,8 +81,7 @@ public class SaveDesignCommand implements ICommand
 	}
 
 	@Override
-	public List<String> onTabComplete( CommandSender sender, String label,
-			String[] args )
+	public List<String> onTabComplete( CommandSender sender, String parent, String label, String[] args )
 	{
 		return null;
 	}

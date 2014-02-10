@@ -55,7 +55,7 @@ public class NewDesignCommand implements ICommand
 	}
 
 	@Override
-	public boolean onCommand( CommandSender sender, String label, String[] args )
+	public boolean onCommand( CommandSender sender, String parent, String label, String[] args )
 	{
 		if(args.length != 2 && args.length != 3)
 			return false;
@@ -101,8 +101,8 @@ public class NewDesignCommand implements ICommand
 		{
 			DesignManager.beingDesigning((Player)sender, new Style(name, (byte)size, (byte)height));
 			sender.sendMessage(ChatColor.GREEN + "You are now in design mode!"); 
-			sender.sendMessage(ChatColor.WHITE + "Use " + ChatColor.YELLOW + "/dynmaze design save [<name>]" + ChatColor.WHITE + " to save changes.");
-			sender.sendMessage(ChatColor.WHITE + "Use " + ChatColor.RED + "/dynmaze design end" + ChatColor.WHITE + " to end designing.");
+			sender.sendMessage(ChatColor.WHITE + "Use " + ChatColor.YELLOW + parent + "save [<name>]" + ChatColor.WHITE + " to save changes.");
+			sender.sendMessage(ChatColor.WHITE + "Use " + ChatColor.RED + parent + "end" + ChatColor.WHITE + " to end designing.");
 		}
 		catch(IllegalStateException e)
 		{
@@ -115,8 +115,7 @@ public class NewDesignCommand implements ICommand
 	}
 
 	@Override
-	public List<String> onTabComplete( CommandSender sender, String label,
-			String[] args )
+	public List<String> onTabComplete( CommandSender sender, String parent, String label, String[] args )
 	{
 		return null;
 	}

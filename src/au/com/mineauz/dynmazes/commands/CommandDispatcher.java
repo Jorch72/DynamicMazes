@@ -49,11 +49,13 @@ public class CommandDispatcher
 		mDefaultCommand = command;
 	}
 	
-	public boolean dispatchCommand(CommandSender sender, String label, String[] args)
+	public boolean dispatchCommand(CommandSender sender, String parent, String label, String[] args)
 	{
+		parent += label + " ";
+		
 		if(args.length == 0 && mDefaultCommand == null)
 		{
-			displayUsage(sender, label, null);
+			displayUsage(sender, parent, label, null);
 			return true;
 		}
 		
@@ -96,7 +98,7 @@ public class CommandDispatcher
 		// Was not found
 		if(com == null)
 		{
-			displayUsage(sender,label, subCommand);
+			displayUsage(sender, parent, label, subCommand);
 			return true;
 		}
 		
@@ -104,7 +106,7 @@ public class CommandDispatcher
 		if(!com.getAllowedSenders().contains(CommandSenderType.from(sender)))
 		{
 			if(com == mDefaultCommand)
-				displayUsage(sender, label, subCommand);
+				displayUsage(sender, parent, label, subCommand);
 			else
 				sender.sendMessage(ChatColor.RED + String.format("%s %s cannot be called from the %s", label, subCommand, CommandSenderType.from(sender)));
 			return true;
@@ -117,12 +119,12 @@ public class CommandDispatcher
 			return true;
 		}
 		
-		if(!com.onCommand(sender, subCommand, subArgs))
-			sender.sendMessage(ChatColor.RED + "Usage: " + com.getUsageString(subCommand, sender));
+		if(!com.onCommand(sender, parent, subCommand, subArgs))
+			sender.sendMessage(ChatColor.RED + "Usage: " + parent + com.getUsageString(subCommand, sender));
 		
 		return true;
 	}
-	private void displayUsage(CommandSender sender, String label, String subcommand)
+	private void displayUsage(CommandSender sender, String parent, String label, String subcommand)
 	{
 		String usage = "";
 		
@@ -154,9 +156,9 @@ public class CommandDispatcher
 		}
 		
 		if(subcommand != null)
-			sender.sendMessage(ChatColor.RED + "Unknown command: " + ChatColor.RESET + "/" + label + " " + ChatColor.GOLD + subcommand);
+			sender.sendMessage(ChatColor.RED + "Unknown command: " + ChatColor.RESET + parent + ChatColor.GOLD + subcommand);
 		else
-			sender.sendMessage(ChatColor.RED + "No command specified: " + ChatColor.RESET + "/" + label + ChatColor.GOLD + " <command>");
+			sender.sendMessage(ChatColor.RED + "No command specified: " + ChatColor.RESET + parent + ChatColor.GOLD + "<command>");
 
 		if(!first)
 		{
@@ -169,8 +171,10 @@ public class CommandDispatcher
 		
 	}
 	
-	public List<String> tabComplete( CommandSender sender, String label, String[] args )
+	public List<String> tabComplete( CommandSender sender, String parent, String label, String[] args )
 	{
+		parent += label + " ";
+		
 		List<String> results = new ArrayList<String>();
 		if(args.length == 1) // Tab completing the sub command
 		{
@@ -235,7 +239,7 @@ public class CommandDispatcher
 			if(com.getPermission() != null && !sender.hasPermission(com.getPermission()))
 				return results;
 			
-			results = com.onTabComplete(sender, subCommand, subArgs);
+			results = com.onTabComplete(sender, parent, subCommand, subArgs);
 			if(results == null)
 				return new ArrayList<String>();
 		}
@@ -282,7 +286,7 @@ public class CommandDispatcher
 		}
 		
 		@Override
-		public boolean onCommand( CommandSender sender, String label, String[] args )
+		public boolean onCommand( CommandSender sender, String parent, String label, String[] args )
 		{
 			if(args.length != 0)
 				return false;
@@ -294,7 +298,7 @@ public class CommandDispatcher
 			{
 				if(mDefaultCommand.getAllowedSenders().contains(CommandSenderType.from(sender)) && (mDefaultCommand.getPermission() == null || sender.hasPermission(mDefaultCommand.getPermission())))
 				{
-					sender.sendMessage(ChatColor.GOLD + "/" + mRootCommandName + " " + mDefaultCommand.getUsageString(mDefaultCommand.getName(), sender));
+					sender.sendMessage(ChatColor.GOLD + parent + mDefaultCommand.getUsageString(mDefaultCommand.getName(), sender));
 					
 					String[] descriptionLines = mDefaultCommand.getDescription().split("\n");
 					for(String line : descriptionLines)
@@ -312,7 +316,7 @@ public class CommandDispatcher
 					continue;
 				
 				
-				sender.sendMessage(ChatColor.GOLD + "/" + mRootCommandName + " " + command.getUsageString(command.getName(), sender));
+				sender.sendMessage(ChatColor.GOLD + parent + command.getUsageString(command.getName(), sender));
 				
 				String[] descriptionLines = command.getDescription().split("\n");
 				for(String line : descriptionLines)
@@ -322,7 +326,7 @@ public class CommandDispatcher
 		}
 
 		@Override
-		public List<String> onTabComplete( CommandSender sender, String label, String[] args )
+		public List<String> onTabComplete( CommandSender sender, String parent, String label, String[] args )
 		{
 			return null;
 		}

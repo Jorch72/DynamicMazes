@@ -44,18 +44,20 @@ public interface ICommand
 	/**
 	 * Called when this command is executed. By this time the permission has been checked, and if this command does not accept the console as a sender, that wont trigger this command.
 	 * @param sender The sender of this command. If canBeConsole() == false, this will only ever be an instance of a Player
+	 * @param parent The command name and path of the parent command.
 	 * @param label The command name or the alias that was used to call this command
 	 * @param args The arguments for this command
 	 * @return True if this command was executed. False otherwise
 	 */
-	public boolean onCommand(CommandSender sender, String label, String[] args);
+	public boolean onCommand(CommandSender sender, String parent, String label, String[] args);
 	
 	/**
 	 * Called when tab complete is used on this command. 
 	 * @param sender The sender of the tab complete
+	 * @param parent The command name and path of the parent command.
 	 * @param label The command name or the alias that was used to specity this command
 	 * @param args The current arguments entered.
 	 * @return A list of all results or null
 	 */
-	public List<String> onTabComplete(CommandSender sender, String label, String[] args);
+	public List<String> onTabComplete(CommandSender sender, String parent, String label, String[] args);
 }

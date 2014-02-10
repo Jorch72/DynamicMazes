@@ -57,15 +57,15 @@ public class DesignCommandRoot extends CommandDispatcher implements ICommand
 	}
 
 	@Override
-	public boolean onCommand( CommandSender sender, String label, String[] args )
+	public boolean onCommand( CommandSender sender, String parent, String label, String[] args )
 	{
-		return dispatchCommand(sender, label, args);
+		return dispatchCommand(sender, parent, label, args);
 	}
 
 	@Override
-	public List<String> onTabComplete( CommandSender sender, String label, String[] args )
+	public List<String> onTabComplete( CommandSender sender, String parent, String label, String[] args )
 	{
-		return tabComplete(sender, label, args);
+		return tabComplete(sender, parent, label, args);
 	}
 
 }

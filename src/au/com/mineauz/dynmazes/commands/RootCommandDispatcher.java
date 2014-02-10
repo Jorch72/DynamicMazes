@@ -18,13 +18,13 @@ public class RootCommandDispatcher extends CommandDispatcher implements CommandE
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args)
 	{
-		return dispatchCommand(sender, label, args);
+		return dispatchCommand(sender, "/", label, args);
 	}
 	
 	@Override
 	public List<String> onTabComplete( CommandSender sender, Command command, String label, String[] args )
 	{
-		return tabComplete(sender, label, args);
+		return tabComplete(sender, "/", label, args);
 	}
 	
 	public void registerAs(PluginCommand command)

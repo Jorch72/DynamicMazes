@@ -48,14 +48,13 @@ public class DeleteMazeCommand implements ICommand
 	}
 
 	@Override
-	public boolean onCommand( CommandSender sender, String label, String[] args )
+	public boolean onCommand( CommandSender sender, String parent, String label, String[] args )
 	{
 		return false;
 	}
 
 	@Override
-	public List<String> onTabComplete( CommandSender sender, String label,
-			String[] args )
+	public List<String> onTabComplete( CommandSender sender, String parent, String label, String[] args )
 	{
 		return null;
 	}
