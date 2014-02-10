@@ -20,6 +20,7 @@ import au.com.mineauz.dynmazes.algorithm.Algorithm;
 public class MazeManager
 {
 	private static HashMap<String, MazeDefinition> mMazeTypes = new HashMap<String, MazeDefinition>();
+	private static HashMap<String, Maze<?>> mMazes = new HashMap<String, Maze<?>>();
 	
 	public static void registerType(String name, Class<? extends Maze<?>> clazz)
 	{
@@ -39,7 +40,15 @@ public class MazeManager
 		if(def == null)
 			throw new IllegalArgumentException("No maze type " + type);
 		
-		return def.newMaze(player, name, args);
+		Maze<?> maze = def.newMaze(player, name, args);
+		mMazes.put(name.toLowerCase(), maze);
+		
+		return maze;
+	}
+	
+	public static Maze<?> getMaze(String name)
+	{
+		return mMazes.get(name.toLowerCase());
 	}
 	
 	public static Collection<String> getMazeTypes()

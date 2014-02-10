@@ -1,11 +1,14 @@
 package au.com.mineauz.dynmazes;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.UUID;
 
 import org.apache.commons.lang.Validate;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.util.BlockVector;
 
 import au.com.mineauz.dynmazes.algorithm.Algorithm;
@@ -23,7 +26,7 @@ public abstract class Maze<T extends INode>
 	private BlockVector mMin;
 	private BlockVector mMax;
 	
-	private Collection<T> mAllNodes;
+	protected Collection<T> allNodes;
 	
 	private boolean mIsGenerating = false;
 	private boolean mIsDrawing = false;
@@ -41,6 +44,11 @@ public abstract class Maze<T extends INode>
 		mMax = max.toVector().toBlockVector();
 	}
 	
+	public String getName()
+	{
+		return mName;
+	}
+	
 	public Algorithm getAlgorithm()
 	{
 		return mAlgorithm;
@@ -53,56 +61,75 @@ public abstract class Maze<T extends INode>
 
 	public void draw()
 	{
-		if(mAllNodes == null)
+		Validate.isTrue(!mIsDrawing);
+		
+		if(allNodes == null)
 			return;
 		
+		mIsDrawing = true;
+		
 		// push to drawing task
+		new DrawingTask<T>(this, allNodes).start();
+	}
+	
+	void setDrawComplete()
+	{
+		mIsDrawing = false;
 	}
 	
 	public void generate(long seed)
 	{
 		Validate.notNull(mAlgorithm);
+		Validate.isTrue(!mIsGenerating);
 		
-		// Launch the thread here
-		// In the thread:
-		//  generate the node mesh
-		//  find start location
-		//  run algorithm
-		//  run post generation stuff
-		//  push to drawing task
-	}
-
-
-	@SuppressWarnings( "unchecked" )
-	public void generate()
-	{
-		prepareArea();
-		
-		T root = findStart();
-		Collection<INode> allNodes = mAlgorithm.generate(root);
-		
-		System.out.println("Generation finished");
-
-		onGenerateComplete(root, (Collection<T>)allNodes);
-		
-		for(INode node : allNodes)
-			placeNode((T)node);
-		
-		System.out.println("Placement finished");
+		mIsGenerating = true;
+		GenerationThread<T> thread = new GenerationThread<T>(this);
+		thread.start();
 	}
 	
-	protected abstract void prepareArea();
+	void setGenerationComplete()
+	{
+		mIsGenerating = false;
+	}
+	
+	public boolean isGenerating()
+	{
+		return mIsGenerating;
+	}
+	
+	public boolean isDrawing()
+	{
+		return mIsDrawing;
+	}
+
+	protected abstract void buildNodes();
+	
+	protected abstract void processMaze(T root); 
 	
 	protected abstract T findStart();
 
-	protected void onGenerateComplete(T root, Collection<T> nodes) {};
-	
 	protected abstract void placeNode( T node );
 
 	
+	public final void save(File file)
+	{
+		try
+		{
+			YamlConfiguration output = new YamlConfiguration();
+
+			output.set("world", mWorldId.toString());
+			
+			// TODO: Save other info too
+			
+			output.save(file);
+		}
+		catch(IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
 	
-	
-	protected int getDepth(INode node)
+	protected static int getDepth(INode node)
 	{
 		int depth = -1;
 		while(node != null)
@@ -113,5 +140,4 @@ public abstract class Maze<T extends INode>
 		
 		return depth;
 	}
-
 }

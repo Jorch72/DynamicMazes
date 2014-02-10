@@ -32,27 +32,27 @@ public class GridMaze extends Maze
 		mRand = new Random();
 	}
 	
-	@Override
-	protected void prepareArea()
-	{
-		for(int x = mMinCorner.getBlockX(); x <= mMinCorner.getBlockX() + mWidth * 2; ++x)
-		{
-			for(int z = mMinCorner.getBlockZ(); z <= mMinCorner.getBlockZ() + mLength * 2; ++z)
-			{
-				for(int y = mMinCorner.getBlockY(); y < mMinCorner.getBlockY() + 4; ++y)
-				{
-					Block block = mMinCorner.getWorld().getBlockAt(x, y, z);
-					if(y == mMinCorner.getBlockY())
-						block.setType(Material.STONE);
-					else if(y == mMinCorner.getBlockY() + 1)
-						block.setType(Material.GRASS);
-					else
-						block.setTypeIdAndData(Material.LEAVES.getId(), (byte)4, false);
-				}
-			}
-				
-		}
-	}
+//	@Override
+//	protected void prepareArea()
+//	{
+//		for(int x = mMinCorner.getBlockX(); x <= mMinCorner.getBlockX() + mWidth * 2; ++x)
+//		{
+//			for(int z = mMinCorner.getBlockZ(); z <= mMinCorner.getBlockZ() + mLength * 2; ++z)
+//			{
+//				for(int y = mMinCorner.getBlockY(); y < mMinCorner.getBlockY() + 4; ++y)
+//				{
+//					Block block = mMinCorner.getWorld().getBlockAt(x, y, z);
+//					if(y == mMinCorner.getBlockY())
+//						block.setType(Material.STONE);
+//					else if(y == mMinCorner.getBlockY() + 1)
+//						block.setType(Material.GRASS);
+//					else
+//						block.setTypeIdAndData(Material.LEAVES.getId(), (byte)4, false);
+//				}
+//			}
+//				
+//		}
+//	}
 	
 	@Override
 	protected void placeNode(INode node)
@@ -206,5 +206,17 @@ public class GridMaze extends Maze
 		}
 		
 		
+	}
+
+
+
+	@Override
+	protected void buildNodes()
+	{
+	}
+
+	@Override
+	protected void processMaze( INode root )
+	{
 	}
 }

@@ -1,7 +1,8 @@
 package au.com.mineauz.dynmazes.types;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
@@ -40,31 +41,12 @@ public class ModuleMaze extends Maze<ModuleNode>
 	}
 	
 	@Override
-	protected void prepareArea()
-	{
-		for(int x = mMinCorner.getBlockX(); x < mMinCorner.getBlockX() + mWidth * mStyle.getPieceSize(); ++x)
-		{
-			for(int z = mMinCorner.getBlockZ(); z < mMinCorner.getBlockZ() + mLength * mStyle.getPieceSize(); ++z)
-			{
-				for(int y = mMinCorner.getBlockY() - 1; y < mMinCorner.getBlockY() + mStyle.getHeight(); ++y)
-				{
-					Block block = mMinCorner.getWorld().getBlockAt(x, y, z);
-					if(y == mMinCorner.getBlockY() - 1)
-						block.setType(Material.BEDROCK);
-					else
-						block.setType(Material.AIR);
-				}
-			}
-		}
-	}
-	
-	@Override
-	protected void onGenerateComplete( ModuleNode root, Collection<ModuleNode> nodes )
+	protected void processMaze( ModuleNode root )
 	{
 		ModuleNode highest = null;
 		int score = 0;
 		
-		for(ModuleNode node : nodes)
+		for(ModuleNode node : allNodes)
 		{
 			if(node.getX() == 0 || node.getY() == 0 || node.getX() == mWidth-1 || node.getY() == mLength-1)
 			{
@@ -95,7 +77,26 @@ public class ModuleMaze extends Maze<ModuleNode>
 	protected void placeNode(ModuleNode node)
 	{
 		if(!node.isTerminus())
-			mStyle.getPiece(node.getType()).place(node.toLocation());
+		{
+			Location loc = node.toLocation();
+			
+			for(int x = loc.getBlockX(); x < loc.getBlockX() + mStyle.getPieceSize(); ++x)
+			{
+				for(int z = loc.getBlockZ(); z < loc.getBlockZ() + mStyle.getPieceSize(); ++z)
+				{
+					for(int y = loc.getBlockY() - 1; y < loc.getBlockY() + mStyle.getHeight(); ++y)
+					{
+						Block block = mMinCorner.getWorld().getBlockAt(x, y, z);
+						if(y == mMinCorner.getBlockY() - 1)
+							block.setType(Material.BEDROCK);
+						else
+							block.setType(Material.AIR);
+					}
+				}
+			}
+			
+			mStyle.getPiece(node.getType()).place(loc);
+		}
 	}
 	
 	@Override
@@ -108,19 +109,19 @@ public class ModuleMaze extends Maze<ModuleNode>
 		switch(side)
 		{
 		case 0:
-			node = new ModuleNode(this, 0, rand.nextInt(mLength));
+			node = getNodeAt(0, rand.nextInt(mLength));
 			mEntrance = new ModuleNode(this, -1, node.getY(), true);
 			break;
 		case 1:
-			node = new ModuleNode(this, mWidth - 1, rand.nextInt(mLength));
+			node = getNodeAt(mWidth - 1, rand.nextInt(mLength));
 			mEntrance = new ModuleNode(this, mWidth, node.getY(), true);
 			break;
 		case 2:
-			node = new ModuleNode(this, rand.nextInt(mWidth), 0);
+			node = getNodeAt(rand.nextInt(mWidth), 0);
 			mEntrance = new ModuleNode(this, node.getX(), -1, true);
 			break;
 		case 3:
-			node = new ModuleNode(this, rand.nextInt(mWidth), mLength - 1);
+			node = getNodeAt(rand.nextInt(mWidth), mLength - 1);
 			mEntrance = new ModuleNode(this, node.getX(), mLength, true);
 			break;
 		}
@@ -164,6 +165,25 @@ public class ModuleMaze extends Maze<ModuleNode>
 		
 		return new ModuleMaze(name, style, player.getLocation(), width, length, Util.toFacingSimplest(player.getEyeLocation().getYaw()));
 	}
+
+	@Override
+	protected void buildNodes()
+	{
+		allNodes = new ArrayList<ModuleNode>(mLength*mWidth);
+		
+		for(int y = 0; y < mLength; ++y)
+		{
+			for(int x = 0; x < mWidth; ++x)
+			{
+				allNodes.add(new ModuleNode(this, x, y));
+			}
+		}
+	}
+	
+	ModuleNode getNodeAt(int x, int y)
+	{
+		return ((List<ModuleNode>)allNodes).get(x + y * mWidth);
+	}
 }
 
 class ModuleNode implements INode
@@ -204,29 +224,29 @@ class ModuleNode implements INode
 		if(mX == 0)
 		{
 			if(mY == 0)
-				return new INode[] {new ModuleNode(mMaze, mX + 1, mY), new ModuleNode(mMaze, mX, mY + 1)};
+				return new INode[] {mMaze.getNodeAt(mX + 1, mY), mMaze.getNodeAt(mX, mY + 1)};
 			if(mY == mMaze.mLength - 1)
-				return new INode[] {new ModuleNode(mMaze, mX + 1, mY), new ModuleNode(mMaze, mX, mY - 1)};
+				return new INode[] {mMaze.getNodeAt(mX + 1, mY), mMaze.getNodeAt(mX, mY - 1)};
 			
-			return new INode[] {new ModuleNode(mMaze, mX + 1, mY), new ModuleNode(mMaze, mX, mY - 1), new ModuleNode(mMaze, mX, mY + 1)};
+			return new INode[] {mMaze.getNodeAt(mX + 1, mY), mMaze.getNodeAt(mX, mY - 1), mMaze.getNodeAt(mX, mY + 1)};
 		}
 		else if(mX == mMaze.mWidth - 1)
 		{
 			if(mY == 0)
-				return new INode[] {new ModuleNode(mMaze, mX - 1, mY), new ModuleNode(mMaze, mX, mY + 1)};
+				return new INode[] {mMaze.getNodeAt(mX - 1, mY), mMaze.getNodeAt(mX, mY + 1)};
 			if(mY == mMaze.mLength - 1)
-				return new INode[] {new ModuleNode(mMaze, mX - 1, mY), new ModuleNode(mMaze, mX, mY - 1)};
+				return new INode[] {mMaze.getNodeAt(mX - 1, mY), mMaze.getNodeAt(mX, mY - 1)};
 			
-			return new INode[] {new ModuleNode(mMaze, mX - 1, mY), new ModuleNode(mMaze, mX, mY - 1), new ModuleNode(mMaze, mX, mY + 1)};
+			return new INode[] {mMaze.getNodeAt(mX - 1, mY), mMaze.getNodeAt(mX, mY - 1), mMaze.getNodeAt(mX, mY + 1)};
 		}
 		else
 		{
 			if(mY == 0)
-				return new INode[] {new ModuleNode(mMaze, mX + 1, mY), new ModuleNode(mMaze, mX - 1, mY), new ModuleNode(mMaze, mX, mY + 1)};
+				return new INode[] {mMaze.getNodeAt(mX + 1, mY), mMaze.getNodeAt(mX - 1, mY), mMaze.getNodeAt(mX, mY + 1)};
 			if(mY == mMaze.mLength - 1)
-				return new INode[] {new ModuleNode(mMaze, mX + 1, mY), new ModuleNode(mMaze, mX - 1, mY), new ModuleNode(mMaze, mX, mY - 1)};
+				return new INode[] {mMaze.getNodeAt(mX + 1, mY), mMaze.getNodeAt(mX - 1, mY), mMaze.getNodeAt(mX, mY - 1)};
 			
-			return new INode[] {new ModuleNode(mMaze, mX + 1, mY), new ModuleNode(mMaze, mX - 1, mY), new ModuleNode(mMaze, mX, mY - 1), new ModuleNode(mMaze, mX, mY + 1)};
+			return new INode[] {mMaze.getNodeAt(mX + 1, mY), mMaze.getNodeAt(mX - 1, mY), mMaze.getNodeAt(mX, mY - 1), mMaze.getNodeAt(mX, mY + 1)};
 		}
 	}
 	
@@ -310,6 +330,7 @@ class ModuleNode implements INode
 				return type;
 		}
 		
+		System.out.println(String.format("Unknown configuration: %d childs %s parent", mChildren.size(), mParent));
 		return PieceType.Cross;
 	}
 	
