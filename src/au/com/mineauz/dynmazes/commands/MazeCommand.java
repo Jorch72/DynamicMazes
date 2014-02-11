@@ -8,7 +8,7 @@ public class MazeCommand extends RootCommandDispatcher
 {
 	public MazeCommand()
 	{
-		super("dynmaze", "All DynamicMazes commands");
+		super("All DynamicMazes commands");
 		
 		registerCommand(new DesignCommandRoot());
 		registerCommand(new NewMazeCommand());

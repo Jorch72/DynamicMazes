@@ -10,9 +10,9 @@ import org.bukkit.command.TabCompleter;
 
 public class RootCommandDispatcher extends CommandDispatcher implements CommandExecutor, TabCompleter
 {
-	public RootCommandDispatcher( String commandName, String description )
+	public RootCommandDispatcher( String description )
 	{
-		super(commandName, description);
+		super(description);
 	}
 	
 	@Override

@@ -20,17 +20,15 @@ import org.bukkit.command.CommandSender;
  */
 public class CommandDispatcher
 {
-	private String mRootCommandName;
 	private String mRootCommandDescription;
 	private HashMap<String, ICommand> mCommands;
 	
 	private ICommand mDefaultCommand = null;
 	
-	public CommandDispatcher(String commandName, String description)
+	public CommandDispatcher(String description)
 	{
 		mCommands = new HashMap<String, ICommand>();
 		
-		mRootCommandName = commandName;
 		mRootCommandDescription = description;
 		
 		registerCommand(new InternalHelp());

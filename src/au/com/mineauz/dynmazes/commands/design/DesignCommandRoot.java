@@ -13,7 +13,7 @@ public class DesignCommandRoot extends CommandDispatcher implements ICommand
 {
 	public DesignCommandRoot()
 	{
-		super("design", "Allows you to design maze styles");
+		super("Allows you to design maze styles");
 	
 		registerCommand(new NewDesignCommand());
 		registerCommand(new EndDesignCommand());

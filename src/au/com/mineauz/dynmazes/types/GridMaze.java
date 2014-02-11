@@ -22,9 +22,9 @@ public class GridMaze extends Maze
 	
 	private Random mRand;
 	
-	public GridMaze(String name, Location loc, int width, int length)
+	public GridMaze(String name, Location loc, int width, int length, int wallWidth, int wallHeight, int pathSize)
 	{
-		super(name, loc, loc.clone().add(width * 2, 4, length * 2));
+		super(name, loc, loc.clone().add(width * (pathSize + wallWidth), 4, length * (pathSize + wallWidth)));
 		mMinCorner = loc;
 		mWidth = width;
 		mLength = length;
