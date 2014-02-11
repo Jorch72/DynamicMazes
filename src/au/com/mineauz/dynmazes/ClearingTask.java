@@ -15,10 +15,12 @@ import org.bukkit.World;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.BlockVector;
 
+import au.com.mineauz.dynmazes.misc.Callback;
 import au.com.mineauz.dynmazes.misc.DependencySortThread;
+import au.com.mineauz.dynmazes.misc.NotifiableTask;
 import au.com.mineauz.dynmazes.styles.StoredBlock;
 
-public class ClearingTask<T extends INode> implements Runnable
+public class ClearingTask<T extends INode> extends NotifiableTask implements Runnable
 {
 	private Iterator<BlockVector> mIt;
 	private ListIterator<StoredBlock> mIt2;
@@ -41,6 +43,13 @@ public class ClearingTask<T extends INode> implements Runnable
 	
 	public ClearingTask(BlockVector min, BlockVector max, World world)
 	{
+		this(min, max, world, null);
+	}
+	
+	public ClearingTask(BlockVector min, BlockVector max, World world, Callback callback)
+	{
+		super(callback);
+		
 		mMin = min;
 		mMax = max;
 		mWorld = world;
@@ -91,11 +100,14 @@ public class ClearingTask<T extends INode> implements Runnable
 				}
 				catch ( InterruptedException e )
 				{
+					mTask.cancel();
+					setFailed(e);
+					return;
 				}
 				catch ( ExecutionException e )
 				{
-					e.printStackTrace();
 					mTask.cancel();
+					setFailed(e);
 					return;
 				}
 				mIt2 = mBlocks.listIterator(mBlocks.size());
@@ -113,6 +125,7 @@ public class ClearingTask<T extends INode> implements Runnable
 			}
 			
 			mTask.cancel();
+			setCompleted();
 		}
 	}
 	
@@ -143,12 +156,12 @@ public class ClearingTask<T extends INode> implements Runnable
 			
 			if(mCurrent.getX() > mMax.getBlockX())
 			{
-				mCurrent.setX(0);
+				mCurrent.setX(mMin.getBlockX());
 				mCurrent.setZ(mCurrent.getBlockZ() + 1);
 				
 				if(mCurrent.getZ() > mMax.getBlockZ())
 				{
-					mCurrent.setZ(0);
+					mCurrent.setZ(mMin.getBlockZ());
 					mCurrent.setY(mCurrent.getBlockY() + 1);
 				}
 			}

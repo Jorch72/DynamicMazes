@@ -18,6 +18,7 @@ import org.bukkit.entity.Player;
 import com.google.common.base.Throwables;
 
 import au.com.mineauz.dynmazes.algorithm.Algorithm;
+import au.com.mineauz.dynmazes.misc.Callback;
 
 public class MazeManager
 {
@@ -98,11 +99,31 @@ public class MazeManager
 		return mMazes.get(name.toLowerCase());
 	}
 	
-	public static void deleteMaze(Maze<?> maze)
+	public static void deleteMaze(final Maze<?> maze, final Callback callback)
 	{
-		mMazes.remove(maze.getName().toLowerCase());
-		new File(mFolder, maze.getName().toLowerCase() + ".yml").delete();
-		maze.clear();
+		maze.clear(new Callback()
+		{
+			@Override
+			public void onFailure( Throwable exception )
+			{
+				if(callback != null)
+					callback.onFailure(exception);
+				else
+					throw new RuntimeException(exception);
+			}
+			
+			@Override
+			public void onComplete()
+			{
+				mMazes.remove(maze.getName().toLowerCase());
+				maze.setDrawComplete();
+				
+				new File(mFolder, maze.getName().toLowerCase() + ".yml").delete();
+				
+				if(callback != null)
+					callback.onComplete();
+			}
+		});
 	}
 	
 	public static void saveMaze(Maze<?> maze)

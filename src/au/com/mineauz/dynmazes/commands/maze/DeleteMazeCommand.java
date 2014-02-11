@@ -10,6 +10,7 @@ import au.com.mineauz.dynmazes.Maze;
 import au.com.mineauz.dynmazes.MazeManager;
 import au.com.mineauz.dynmazes.commands.CommandSenderType;
 import au.com.mineauz.dynmazes.commands.ICommand;
+import au.com.mineauz.dynmazes.misc.Callback;
 
 public class DeleteMazeCommand implements ICommand
 {
@@ -51,22 +52,36 @@ public class DeleteMazeCommand implements ICommand
 	}
 
 	@Override
-	public boolean onCommand( CommandSender sender, String parent, String label, String[] args )
+	public boolean onCommand( final CommandSender sender, String parent, String label, String[] args )
 	{
 		if(args.length != 1)
 			return false;
 		
-		Maze<?> maze = MazeManager.getMaze(args[0]);
+		final Maze<?> maze = MazeManager.getMaze(args[0]);
 		
 		if(maze == null)
 		{
 			sender.sendMessage(ChatColor.RED + "No maze by the name " + args[0] + " exists");
 			return true;
 		}
+
+		MazeManager.deleteMaze(maze, new Callback()
+		{
+			@Override
+			public void onFailure( Throwable exception )
+			{
+				sender.sendMessage(ChatColor.RED + "An internal error occured while deleting that maze.");
+				exception.printStackTrace();
+			}
+			
+			@Override
+			public void onComplete()
+			{
+				sender.sendMessage(ChatColor.GREEN + maze.getName() + " was deleted successfully");
+			}
+		});
 		
-		MazeManager.deleteMaze(maze);
-		
-		sender.sendMessage(ChatColor.GREEN + "The maze " + maze.getName() + " has been deleted");
+		sender.sendMessage(ChatColor.GOLD + "The maze " + maze.getName() + " is now being deleted.");
 		
 		return true;
 	}

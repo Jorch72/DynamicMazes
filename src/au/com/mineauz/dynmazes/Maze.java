@@ -16,6 +16,7 @@ import org.bukkit.util.BlockVector;
 
 import au.com.mineauz.dynmazes.algorithm.Algorithm;
 import au.com.mineauz.dynmazes.algorithm.GrowingTreeAlgorithm;
+import au.com.mineauz.dynmazes.misc.Callback;
 
 
 public abstract class Maze<T extends INode>
@@ -85,7 +86,7 @@ public abstract class Maze<T extends INode>
 		new DrawingTask<T>(this, allNodes).start();
 	}
 	
-	public void clear()
+	public void clear(Callback callback)
 	{
 		Validate.isTrue(!mIsDrawing);
 		
@@ -93,7 +94,7 @@ public abstract class Maze<T extends INode>
 		
 		BlockVector min = mMin.clone();
 		min.setY(min.getBlockY() - 1);
-		new ClearingTask<T>(min, mMax, mWorld).start();
+		new ClearingTask<T>(min, mMax, mWorld, callback).start();
 	}
 	
 	void setDrawComplete()
