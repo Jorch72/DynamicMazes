@@ -7,15 +7,17 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Stack;
 
+import org.bukkit.configuration.ConfigurationSection;
+
 import au.com.mineauz.dynmazes.INode;
 
 public class DepthFirstAlgorithm implements Algorithm
 {
 	private Random mRand;
 	
-	public DepthFirstAlgorithm(long seed)
+	public DepthFirstAlgorithm()
 	{
-		mRand = (seed == -1 ? new Random() : new Random(seed));
+		mRand = new Random();
 	}
 	
 	@Override
@@ -67,5 +69,21 @@ public class DepthFirstAlgorithm implements Algorithm
 	public void setSeed( long seed )
 	{
 		mRand.setSeed(seed);
+	}
+	
+	@Override
+	public String getType()
+	{
+		return "DepthFirst";
+	}
+	
+	@Override
+	public void read( ConfigurationSection section )
+	{
+	}
+	
+	@Override
+	public void save( ConfigurationSection section )
+	{
 	}
 }

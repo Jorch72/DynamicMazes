@@ -7,6 +7,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 
+import org.bukkit.configuration.ConfigurationSection;
+
 import au.com.mineauz.dynmazes.INode;
 
 public class GrowingTreeAlgorithm implements Algorithm
@@ -15,10 +17,9 @@ public class GrowingTreeAlgorithm implements Algorithm
 	
 	private double mRandChance = 0;
 	
-	public GrowingTreeAlgorithm(long seed, double randChance)
+	public GrowingTreeAlgorithm()
 	{
-		mRand = (seed == -1 ? new Random() : new Random(seed));
-		mRandChance = randChance;
+		mRand = new Random();
 	}
 	
 	private int select(List<INode> nodes)
@@ -77,5 +78,33 @@ public class GrowingTreeAlgorithm implements Algorithm
 	public void setSeed( long seed )
 	{
 		mRand.setSeed(seed);
+	}
+	
+	public double getRandomChance()
+	{
+		return mRandChance;
+	}
+	
+	public void setRandomChance(double chance)
+	{
+		mRandChance = chance;
+	}
+	
+	@Override
+	public String getType()
+	{
+		return "GrowingTree";
+	}
+	
+	@Override
+	public void read( ConfigurationSection section )
+	{
+		mRandChance = section.getDouble("chance");
+	}
+	
+	@Override
+	public void save( ConfigurationSection section )
+	{
+		section.set("chance", mRandChance);
 	}
 }

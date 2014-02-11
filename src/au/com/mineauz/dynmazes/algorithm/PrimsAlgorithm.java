@@ -6,15 +6,17 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Random;
 
+import org.bukkit.configuration.ConfigurationSection;
+
 import au.com.mineauz.dynmazes.INode;
 
 public class PrimsAlgorithm implements Algorithm
 {
 	private Random mRand;
 	
-	public PrimsAlgorithm(long seed)
+	public PrimsAlgorithm()
 	{
-		mRand = (seed == -1 ? new Random() : new Random(seed));
+		mRand = new Random();
 	}
 	
 	@Override
@@ -65,5 +67,21 @@ public class PrimsAlgorithm implements Algorithm
 	public void setSeed( long seed )
 	{
 		mRand.setSeed(seed);
+	}
+	
+	@Override
+	public String getType()
+	{
+		return "Prims";
+	}
+	
+	@Override
+	public void read( ConfigurationSection section )
+	{
+	}
+	
+	@Override
+	public void save( ConfigurationSection section )
+	{
 	}
 }

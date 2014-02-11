@@ -2,11 +2,11 @@ package au.com.mineauz.dynmazes;
 
 import java.util.Set;
 
-import org.bukkit.Location;
+import org.bukkit.util.BlockVector;
 
 public interface INode
 {
-	public Location toLocation();
+	public BlockVector toLocation();
 	public INode[] getNeighbours();
 	
 	public INode getParent();

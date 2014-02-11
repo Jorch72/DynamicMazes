@@ -1,5 +1,7 @@
 package au.com.mineauz.dynmazes;
 
+import java.io.File;
+
 import org.bukkit.plugin.java.JavaPlugin;
 
 import au.com.mineauz.dynmazes.algorithm.DepthFirstAlgorithm;
@@ -24,6 +26,7 @@ public class DynamicMazePlugin extends JavaPlugin
 		mInstance = this;
 		
 		StyleManager.initialize(getDataFolder());
+		MazeManager.initialize(new File(getDataFolder(), "mazes"));
 		
 		MazeManager.registerType("Module", ModuleMaze.class);
 		
@@ -33,5 +36,13 @@ public class DynamicMazePlugin extends JavaPlugin
 		
 		MazeCommand command = new MazeCommand();
 		command.registerAs(getCommand("dynmaze"));
+		
+		MazeManager.loadMazes();
+	}
+	
+	@Override
+	public void onDisable()
+	{
+		MazeManager.saveMazes();
 	}
 }
