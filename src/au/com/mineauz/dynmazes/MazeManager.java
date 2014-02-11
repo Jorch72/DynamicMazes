@@ -77,7 +77,7 @@ public class MazeManager
 		Maze<?> maze = def.newMaze(player, name, args);
 		mMazes.put(name.toLowerCase(), maze);
 		
-		maze.save(new File(mFolder, name + ".yml"));
+		saveMaze(maze);
 		
 		return maze;
 	}
@@ -96,6 +96,18 @@ public class MazeManager
 	public static Maze<?> getMaze(String name)
 	{
 		return mMazes.get(name.toLowerCase());
+	}
+	
+	public static void deleteMaze(Maze<?> maze)
+	{
+		mMazes.remove(maze.getName().toLowerCase());
+		new File(mFolder, maze.getName().toLowerCase() + ".yml").delete();
+		maze.clear();
+	}
+	
+	public static void saveMaze(Maze<?> maze)
+	{
+		maze.save(new File(mFolder, maze.getName().toLowerCase() + ".yml"));
 	}
 	
 	public static Collection<String> getMazeTypes()
@@ -123,12 +135,8 @@ public class MazeManager
 	
 	public static void saveMazes()
 	{
-		mFolder.mkdirs();
-		
 		for(Maze<?> maze : mMazes.values())
-		{
-			maze.save(new File(mFolder, maze.getName() + ".yml"));
-		}
+			saveMaze(maze);
 	}
 	
 	@Retention(RetentionPolicy.RUNTIME)

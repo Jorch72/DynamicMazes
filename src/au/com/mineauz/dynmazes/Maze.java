@@ -15,7 +15,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.util.BlockVector;
 
 import au.com.mineauz.dynmazes.algorithm.Algorithm;
-import au.com.mineauz.dynmazes.algorithm.DepthFirstAlgorithm;
+import au.com.mineauz.dynmazes.algorithm.GrowingTreeAlgorithm;
 
 
 public abstract class Maze<T extends INode>
@@ -40,7 +40,8 @@ public abstract class Maze<T extends INode>
 	{
 		mType = type;
 		
-		mAlgorithm = new DepthFirstAlgorithm();
+		mAlgorithm = new GrowingTreeAlgorithm();
+		((GrowingTreeAlgorithm)mAlgorithm).setRandomChance(0.5);
 		
 		mName = name;
 		
@@ -82,6 +83,17 @@ public abstract class Maze<T extends INode>
 		
 		// push to drawing task
 		new DrawingTask<T>(this, allNodes).start();
+	}
+	
+	public void clear()
+	{
+		Validate.isTrue(!mIsDrawing);
+		
+		mIsDrawing = true;
+		
+		BlockVector min = mMin.clone();
+		min.setY(min.getBlockY() - 1);
+		new ClearingTask<T>(min, mMax, mWorld).start();
 	}
 	
 	void setDrawComplete()

@@ -63,6 +63,12 @@ public class NewMazeCommand implements ICommand
 			sender.sendMessage(ChatColor.RED + "Name has invalid characters in it. Only letters, numbers, and _ may be used.");
 			return true;
 		}
+		
+		if(MazeManager.getMaze(name) != null)
+		{
+			sender.sendMessage(ChatColor.RED + "A maze by that name already exists.");
+			return true;
+		}
 
 		try
 		{

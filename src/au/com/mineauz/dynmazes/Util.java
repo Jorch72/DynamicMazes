@@ -2,7 +2,6 @@ package au.com.mineauz.dynmazes;
 
 import org.bukkit.Location;
 import org.bukkit.block.BlockFace;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.util.BlockVector;
 import org.bukkit.util.Vector;
 

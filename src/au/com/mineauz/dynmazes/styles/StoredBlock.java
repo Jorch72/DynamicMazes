@@ -248,16 +248,16 @@ public class StoredBlock
 			mExtra = null;
 	}
 	
-	public BlockFace getDependantFace()
+	public static BlockFace getDependantFace(Material material, int data)
 	{
-		if(mType.hasGravity())
+		if(material.hasGravity())
 			return BlockFace.DOWN;
 		
-		MaterialData data = mType.getNewData((byte)mData);
-		if(data instanceof Attachable)
-			return ((Attachable)data).getAttachedFace();
+		MaterialData matData = material.getNewData((byte)data);
+		if(matData instanceof Attachable)
+			return ((Attachable)matData).getAttachedFace();
 		
-		switch(mType)
+		switch(material)
 		{
 		case RAILS:
 		case POWERED_RAIL:
@@ -303,6 +303,10 @@ public class StoredBlock
 		default:
 			return BlockFace.SELF;
 		}
+	}
+	public BlockFace getDependantFace()
+	{
+		return getDependantFace(mType, mData);
 	}
 	
 	public BlockVector getLocation()
