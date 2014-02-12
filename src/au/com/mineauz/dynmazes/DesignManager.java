@@ -17,6 +17,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.util.BlockVector;
 
+import au.com.mineauz.dynmazes.misc.Callback;
 import au.com.mineauz.dynmazes.styles.Piece;
 import au.com.mineauz.dynmazes.styles.PieceType;
 import au.com.mineauz.dynmazes.styles.Style;
@@ -258,19 +259,27 @@ public class DesignManager implements Listener
 		if(mMin == null)
 			return;
 		
-		for(int y = mMax.getBlockY() - 1; y >= mMin.getBlockY(); --y)
+		new ClearingTask(mMin, mMax, mPlayer.getWorld(), new Callback()
 		{
-			for(int x = mMin.getBlockX(); x < mMax.getBlockX(); ++x)
+			@Override
+			public void onFailure( Throwable exception )
 			{
-				for(int z = mMin.getBlockZ(); z < mMax.getBlockZ(); ++z)
-					mPlayer.getWorld().getBlockAt(x, y, z).setType(Material.AIR);
+				exception.printStackTrace();
+				mMin = mMax = null;
+				mPieceLocations = null;
+				
+				HandlerList.unregisterAll(DesignManager.this);
 			}
-		}
-		
-		mMin = mMax = null;
-		mPieceLocations = null;
-		
-		HandlerList.unregisterAll(this);
+			
+			@Override
+			public void onComplete()
+			{
+				mMin = mMax = null;
+				mPieceLocations = null;
+				
+				HandlerList.unregisterAll(DesignManager.this);
+			}
+		}).start();
 	}
 	
 	public void save(String name)
