@@ -179,6 +179,11 @@ public class MazeManager
 		return types;
 	}
 	
+	public static boolean isMazeType(String type)
+	{
+		return mMazeTypes.containsKey(type.toLowerCase());
+	}
+	
 	public static void loadMazes()
 	{
 		mMazes.clear();

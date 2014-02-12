@@ -1,5 +1,9 @@
 package au.com.mineauz.dynmazes;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import org.bukkit.Location;
 import org.bukkit.block.BlockFace;
 import org.bukkit.util.BlockVector;
@@ -88,5 +92,21 @@ public class Util
 		}
 		
 		return true;
+	}
+	
+	public static List<String> matchStrings(String str, Collection<String> values)
+	{
+		str = str.toLowerCase();
+		ArrayList<String> matches = new ArrayList<String>();
+		
+		for(String value : values)
+		{
+			if(value.toLowerCase().startsWith(str))
+				matches.add(value);
+		}
+		
+		if(matches.isEmpty())
+			return null;
+		return matches;
 	}
 }

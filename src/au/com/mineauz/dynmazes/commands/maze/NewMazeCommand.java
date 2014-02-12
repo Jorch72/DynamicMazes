@@ -55,7 +55,7 @@ public class NewMazeCommand implements ICommand
 	@Override
 	public boolean onCommand( CommandSender sender, String parent, String label, String[] args )
 	{
-		if(args.length <= 1)
+		if(args.length < 1)
 			return false;
 		
 		String name = args[0];
@@ -68,6 +68,36 @@ public class NewMazeCommand implements ICommand
 		if(MazeManager.getMaze(name) != null)
 		{
 			sender.sendMessage(ChatColor.RED + "A maze by that name already exists.");
+			return true;
+		}
+		
+		if(args.length == 1 || !MazeManager.isMazeType(args[1]))
+		{
+			if(args.length == 1)
+				sender.sendMessage(ChatColor.RED + "Maze type missing.");
+			else
+				sender.sendMessage(ChatColor.RED + args[1] + " is not a maze type.");
+			
+			sender.sendMessage(ChatColor.YELLOW + "Available maze types:");
+			StringBuilder builder = new StringBuilder();
+			boolean odd = true;
+			for(String type : MazeManager.getMazeTypes())
+			{
+				if(builder.length() != 0)
+				{
+					builder.append(ChatColor.GRAY);
+					builder.append(", ");
+				}
+				
+				if(odd)
+					builder.append(ChatColor.WHITE);
+				else
+					builder.append(ChatColor.GRAY);
+				
+				builder.append(type);
+			}
+			
+			sender.sendMessage(builder.toString());
 			return true;
 		}
 
@@ -92,6 +122,9 @@ public class NewMazeCommand implements ICommand
 	@Override
 	public List<String> onTabComplete( CommandSender sender, String parent, String label, String[] args )
 	{
+		if(args.length == 2)
+			return Util.matchStrings(args[1], MazeManager.getMazeTypes());
+		
 		return null;
 	}
 
