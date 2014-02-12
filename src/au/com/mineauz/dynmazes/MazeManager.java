@@ -11,7 +11,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -152,7 +151,7 @@ public class MazeManager
 	
 	public static void deleteMaze(final Maze<?> maze, final Callback callback)
 	{
-		maze.clear(new Callback()
+		maze.clear(true, new Callback()
 		{
 			@Override
 			public void onFailure( Throwable exception )

@@ -9,6 +9,7 @@ import au.com.mineauz.dynmazes.algorithm.GrowingTreeAlgorithm;
 import au.com.mineauz.dynmazes.algorithm.PrimsAlgorithm;
 import au.com.mineauz.dynmazes.commands.MazeCommand;
 import au.com.mineauz.dynmazes.styles.StyleManager;
+import au.com.mineauz.dynmazes.types.GridMaze;
 import au.com.mineauz.dynmazes.types.ModuleMaze;
 
 public class DynamicMazePlugin extends JavaPlugin
@@ -29,6 +30,7 @@ public class DynamicMazePlugin extends JavaPlugin
 		MazeManager.initialize(new File(getDataFolder(), "mazes"));
 		
 		MazeManager.registerType("Module", ModuleMaze.class);
+		MazeManager.registerType("Grid", GridMaze.class);
 		
 		MazeManager.registerAlgorithm("DepthFirst", DepthFirstAlgorithm.class);
 		MazeManager.registerAlgorithm("Prims", PrimsAlgorithm.class);

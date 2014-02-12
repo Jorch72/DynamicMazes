@@ -148,9 +148,7 @@ public abstract class Maze<T extends INode>
 			return;
 		}
 		
-		mIsDrawing = true;
-		
-		new DrawingTask<T>(this, allNodes, new Callback()
+		clear(false, new Callback()
 		{
 			@Override
 			public void onFailure( Throwable exception )
@@ -166,15 +164,33 @@ public abstract class Maze<T extends INode>
 			@Override
 			public void onComplete()
 			{
-				mIsDrawing = false;
+				new DrawingTask<T>(Maze.this, allNodes, new Callback()
+				{
+					@Override
+					public void onFailure( Throwable exception )
+					{
+						mIsDrawing = false;
+						
+						if(callback != null)
+							callback.onFailure(exception);
+						else
+							throw new RuntimeException(exception);
+					}
+					
+					@Override
+					public void onComplete()
+					{
+						mIsDrawing = false;
 
-				if(callback != null)
-					callback.onComplete();
+						if(callback != null)
+							callback.onComplete();
+					}
+				}).start();
 			}
-		}).start();
+		});
 	}
 	
-	public void clear(final Callback callback)
+	public void clear(boolean includeBase, final Callback callback)
 	{
 		Validate.isTrue(!mIsDrawing);
 		Validate.notNull(getWorld());
@@ -182,7 +198,9 @@ public abstract class Maze<T extends INode>
 		mIsDrawing = true;
 		
 		BlockVector min = mMin.clone();
-		min.setY(min.getBlockY() - 1);
+		if(includeBase)
+			min.setY(min.getBlockY() - 1);
+		
 		new ClearingTask(min, mMax, getWorld(), new Callback()
 		{
 			@Override

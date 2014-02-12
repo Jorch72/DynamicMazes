@@ -37,8 +37,6 @@ public class ModuleMaze extends Maze<ModuleNode>
 	{
 		super(name, "Module", loc.getWorld());
 		
-		System.out.println(String.format("F: %s W: %d L: %d", facing, width, length));
-		
 		switch(facing)
 		{
 		case NORTH:
