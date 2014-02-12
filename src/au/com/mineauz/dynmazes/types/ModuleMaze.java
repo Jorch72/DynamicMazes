@@ -7,6 +7,7 @@ import java.util.Random;
 import java.util.Set;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -18,6 +19,9 @@ import au.com.mineauz.dynmazes.INode;
 import au.com.mineauz.dynmazes.Maze;
 import au.com.mineauz.dynmazes.MazeManager.MazeCommand;
 import au.com.mineauz.dynmazes.Util;
+import au.com.mineauz.dynmazes.flags.Flag;
+import au.com.mineauz.dynmazes.flags.StyleFlag;
+import au.com.mineauz.dynmazes.misc.Callback;
 import au.com.mineauz.dynmazes.styles.PieceType;
 import au.com.mineauz.dynmazes.styles.StoredBlock;
 import au.com.mineauz.dynmazes.styles.Style;
@@ -25,13 +29,13 @@ import au.com.mineauz.dynmazes.styles.StyleManager;
 
 public class ModuleMaze extends Maze<ModuleNode>
 {
-	Style mStyle;
-	
 	int mWidth;
 	int mLength;
 	
 	private ModuleNode mEntrance;
 	private ModuleNode mExit;
+	
+	StyleFlag mStyle = new StyleFlag();
 	
 	public ModuleMaze(String name, Style style, Location loc, int width, int length, BlockFace facing)
 	{
@@ -62,7 +66,8 @@ public class ModuleMaze extends Maze<ModuleNode>
 			break;
 		}
 		
-		mStyle = style;
+		mStyle.setValue(style);
+		addFlag("style", mStyle);
 	}
 	
 	protected ModuleMaze()
@@ -107,7 +112,7 @@ public class ModuleMaze extends Maze<ModuleNode>
 	protected void placeNode(ModuleNode node, List<StoredBlock> blocks)
 	{
 		if(!node.isTerminus())
-			blocks.addAll(mStyle.getPiece(node.getType()).getBlocks(node.toLocation()));
+			blocks.addAll(mStyle.getValue().getPiece(node.getType()).getBlocks(node.toLocation()));
 	}
 	
 	@Override
@@ -203,7 +208,6 @@ public class ModuleMaze extends Maze<ModuleNode>
 		
 		root.set("width", mWidth);
 		root.set("length", mLength);
-		root.set("style", mStyle.getName());
 	}
 	
 	@Override
@@ -213,9 +217,38 @@ public class ModuleMaze extends Maze<ModuleNode>
 		
 		mWidth = section.getInt("width");
 		mLength = section.getInt("length");
-		mStyle = StyleManager.getStyle(section.getString("style"));
-		if(mStyle == null)
-			throw new InvalidConfigurationException("Style does not exist");
+		
+		mStyle = (StyleFlag)getFlag("style");
+	}
+	
+	@Override
+	public <Type> void onFlagChanged( String name, final Flag<Type> flag, Type value )
+	{
+		if(name.equals("style"))
+		{
+			Style oldStyle = (Style)value;
+			final Style newStyle = ((StyleFlag)flag).getValue();
+			
+			if(oldStyle.getHeight() != newStyle.getHeight() || oldStyle.getPieceSize() != newStyle.getPieceSize())
+			{
+				clear(true, new Callback()
+				{
+					@Override
+					public void onFailure( Throwable exception )
+					{
+					}
+					
+					@Override
+					public void onComplete()
+					{
+						// Recalc bounds
+						
+						setBounds(getMinCorner(), new BlockVector(getMinCorner().getBlockX() + (mLength * newStyle.getPieceSize()), getMinCorner().getBlockY() + newStyle.getHeight(), getMinCorner().getBlockZ() + (mWidth * newStyle.getPieceSize())));
+						prepareArea(new StoredBlock(Material.BEDROCK), null);
+					}
+				});
+			}
+		}
 	}
 }
 
@@ -286,7 +319,7 @@ class ModuleNode implements INode
 	@Override
 	public BlockVector toLocation()
 	{
-		return mMaze.getMinCorner().clone().add(new Vector(mX * mMaze.mStyle.getPieceSize(), 0, mY * mMaze.mStyle.getPieceSize())).toBlockVector();
+		return mMaze.getMinCorner().clone().add(new Vector(mX * mMaze.mStyle.getValue().getPieceSize(), 0, mY * mMaze.mStyle.getValue().getPieceSize())).toBlockVector();
 	}
 	
 	@Override

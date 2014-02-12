@@ -14,7 +14,10 @@ import au.com.mineauz.dynmazes.Util;
 import au.com.mineauz.dynmazes.commands.CommandSenderType;
 import au.com.mineauz.dynmazes.commands.ICommand;
 import au.com.mineauz.dynmazes.flags.Flag;
+import au.com.mineauz.dynmazes.flags.RequiresConfirmation;
 import au.com.mineauz.dynmazes.misc.BadArgumentException;
+import au.com.mineauz.dynmazes.misc.Callback;
+import au.com.mineauz.dynmazes.misc.ConfirmationPrompt;
 
 public class SetMazeCommand implements ICommand
 {
@@ -55,21 +58,21 @@ public class SetMazeCommand implements ICommand
 		return EnumSet.of(CommandSenderType.Player);
 	}
 
+	@SuppressWarnings( "unchecked" )
 	@Override
-	public boolean onCommand( CommandSender sender, String parent, String label, String[] args )
+	public boolean onCommand( final CommandSender sender, String parent, String label, String[] args )
 	{
 		if(args.length <= 1)
 			return false;
 		
-		Maze<?> maze = MazeManager.getMaze(args[0]);
+		final Maze<?> maze = MazeManager.getMaze(args[0]);
 		if(maze == null)
 		{
 			sender.sendMessage(ChatColor.RED + "There is no maze by the name " + args[0]);
 			return true;
 		}
 		
-		@SuppressWarnings( "unchecked" )
-		Flag<Object> flag = (Flag<Object>)maze.getFlag(args[1]);
+		final Flag<Object> flag = (Flag<Object>)maze.getFlag(args[1]);
 		
 		if(flag == null)
 		{
@@ -87,12 +90,10 @@ public class SetMazeCommand implements ICommand
 			return true;
 		}
 		
+		Object result = null;
 		try
 		{
-			Object result = flag.parse((Player)sender, Arrays.copyOfRange(args, 2, args.length));
-			flag.setValue(result);
-			MazeManager.saveMaze(maze);
-			sender.sendMessage(ChatColor.GREEN + args[1] + " has been set to " + flag.getValueString());
+			result = flag.parse((Player)sender, Arrays.copyOfRange(args, 2, args.length));
 		}
 		catch(IllegalArgumentException e)
 		{
@@ -112,6 +113,46 @@ public class SetMazeCommand implements ICommand
 			sender.sendMessage(ChatColor.RED + "Error in command: " + cmdString);
 			sender.sendMessage(ChatColor.RED + " " + e.getMessage());
 		}
+		
+		final Object lastValue = flag.getValue();
+		
+		if(flag instanceof RequiresConfirmation)
+		{
+			String prompt = ((RequiresConfirmation<Object>)flag).getConfirmationPrompt(result);
+			if(prompt != null)
+			{
+				final Object fResult = result;
+				final String flagName = args[1];
+				
+				new ConfirmationPrompt()
+					.setText(prompt)
+					.setPlayer((Player)sender)
+					.setCallback(new Callback()
+					{
+						@Override
+						public void onFailure( Throwable exception )
+						{
+							sender.sendMessage(ChatColor.GOLD + "Change cancelled");
+						}
+						
+						@Override
+						public void onComplete()
+						{
+							flag.setValue(fResult);
+							maze.onFlagChanged(flagName, flag, lastValue);
+							MazeManager.saveMaze(maze);
+							sender.sendMessage(ChatColor.GREEN + flagName + " has been set to " + flag.getValueString());
+						}
+					})
+					.launch();
+				return true;
+			}
+		}
+		
+		flag.setValue(result);
+		maze.onFlagChanged(args[1], flag, lastValue);
+		MazeManager.saveMaze(maze);
+		sender.sendMessage(ChatColor.GREEN + args[1] + " has been set to " + flag.getValueString());
 		
 		return true;
 	}
