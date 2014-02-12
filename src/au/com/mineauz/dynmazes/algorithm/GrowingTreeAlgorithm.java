@@ -15,7 +15,7 @@ public class GrowingTreeAlgorithm implements Algorithm
 {
 	private Random mRand;
 	
-	private double mRandChance = 0;
+	private double mRandChance = 0.5;
 	
 	public GrowingTreeAlgorithm()
 	{
