@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import org.apache.commons.lang.Validate;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
@@ -20,6 +21,7 @@ import com.google.common.base.Throwables;
 
 import au.com.mineauz.dynmazes.algorithm.Algorithm;
 import au.com.mineauz.dynmazes.misc.Callback;
+import au.com.mineauz.dynmazes.misc.ConfirmationPrompt;
 import au.com.mineauz.dynmazes.styles.StoredBlock;
 
 public class MazeManager
@@ -71,19 +73,53 @@ public class MazeManager
 		}
 	}
 	
-	public static Maze<?> createMaze(Player player, String name, String type, String[] args) throws IllegalArgumentException, NoSuchFieldException
+	public static ConfirmationPrompt createMaze(final Player player, String name, String type, String[] args) throws IllegalArgumentException, NoSuchFieldException
 	{
 		MazeDefinition def = mMazeTypes.get(type.toLowerCase());
 		if(def == null)
 			throw new IllegalArgumentException("No maze type " + type);
 		
-		Maze<?> maze = def.newMaze(player, name, args);
-		mMazes.put(name.toLowerCase(), maze);
+		final Maze<?> maze = def.newMaze(player, name, args);
 		
-		saveMaze(maze);
-		maze.prepareArea(new StoredBlock(Material.BEDROCK), null);
+		int blockCount = (maze.getMaxCorner().getBlockX() - maze.getMinCorner().getBlockX()) * (maze.getMaxCorner().getBlockY() - maze.getMinCorner().getBlockY()) * (maze.getMaxCorner().getBlockZ() - maze.getMinCorner().getBlockZ());
+		String text = String.format("&e(%d, %d, %d) &f-> &e(%d, %d, %d) &7[%d blocks]", maze.getMinCorner().getBlockX(), maze.getMinCorner().getBlockY(), maze.getMinCorner().getBlockZ(), maze.getMaxCorner().getBlockX() - 1, maze.getMaxCorner().getBlockY() - 1, maze.getMaxCorner().getBlockZ() - 1, blockCount);
 		
-		return maze;
+		ConfirmationPrompt prompt = new ConfirmationPrompt()
+			.setPlayer(player)
+			.setCallback(new Callback()
+			{
+				@Override
+				public void onFailure( Throwable exception )
+				{
+					player.sendMessage(ChatColor.GOLD + "Maze creation cancelled");
+				}
+				
+				@Override
+				public void onComplete()
+				{
+					mMazes.put(maze.getName().toLowerCase(), maze);
+					
+					saveMaze(maze);
+					maze.prepareArea(new StoredBlock(Material.BEDROCK), new Callback()
+					{
+						@Override
+						public void onFailure( Throwable exception )
+						{
+							player.sendMessage(ChatColor.RED + "An error occured while creating the maze");
+							exception.printStackTrace();
+						}
+						
+						@Override
+						public void onComplete()
+						{
+							player.sendMessage(ChatColor.GREEN + "Maze created. Use " + ChatColor.YELLOW + "/dynmaze generate " + maze.getName() + ChatColor.GREEN + " to build it.");
+						}
+					});
+				}
+			})
+			.setText(ChatColor.translateAlternateColorCodes('&', String.format("This will create a maze at %s&f. Do you wish to continue?", text)));
+		
+		return prompt;
 	}
 	
 	public static Maze<?> createEmptyMaze(String type)

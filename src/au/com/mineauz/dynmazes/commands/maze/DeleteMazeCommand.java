@@ -5,12 +5,14 @@ import java.util.List;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import au.com.mineauz.dynmazes.Maze;
 import au.com.mineauz.dynmazes.MazeManager;
 import au.com.mineauz.dynmazes.commands.CommandSenderType;
 import au.com.mineauz.dynmazes.commands.ICommand;
 import au.com.mineauz.dynmazes.misc.Callback;
+import au.com.mineauz.dynmazes.misc.ConfirmationPrompt;
 
 public class DeleteMazeCommand implements ICommand
 {
@@ -64,25 +66,43 @@ public class DeleteMazeCommand implements ICommand
 			sender.sendMessage(ChatColor.RED + "No maze by the name " + args[0] + " exists");
 			return true;
 		}
+		
+		ConfirmationPrompt prompt = new ConfirmationPrompt()
+			.setPlayer((Player)sender)
+			.setText("Delete " + maze.getName() + "?")
+			.setCallback(new Callback()
+			{
+				@Override
+				public void onFailure( Throwable exception )
+				{
+					sender.sendMessage(ChatColor.GOLD + "Maze delete cancelled");
+				}
+				
+				@Override
+				public void onComplete()
+				{
+					MazeManager.deleteMaze(maze, new Callback()
+					{
+						@Override
+						public void onFailure( Throwable exception )
+						{
+							sender.sendMessage(ChatColor.RED + "An internal error occured while deleting that maze.");
+							exception.printStackTrace();
+						}
+						
+						@Override
+						public void onComplete()
+						{
+							sender.sendMessage(ChatColor.GREEN + maze.getName() + " was deleted successfully");
+						}
+					});
+					
+					sender.sendMessage(ChatColor.GOLD + "The maze " + maze.getName() + " is now being deleted.");
+				}
+			});
+		
+		prompt.launch();
 
-		MazeManager.deleteMaze(maze, new Callback()
-		{
-			@Override
-			public void onFailure( Throwable exception )
-			{
-				sender.sendMessage(ChatColor.RED + "An internal error occured while deleting that maze.");
-				exception.printStackTrace();
-			}
-			
-			@Override
-			public void onComplete()
-			{
-				sender.sendMessage(ChatColor.GREEN + maze.getName() + " was deleted successfully");
-			}
-		});
-		
-		sender.sendMessage(ChatColor.GOLD + "The maze " + maze.getName() + " is now being deleted.");
-		
 		return true;
 	}
 

@@ -12,6 +12,7 @@ import au.com.mineauz.dynmazes.MazeManager;
 import au.com.mineauz.dynmazes.Util;
 import au.com.mineauz.dynmazes.commands.CommandSenderType;
 import au.com.mineauz.dynmazes.commands.ICommand;
+import au.com.mineauz.dynmazes.misc.ConfirmationPrompt;
 
 public class NewMazeCommand implements ICommand
 {
@@ -72,9 +73,9 @@ public class NewMazeCommand implements ICommand
 
 		try
 		{
-			MazeManager.createMaze((Player)sender, name, args[1], Arrays.copyOfRange(args, 2, args.length));
+			ConfirmationPrompt prompt = MazeManager.createMaze((Player)sender, name, args[1], Arrays.copyOfRange(args, 2, args.length));
 			
-			sender.sendMessage(ChatColor.GREEN + "Maze created. Use " + ChatColor.YELLOW + parent + "generate " + name + ChatColor.GREEN + " to build it.");
+			prompt.launch();
 		}
 		catch(IllegalArgumentException e)
 		{
