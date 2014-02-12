@@ -41,10 +41,4 @@ public class DynamicMazePlugin extends JavaPlugin
 		
 		MazeManager.loadMazes();
 	}
-	
-	@Override
-	public void onDisable()
-	{
-		MazeManager.saveMazes();
-	}
 }
