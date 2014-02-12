@@ -3,6 +3,7 @@ package au.com.mineauz.dynmazes;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 import org.apache.commons.lang.Validate;
@@ -17,6 +18,7 @@ import org.bukkit.util.BlockVector;
 import au.com.mineauz.dynmazes.algorithm.Algorithm;
 import au.com.mineauz.dynmazes.algorithm.GrowingTreeAlgorithm;
 import au.com.mineauz.dynmazes.misc.Callback;
+import au.com.mineauz.dynmazes.styles.StoredBlock;
 
 
 public abstract class Maze<T extends INode>
@@ -73,20 +75,45 @@ public abstract class Maze<T extends INode>
 		mAlgorithm = algorithm;
 	}
 
-	public void draw()
+	public void draw(final Callback callback)
 	{
 		Validate.isTrue(!mIsDrawing);
 		
 		if(allNodes == null)
+		{
+			if(callback != null)
+				callback.onFailure(new IllegalStateException("Maze not generated"));
+			
 			return;
+		}
 		
 		mIsDrawing = true;
 		
-		// push to drawing task
-		new DrawingTask<T>(this, allNodes).start();
+		new DrawingTask<T>(this, allNodes, new Callback()
+		{
+			@Override
+			public void onFailure( Throwable exception )
+			{
+				mIsDrawing = false;
+				
+				if(callback != null)
+					callback.onFailure(exception);
+				else
+					throw new RuntimeException(exception);
+			}
+			
+			@Override
+			public void onComplete()
+			{
+				mIsDrawing = false;
+
+				if(callback != null)
+					callback.onComplete();
+			}
+		}).start();
 	}
 	
-	public void clear(Callback callback)
+	public void clear(final Callback callback)
 	{
 		Validate.isTrue(!mIsDrawing);
 		
@@ -94,7 +121,25 @@ public abstract class Maze<T extends INode>
 		
 		BlockVector min = mMin.clone();
 		min.setY(min.getBlockY() - 1);
-		new ClearingTask<T>(min, mMax, mWorld, callback).start();
+		new ClearingTask<T>(min, mMax, mWorld, new Callback()
+		{
+			@Override
+			public void onFailure( Throwable exception )
+			{
+				if(callback != null)
+					callback.onFailure(exception);
+				else
+					throw new RuntimeException(exception);
+			}
+			
+			@Override
+			public void onComplete()
+			{
+				mIsDrawing = false;
+				if(callback != null)
+					callback.onComplete();
+			}
+		}).start();
 	}
 	
 	void setDrawComplete()
@@ -102,13 +147,13 @@ public abstract class Maze<T extends INode>
 		mIsDrawing = false;
 	}
 	
-	public void generate(long seed)
+	public void generate(long seed, Callback callback)
 	{
 		Validate.notNull(mAlgorithm);
 		Validate.isTrue(!mIsGenerating);
 		
 		mIsGenerating = true;
-		GenerationThread<T> thread = new GenerationThread<T>(this);
+		GenerationThread<T> thread = new GenerationThread<T>(this, callback);
 		thread.start();
 	}
 	
@@ -152,7 +197,7 @@ public abstract class Maze<T extends INode>
 	
 	protected abstract T findStart();
 
-	protected abstract void placeNode( T node );
+	protected abstract void placeNode( T node, List<StoredBlock> blocks );
 
 	
 	public final void save(File file)

@@ -10,6 +10,7 @@ import au.com.mineauz.dynmazes.Maze;
 import au.com.mineauz.dynmazes.MazeManager;
 import au.com.mineauz.dynmazes.commands.CommandSenderType;
 import au.com.mineauz.dynmazes.commands.ICommand;
+import au.com.mineauz.dynmazes.misc.Callback;
 
 public class GenerateMazeCommand implements ICommand
 {
@@ -51,12 +52,12 @@ public class GenerateMazeCommand implements ICommand
 	}
 
 	@Override
-	public boolean onCommand( CommandSender sender, String parent, String label, String[] args )
+	public boolean onCommand( final CommandSender sender, String parent, String label, String[] args )
 	{
 		if(args.length != 1 && args.length != 2)
 			return false;
 		
-		Maze<?> maze = MazeManager.getMaze(args[0]);
+		final Maze<?> maze = MazeManager.getMaze(args[0]);
 		if(maze == null)
 		{
 			sender.sendMessage(ChatColor.RED + "There is no maze by the name " + args[0]);
@@ -82,8 +83,23 @@ public class GenerateMazeCommand implements ICommand
 			}
 		}
 		
-		maze.generate(seed);
-		sender.sendMessage(ChatColor.GREEN + maze.getName() + " is being (re)generated");
+		maze.generate(seed, new Callback()
+		{
+			@Override
+			public void onFailure( Throwable exception )
+			{
+				sender.sendMessage(ChatColor.RED + "An error occured while generating the maze");
+				exception.printStackTrace();
+			}
+			
+			@Override
+			public void onComplete()
+			{
+				sender.sendMessage(ChatColor.GREEN + maze.getName() + " was generated successfully");
+			}
+		});
+		
+		sender.sendMessage(ChatColor.GREEN + maze.getName() + " is being generated");
 		
 		return true;
 	}

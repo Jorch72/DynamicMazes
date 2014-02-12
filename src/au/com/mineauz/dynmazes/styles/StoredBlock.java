@@ -334,4 +334,14 @@ public class StoredBlock
 	{
 		return mType + ":" + mData;
 	}
+	
+	public StoredBlock clone()
+	{
+		StoredBlock copy = new StoredBlock();
+		copy.mData = mData;
+		copy.mType = mType;
+		if(mExtra != null)
+			copy.mExtra = new HashMap<String, Object>(mExtra);
+		return copy;
+	}
 }

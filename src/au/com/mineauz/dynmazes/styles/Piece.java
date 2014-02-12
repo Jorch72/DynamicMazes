@@ -2,6 +2,7 @@ package au.com.mineauz.dynmazes.styles;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 import org.bukkit.Location;
@@ -83,6 +84,26 @@ public class Piece
 		
 		for(BlockVector loc : blocksToAdd)
 			mBlocks[loc.getBlockX() + loc.getBlockZ() * (mSize) + loc.getBlockY() * (mSize * mSize)].apply(minCorner.getWorld().getBlockAt(minCorner.getBlockX() + loc.getBlockX(), minCorner.getBlockY() + loc.getBlockY(), minCorner.getBlockZ() + loc.getBlockZ()));
+	}
+	
+	public List<StoredBlock> getBlocks(BlockVector origin)
+	{
+		ArrayList<StoredBlock> blocks = new ArrayList<StoredBlock>(mBlocks.length);
+		
+		for(int y = 0; y < mHeight; ++y)
+		{
+			for(int x = 0; x < mSize; ++x)
+			{
+				for(int z = 0; z < mSize; ++z)
+				{
+					StoredBlock block = mBlocks[x + z * (mSize) + y * (mSize * mSize)].clone();
+					block.setLocation(new BlockVector(origin.getBlockX() + x, origin.getBlockY() + y, origin.getBlockZ() + z));
+					blocks.add(block);
+				}
+			}
+		}
+		
+		return blocks;
 	}
 	
 	public void save(ConfigurationSection parent)

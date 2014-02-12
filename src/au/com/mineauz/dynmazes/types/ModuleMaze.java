@@ -7,8 +7,6 @@ import java.util.Random;
 import java.util.Set;
 
 import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -21,6 +19,7 @@ import au.com.mineauz.dynmazes.Maze;
 import au.com.mineauz.dynmazes.MazeManager.MazeCommand;
 import au.com.mineauz.dynmazes.Util;
 import au.com.mineauz.dynmazes.styles.PieceType;
+import au.com.mineauz.dynmazes.styles.StoredBlock;
 import au.com.mineauz.dynmazes.styles.Style;
 import au.com.mineauz.dynmazes.styles.StyleManager;
 
@@ -81,29 +80,10 @@ public class ModuleMaze extends Maze<ModuleNode>
 	}
 	
 	@Override
-	protected void placeNode(ModuleNode node)
+	protected void placeNode(ModuleNode node, List<StoredBlock> blocks)
 	{
 		if(!node.isTerminus())
-		{
-			BlockVector loc = node.toLocation();
-			
-			for(int x = loc.getBlockX(); x < loc.getBlockX() + mStyle.getPieceSize(); ++x)
-			{
-				for(int z = loc.getBlockZ(); z < loc.getBlockZ() + mStyle.getPieceSize(); ++z)
-				{
-					for(int y = loc.getBlockY() - 1; y < loc.getBlockY() + mStyle.getHeight(); ++y)
-					{
-						Block block = getWorld().getBlockAt(x, y, z);
-						if(y == getMinCorner().getBlockY() - 1)
-							block.setType(Material.BEDROCK);
-						else
-							block.setType(Material.AIR);
-					}
-				}
-			}
-			
-			mStyle.getPiece(node.getType()).place(new Location(getWorld(), loc.getX(), loc.getY(), loc.getZ()));
-		}
+			blocks.addAll(mStyle.getPiece(node.getType()).getBlocks(node.toLocation()));
 	}
 	
 	@Override
