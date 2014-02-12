@@ -20,11 +20,13 @@ public class DependencySortThread extends Thread
 {
 	private final List<StoredBlock> mList;
 	private final SortFuture mFuture;
+	private final int mFloorLevel;
 	
-	public DependencySortThread(List<StoredBlock> list)
+	public DependencySortThread(List<StoredBlock> list, int floorLevel)
 	{
 		mList = list;
 		mFuture = new SortFuture();
+		mFloorLevel = floorLevel;
 	}
 	
 	public Future<List<StoredBlock>> getFuture()
@@ -48,7 +50,7 @@ public class DependencySortThread extends Thread
 				
 				BlockFace face = block.getDependantFace();
 						
-				if(face == BlockFace.SELF || (face == BlockFace.DOWN && block.getLocation().getBlockY() == 0))
+				if(face == BlockFace.SELF || (face == BlockFace.DOWN && block.getLocation().getBlockY() == mFloorLevel))
 					blocksToAdd.add(block);
 				else
 					dependencies.put(block.getLocationRelative(face), block);

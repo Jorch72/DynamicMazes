@@ -168,7 +168,7 @@ public abstract class Maze<T extends INode>
 			@Override
 			public void onComplete()
 			{
-				new DrawingTask<T>(Maze.this, allNodes, new Callback()
+				new DrawingTask<T>(Maze.this, allNodes, mMin.getBlockY()-1, new Callback()
 				{
 					@Override
 					public void onFailure( Throwable exception )

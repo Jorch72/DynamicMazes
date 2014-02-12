@@ -21,6 +21,7 @@ public class DrawingTask<T extends INode> extends NotifiableTask implements Runn
 	private Maze<T> mMaze;
 	private Iterator<T> mIt;
 	private ArrayList<StoredBlock> mBlocks;
+	private int mFloorLevel;
 	
 	private Future<List<StoredBlock>> mFuture;
 	
@@ -36,13 +37,14 @@ public class DrawingTask<T extends INode> extends NotifiableTask implements Runn
 	
 	private long mIntervalLimit;
 	
-	public DrawingTask(Maze<T> maze, Collection<T> allNodes, Callback callback)
+	public DrawingTask(Maze<T> maze, Collection<T> allNodes, int floorLevel, Callback callback)
 	{
 		super(callback);
 		
 		mMaze = maze;
 		mIt = allNodes.iterator();
 		mStage = 0;
+		mFloorLevel = floorLevel;
 		
 		mBlocks = new ArrayList<StoredBlock>();
 	}
@@ -69,7 +71,7 @@ public class DrawingTask<T extends INode> extends NotifiableTask implements Runn
 				mMaze.placeNode(node, mBlocks);
 			}
 			
-			DependencySortThread thread = new DependencySortThread(mBlocks);
+			DependencySortThread thread = new DependencySortThread(mBlocks, mFloorLevel);
 			mFuture = thread.getFuture();
 			
 			thread.start();
