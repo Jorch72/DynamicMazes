@@ -41,6 +41,17 @@ public class StoredBlock
 		mData = 0;
 	}
 	
+	public StoredBlock(Material material, MaterialData data)
+	{
+		mType = material;
+		mData = data.getData();
+	}
+	
+	public StoredBlock(Material material)
+	{
+		mType = material;
+		mData = 0;
+	}
 	public StoredBlock(BlockState state)
 	{
 		mType = state.getType();

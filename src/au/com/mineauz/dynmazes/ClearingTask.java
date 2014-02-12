@@ -20,7 +20,7 @@ import au.com.mineauz.dynmazes.misc.DependencySortThread;
 import au.com.mineauz.dynmazes.misc.NotifiableTask;
 import au.com.mineauz.dynmazes.styles.StoredBlock;
 
-public class ClearingTask<T extends INode> extends NotifiableTask implements Runnable
+public class ClearingTask extends NotifiableTask implements Runnable
 {
 	private Iterator<BlockVector> mIt;
 	private ListIterator<StoredBlock> mIt2;
@@ -154,12 +154,12 @@ public class ClearingTask<T extends INode> extends NotifiableTask implements Run
 			
 			mCurrent.setX(mCurrent.getBlockX() + 1);
 			
-			if(mCurrent.getX() > mMax.getBlockX())
+			if(mCurrent.getX() >= mMax.getBlockX())
 			{
 				mCurrent.setX(mMin.getBlockX());
 				mCurrent.setZ(mCurrent.getBlockZ() + 1);
 				
-				if(mCurrent.getZ() > mMax.getBlockZ())
+				if(mCurrent.getZ() >= mMax.getBlockZ())
 				{
 					mCurrent.setZ(mMin.getBlockZ());
 					mCurrent.setY(mCurrent.getBlockY() + 1);
@@ -172,7 +172,7 @@ public class ClearingTask<T extends INode> extends NotifiableTask implements Run
 		@Override
 		public boolean hasNext()
 		{
-			return !mCurrent.equals(mMax);
+			return mCurrent.getBlockY() < mMax.getBlockY();
 		}
 	}
 }

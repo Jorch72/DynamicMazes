@@ -75,8 +75,54 @@ public abstract class Maze<T extends INode>
 		mAlgorithm = algorithm;
 	}
 
+	public void prepareArea(final StoredBlock baseType, final Callback callback)
+	{
+		Validate.notNull(getWorld());
+		
+		final BlockVector min = mMin.clone();
+		min.setY(min.getBlockY() - 1);
+		
+		new ClearingTask(min, mMax, getWorld(), new Callback()
+		{
+			@Override
+			public void onFailure( Throwable exception )
+			{
+				if(callback != null)
+					callback.onFailure(exception);
+				else
+					throw new RuntimeException(exception);
+			}
+			
+			@Override
+			public void onComplete()
+			{
+				BlockVector max = mMax.clone();
+				max.setY(min.getY()+1);
+				new FillTask<INode>(min, max, getWorld(), baseType, new Callback()
+				{
+					@Override
+					public void onFailure( Throwable exception )
+					{
+						if(callback != null)
+							callback.onFailure(exception);
+						else
+							throw new RuntimeException(exception);
+					}
+					
+					@Override
+					public void onComplete()
+					{
+						if(callback != null)
+							callback.onComplete();
+					}
+				}).start();
+			}
+		}).start(); 
+	}
+	
 	public void draw(final Callback callback)
 	{
+		Validate.notNull(getWorld());
 		Validate.isTrue(!mIsDrawing);
 		
 		if(allNodes == null)
@@ -116,12 +162,13 @@ public abstract class Maze<T extends INode>
 	public void clear(final Callback callback)
 	{
 		Validate.isTrue(!mIsDrawing);
+		Validate.notNull(getWorld());
 		
 		mIsDrawing = true;
 		
 		BlockVector min = mMin.clone();
 		min.setY(min.getBlockY() - 1);
-		new ClearingTask<T>(min, mMax, mWorld, new Callback()
+		new ClearingTask(min, mMax, getWorld(), new Callback()
 		{
 			@Override
 			public void onFailure( Throwable exception )

@@ -13,12 +13,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import org.apache.commons.lang.Validate;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
 import com.google.common.base.Throwables;
 
 import au.com.mineauz.dynmazes.algorithm.Algorithm;
 import au.com.mineauz.dynmazes.misc.Callback;
+import au.com.mineauz.dynmazes.styles.StoredBlock;
 
 public class MazeManager
 {
@@ -79,6 +81,7 @@ public class MazeManager
 		mMazes.put(name.toLowerCase(), maze);
 		
 		saveMaze(maze);
+		maze.prepareArea(new StoredBlock(Material.BEDROCK), null);
 		
 		return maze;
 	}
