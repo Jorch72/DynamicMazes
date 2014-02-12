@@ -23,7 +23,7 @@ public class Style
 	public Style(String name, byte size, byte height)
 	{
 		Validate.isTrue(size >= 4 && size <= 10);
-		Validate.isTrue(height > 1);
+		Validate.isTrue(height > 4);
 		
 		mPieceSize = size;
 		mName = name;
@@ -52,6 +52,15 @@ public class Style
 	{
 		return mHeight;
 	}
+	
+	public void setHeight(int height)
+	{
+		Validate.isTrue(height >= 3 && height <= 40);
+		mHeight = (byte)height;
+		for(Piece piece : mPieces)
+			piece.setHeight(height);
+	}
+	
 	
 	public int getPieceSize()
 	{

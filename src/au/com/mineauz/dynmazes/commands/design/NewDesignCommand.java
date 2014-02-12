@@ -85,9 +85,9 @@ public class NewDesignCommand implements ICommand
 		try
 		{
 			height = Integer.parseInt(args[args.length - 1]);
-			if(height < 4 || height > 100)
+			if(height < 3 || height > 40)
 			{
-				sender.sendMessage(ChatColor.RED + "Piece height is out of range. Allowed range is 4 - 100 inclusive.");
+				sender.sendMessage(ChatColor.RED + "Piece height is out of range. Allowed range is 3 - 40 inclusive.");
 				return true;
 			}
 		}

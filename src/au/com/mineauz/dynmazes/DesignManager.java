@@ -212,6 +212,7 @@ public class DesignManager implements Listener
 				do
 				{
 					loc.getWorld().getBlockAt(x, loc.getBlockY()-1, z).setType(Material.LAPIS_BLOCK);
+					loc.getWorld().getBlockAt(x, loc.getBlockY() + mStyle.getHeight(), z).setType(Material.LAPIS_BLOCK);
 					
 					x += con.getModX();
 					z += con.getModZ();
@@ -219,6 +220,64 @@ public class DesignManager implements Listener
 				while(x >= minX - 1 && x <= maxX + 1 && z >= minZ - 1 && z <= maxZ + 1);
 			}
 		}
+	}
+	
+	public void setHeight(final int height)
+	{
+		BlockVector min = mMin.clone();
+		min.setY(Math.min(mMin.getBlockY() + height + 1, min.getBlockY() + mStyle.getHeight() + 1));
+		
+		new ClearingTask(min, mMax, mWorld, new Callback()
+		{
+			@Override
+			public void onFailure( Throwable exception )
+			{
+			}
+			
+			@Override
+			public void onComplete()
+			{
+				mStyle.setHeight(height);
+				for(PieceType type : PieceType.values())
+				{
+					Location loc = mPieceLocations[type.ordinal()];
+					
+					int minX = loc.getBlockX();
+					int minZ = loc.getBlockZ();
+					int maxX = minX + mStyle.getPieceSize() - 1;
+					int maxZ = minZ + mStyle.getPieceSize() - 1;
+					
+					for(int i = 0; i < mStyle.getPieceSize(); ++i)
+					{
+						loc.getWorld().getBlockAt(minX + i, loc.getBlockY() + mStyle.getHeight(), minZ).setType(Material.GOLD_BLOCK);
+						loc.getWorld().getBlockAt(minX + i, loc.getBlockY() + mStyle.getHeight(), maxZ).setType(Material.GOLD_BLOCK);
+						
+						loc.getWorld().getBlockAt(minX, loc.getBlockY() + mStyle.getHeight(), minZ + i).setType(Material.GOLD_BLOCK);
+						loc.getWorld().getBlockAt(maxX, loc.getBlockY() + mStyle.getHeight(), minZ + i).setType(Material.GOLD_BLOCK);
+					}
+					
+					int centerX = (minX + maxX) / 2;
+					int centerZ = (minZ + maxZ) / 2;
+					
+					for(BlockFace con : type.getConnections())
+					{
+						int x = centerX;
+						int z = centerZ;
+						
+						do
+						{
+							loc.getWorld().getBlockAt(x, loc.getBlockY()-1, z).setType(Material.LAPIS_BLOCK);
+							loc.getWorld().getBlockAt(x, loc.getBlockY() + mStyle.getHeight(), z).setType(Material.LAPIS_BLOCK);
+							
+							x += con.getModX();
+							z += con.getModZ();
+						}
+						while(x >= minX - 1 && x <= maxX + 1 && z >= minZ - 1 && z <= maxZ + 1);
+					}
+				}
+				mMax.setY(mMin.getBlockY() + height + 2);
+			}
+		}).start();
 	}
 	
 	private void start(Style existing) throws IllegalStateException

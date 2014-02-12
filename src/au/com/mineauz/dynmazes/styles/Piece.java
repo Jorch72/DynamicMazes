@@ -128,4 +128,18 @@ public class Piece
 			mBlocks[id].read(parent.getConfigurationSection(key));
 		}
 	}
+
+	public void setHeight( int height )
+	{
+		mHeight = (byte)height;
+		int len = mBlocks.length;
+		mBlocks = Arrays.copyOf(mBlocks, mSize * mSize * mHeight);
+		
+		if(mBlocks.length > len)
+		{
+			StoredBlock empty = new StoredBlock();
+			for(int i = len; i < mBlocks.length; ++i)
+				mBlocks[i] = empty;
+		}
+	}
 }

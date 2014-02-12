@@ -19,6 +19,7 @@ public class DesignCommandRoot extends CommandDispatcher implements ICommand
 		registerCommand(new EndDesignCommand());
 		registerCommand(new SaveDesignCommand());
 		registerCommand(new EditDesignCommand());
+		registerCommand(new ChangeHeightDesignCommand());
 	}
 	@Override
 	public String getName()
