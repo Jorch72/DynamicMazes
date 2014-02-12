@@ -8,12 +8,10 @@ import java.util.Set;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.TreeSpecies;
 import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
-import org.bukkit.material.Leaves;
 import org.bukkit.util.BlockVector;
 import org.bukkit.util.Vector;
 
@@ -21,6 +19,7 @@ import au.com.mineauz.dynmazes.INode;
 import au.com.mineauz.dynmazes.Maze;
 import au.com.mineauz.dynmazes.Util;
 import au.com.mineauz.dynmazes.MazeManager.MazeCommand;
+import au.com.mineauz.dynmazes.flags.BlockTypeFlag;
 import au.com.mineauz.dynmazes.styles.StoredBlock;
 
 public class GridMaze extends Maze<GridNode>
@@ -38,13 +37,21 @@ public class GridMaze extends Maze<GridNode>
 	private GridNode mEntrance;
 	private GridNode mExit;
 	
-	private StoredBlock mPathMaterial = new StoredBlock(Material.GRAVEL);
-	private StoredBlock mFillMaterial = new StoredBlock(Material.GRASS);
-	private StoredBlock mWallMaterial = new StoredBlock(Material.LEAVES, new Leaves(TreeSpecies.DARK_OAK));
+	private BlockTypeFlag mPathMaterial = new BlockTypeFlag();
+	private BlockTypeFlag mFillMaterial = new BlockTypeFlag();
+	private BlockTypeFlag mWallMaterial = new BlockTypeFlag();
 	
 	public GridMaze(String name, Location loc, BlockFace facing, int width, int length, int pathWidth, int wallWidth, int height)
 	{
 		super(name, "Grid", loc.getWorld());
+		
+		addFlag("wall-type", mWallMaterial);
+		addFlag("path-type", mPathMaterial);
+		addFlag("fill-type", mFillMaterial);
+		
+		mWallMaterial.setValue(new StoredBlock(Material.LEAVES));
+		mPathMaterial.setValue(new StoredBlock(Material.GRAVEL));
+		mFillMaterial.setValue(new StoredBlock(Material.GRASS));
 		
 		int widthSize = wallWidth + (wallWidth + pathWidth) * width;
 		int lengthSize = wallWidth + (wallWidth + pathWidth) * length;
@@ -176,7 +183,7 @@ public class GridMaze extends Maze<GridNode>
 		{
 			for(int z = 0; z < mPathWidth; ++z)
 			{
-				StoredBlock block = mPathMaterial.clone();
+				StoredBlock block = mPathMaterial.getValue().clone();
 				BlockVector vec = origin.clone();
 				vec.setX(vec.getX() + x);
 				vec.setZ(vec.getZ() + z);
@@ -210,7 +217,7 @@ public class GridMaze extends Maze<GridNode>
 			{
 				for(int w = 0; w < mWallWidth; ++w)
 				{
-					StoredBlock block = mPathMaterial.clone();
+					StoredBlock block = mPathMaterial.getValue().clone();
 					BlockVector vec = newOrigin.clone();
 					
 					if(face.getModX() != 0)
@@ -255,7 +262,7 @@ public class GridMaze extends Maze<GridNode>
 				{
 					for(int y = 0; y <= mHeight; ++y)
 					{
-						StoredBlock block = (y == 0 ? mFillMaterial.clone() : mWallMaterial.clone());
+						StoredBlock block = (y == 0 ? mFillMaterial.getValue().clone() : mWallMaterial.getValue().clone());
 						
 						BlockVector vec = newOrigin.clone();
 						vec.setX(vec.getX() + x);
@@ -296,7 +303,7 @@ public class GridMaze extends Maze<GridNode>
 				{
 					for(int y = 0; y <= mHeight; ++y)
 					{
-						StoredBlock block = (y == 0 ? mFillMaterial.clone() : mWallMaterial.clone());
+						StoredBlock block = (y == 0 ? mFillMaterial.getValue().clone() : mWallMaterial.getValue().clone());
 						
 						BlockVector vec = newOrigin.clone();
 						if(face.getModX() != 0)
@@ -415,6 +422,10 @@ public class GridMaze extends Maze<GridNode>
 		mPathWidth = section.getInt("pathSize");
 		mWallWidth = section.getInt("wallSize");
 		mHeight = section.getInt("height");
+		
+		mPathMaterial = (BlockTypeFlag)getFlag("path-type");
+		mFillMaterial = (BlockTypeFlag)getFlag("fill-type");
+		mWallMaterial = (BlockTypeFlag)getFlag("wall-type");
 	}
 }
 

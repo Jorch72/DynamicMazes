@@ -51,4 +51,10 @@ public class AlgorithmFlag extends Flag<Algorithm>
 		else
 			value.read(section);
 	}
+	
+	@Override
+	public String getValueString()
+	{
+		return value.getType();
+	}
 }

@@ -27,4 +27,6 @@ public abstract class Flag<T>
 	
 	public abstract void save(ConfigurationSection section);
 	public abstract void read(ConfigurationSection section) throws InvalidConfigurationException;
+	
+	public abstract String getValueString();
 }

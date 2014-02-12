@@ -92,7 +92,7 @@ public class SetMazeCommand implements ICommand
 			Object result = flag.parse((Player)sender, Arrays.copyOfRange(args, 2, args.length));
 			flag.setValue(result);
 			MazeManager.saveMaze(maze);
-			sender.sendMessage(ChatColor.GREEN + args[1] + " has been set.");
+			sender.sendMessage(ChatColor.GREEN + args[1] + " has been set to " + flag.getValueString());
 		}
 		catch(IllegalArgumentException e)
 		{
