@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 
 import au.com.mineauz.dynmazes.Maze;
 import au.com.mineauz.dynmazes.MazeManager;
+import au.com.mineauz.dynmazes.Util;
 import au.com.mineauz.dynmazes.commands.CommandSenderType;
 import au.com.mineauz.dynmazes.commands.ICommand;
 import au.com.mineauz.dynmazes.misc.Callback;
@@ -109,6 +110,8 @@ public class DeleteMazeCommand implements ICommand
 	@Override
 	public List<String> onTabComplete( CommandSender sender, String parent, String label, String[] args )
 	{
+		if(args.length == 1)
+			return Util.matchStrings(args[0], MazeManager.getMazeNames());
 		return null;
 	}
 

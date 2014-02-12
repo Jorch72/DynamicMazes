@@ -11,7 +11,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
+
 import org.apache.commons.lang.Validate;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -136,6 +139,15 @@ public class MazeManager
 	public static Maze<?> getMaze(String name)
 	{
 		return mMazes.get(name.toLowerCase());
+	}
+	
+	public static Collection<String> getMazeNames()
+	{
+		LinkedList<String> names = new LinkedList<String>();
+		for(Maze<?> maze : mMazes.values())
+			names.add(maze.getName());
+		
+		return names;
 	}
 	
 	public static void deleteMaze(final Maze<?> maze, final Callback callback)

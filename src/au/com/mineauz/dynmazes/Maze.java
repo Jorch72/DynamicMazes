@@ -66,6 +66,7 @@ public abstract class Maze<T extends INode>
 	protected Maze(String type)
 	{
 		mType = type;
+		mFlags = new HashMap<String, Flag<?>>();
 	}
 	
 	protected void setBounds(BlockVector min, BlockVector max)
