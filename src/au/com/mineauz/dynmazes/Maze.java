@@ -3,7 +3,10 @@ package au.com.mineauz.dynmazes;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.lang.Validate;
@@ -16,13 +19,15 @@ import org.bukkit.util.BlockVector;
 
 import au.com.mineauz.dynmazes.algorithm.Algorithm;
 import au.com.mineauz.dynmazes.algorithm.GrowingTreeAlgorithm;
+import au.com.mineauz.dynmazes.flags.AlgorithmFlag;
+import au.com.mineauz.dynmazes.flags.Flag;
+import au.com.mineauz.dynmazes.flags.FlagIO;
 import au.com.mineauz.dynmazes.misc.Callback;
 import au.com.mineauz.dynmazes.styles.StoredBlock;
 
 
 public abstract class Maze<T extends INode>
 {
-	private Algorithm mAlgorithm;
 	private String mName;
 	
 	private String mType;
@@ -38,12 +43,19 @@ public abstract class Maze<T extends INode>
 	private boolean mIsGenerating = false;
 	private boolean mIsDrawing = false;
 	
+	private AlgorithmFlag mAlgorithm;
+	
+	private HashMap<String, Flag<?>> mFlags;
+	
 	public Maze(String name, String type, World world)
 	{
 		mType = type;
 		
-		mAlgorithm = new GrowingTreeAlgorithm();
-		((GrowingTreeAlgorithm)mAlgorithm).setRandomChance(0.5);
+		mFlags = new HashMap<String, Flag<?>>();
+		mAlgorithm = new AlgorithmFlag();
+		mAlgorithm.setValue(new GrowingTreeAlgorithm());
+		((GrowingTreeAlgorithm)mAlgorithm.getValue()).setRandomChance(0.5);
+		mFlags.put("algorithm", mAlgorithm);
 		
 		mName = name;
 		
@@ -69,12 +81,12 @@ public abstract class Maze<T extends INode>
 	
 	public Algorithm getAlgorithm()
 	{
-		return mAlgorithm;
+		return mAlgorithm.getValue();
 	}
 	
 	public void setAlgorithm(Algorithm algorithm)
 	{
-		mAlgorithm = algorithm;
+		mAlgorithm.setValue(algorithm);
 	}
 
 	public void prepareArea(final StoredBlock baseType, final Callback callback)
@@ -270,15 +282,11 @@ public abstract class Maze<T extends INode>
 		root.set("name", mName);
 		root.set("type", mType);
 		root.set("world", mWorldId.toString());
-		if(mAlgorithm != null)
-		{
-			ConfigurationSection algo = root.createSection("algorithm");
-			algo.set("type", mAlgorithm.getType());
-			mAlgorithm.save(algo);
-		}
 		
 		root.set("min", mMin);
 		root.set("max", mMax);
+		
+		FlagIO.saveFlags(mFlags, root.createSection("flags"));
 	}
 	
 	public static Maze<?> read(File file)
@@ -318,18 +326,15 @@ public abstract class Maze<T extends INode>
 		mName = section.getString("name");
 		mWorldId = UUID.fromString(section.getString("world"));
 		
-		if(section.isConfigurationSection("algorithm"))
-		{
-			ConfigurationSection algo = section.getConfigurationSection("algorithm");
-			mAlgorithm = MazeManager.getAlgorithm(algo.getString("type"));
-			if(mAlgorithm == null)
-				DynamicMazePlugin.getInstance().getLogger().warning("Unknown algorithm type " + algo.getString("type") + " in maze " + mName);
-			else
-				mAlgorithm.read(algo);
-		}
-		
 		mMin = section.getVector("min").toBlockVector();
 		mMax = section.getVector("max").toBlockVector();
+		
+		if(section.isConfigurationSection("flags"))
+		{
+			mFlags.clear();
+			mFlags.putAll(FlagIO.loadFlags(section.getConfigurationSection("flags")));
+			mAlgorithm = (AlgorithmFlag)getFlag("algorithm");
+		}
 	}
 	
 	protected static int getDepth(INode node)
@@ -342,5 +347,22 @@ public abstract class Maze<T extends INode>
 		}
 		
 		return depth;
+	}
+	
+	public Map<String, Flag<?>> getFlags()
+	{
+		return Collections.unmodifiableMap(mFlags);
+	}
+	
+	public void addFlag(String name, Flag<?> flag)
+	{
+		if(mFlags.containsKey(name.toLowerCase()))
+			throw new IllegalArgumentException("Duplicate flag " + name);
+		mFlags.put(name.toLowerCase(), flag);
+	}
+	
+	public Flag<?> getFlag(String name)
+	{
+		return mFlags.get(name.toLowerCase());
 	}
 }

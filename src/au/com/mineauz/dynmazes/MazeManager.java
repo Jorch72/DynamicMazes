@@ -184,6 +184,15 @@ public class MazeManager
 		return mMazeTypes.containsKey(type.toLowerCase());
 	}
 	
+	public static Collection<String> getAlgorithmTypes()
+	{
+		ArrayList<String> types = new ArrayList<String>(mAlgorithms.size());
+		for(String def : mAlgorithms.keySet())
+			types.add(def);
+		
+		return types;
+	}
+	
 	public static void loadMazes()
 	{
 		mMazes.clear();
