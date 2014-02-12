@@ -35,9 +35,35 @@ public class ModuleMaze extends Maze<ModuleNode>
 	
 	public ModuleMaze(String name, Style style, Location loc, int width, int length, BlockFace facing)
 	{
-		super(name, "Module", loc, loc.clone().add(width * style.getPieceSize(), style.getHeight(), length * style.getPieceSize()));
-		mWidth = width;
-		mLength = length;
+		super(name, "Module", loc.getWorld());
+		
+		System.out.println(String.format("F: %s W: %d L: %d", facing, width, length));
+		
+		switch(facing)
+		{
+		case NORTH:
+			setBounds(new BlockVector(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ() - (length * style.getPieceSize()) + 1), new BlockVector(loc.getBlockX() + (width * style.getPieceSize()), loc.getBlockY() + style.getHeight(), loc.getBlockZ() + 1));
+			mWidth = width;
+			mLength = length;
+			break;
+		case SOUTH:
+			setBounds(new BlockVector(loc.getBlockX() - (width * style.getPieceSize()) + 1, loc.getBlockY(), loc.getBlockZ()), new BlockVector(loc.getBlockX() + 1, loc.getBlockY() + style.getHeight(), loc.getBlockZ() + (length * style.getPieceSize())));
+			mWidth = width;
+			mLength = length;
+			break;
+		case WEST:
+			setBounds(new BlockVector(loc.getBlockX() - (length * style.getPieceSize()) + 1, loc.getBlockY(), loc.getBlockZ() - (width * style.getPieceSize()) + 1), new BlockVector(loc.getBlockX() + 1, loc.getBlockY() + style.getHeight(), loc.getBlockZ() + 1));
+			mWidth = length;
+			mLength = width;
+			break;
+		case EAST:
+		default:
+			setBounds(loc.toVector().toBlockVector(), new BlockVector(loc.getBlockX() + (length * style.getPieceSize()), loc.getBlockY() + style.getHeight(), loc.getBlockZ() + (width * style.getPieceSize())));
+			mWidth = length;
+			mLength = width;
+			break;
+		}
+		
 		mStyle = style;
 	}
 	
@@ -141,7 +167,7 @@ public class ModuleMaze extends Maze<ModuleNode>
 		
 		try
 		{
-			length = Integer.parseInt(args[1]);
+			length = Integer.parseInt(args[2]);
 			if(length <= 1)
 				throw new IllegalArgumentException("Length cannot be less than 2");
 		}

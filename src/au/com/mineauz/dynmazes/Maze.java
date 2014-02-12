@@ -8,7 +8,6 @@ import java.util.UUID;
 
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -39,7 +38,7 @@ public abstract class Maze<T extends INode>
 	private boolean mIsGenerating = false;
 	private boolean mIsDrawing = false;
 	
-	public Maze(String name, String type, Location min, Location max)
+	public Maze(String name, String type, World world)
 	{
 		mType = type;
 		
@@ -48,16 +47,19 @@ public abstract class Maze<T extends INode>
 		
 		mName = name;
 		
-		mWorld = min.getWorld();
+		mWorld = world;
 		mWorldId = mWorld.getUID();
-		
-		mMin = min.toVector().toBlockVector();
-		mMax = max.toVector().toBlockVector();
 	}
 	
 	protected Maze(String type)
 	{
 		mType = type;
+	}
+	
+	protected void setBounds(BlockVector min, BlockVector max)
+	{
+		mMin = min;
+		mMax = max;
 	}
 	
 	public String getName()
@@ -82,7 +84,7 @@ public abstract class Maze<T extends INode>
 		final BlockVector min = mMin.clone();
 		min.setY(min.getBlockY() - 1);
 		
-		new ClearingTask(min, mMax, getWorld(), new Callback()
+		new ClearingTask(mMin, mMax, getWorld(), new Callback()
 		{
 			@Override
 			public void onFailure( Throwable exception )
