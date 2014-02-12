@@ -166,7 +166,6 @@ public class MazeManager
 			public void onComplete()
 			{
 				mMazes.remove(maze.getName().toLowerCase());
-				maze.setDrawComplete();
 				
 				new File(mFolder, maze.getName().toLowerCase() + ".yml").delete();
 				

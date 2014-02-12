@@ -93,9 +93,12 @@ public abstract class Maze<T extends INode>
 	public void prepareArea(final StoredBlock baseType, final Callback callback)
 	{
 		Validate.notNull(getWorld());
+		Validate.isTrue(!mIsDrawing);
 		
 		final BlockVector min = mMin.clone();
 		min.setY(min.getBlockY() - 1);
+		
+		mIsDrawing = true;
 		
 		new ClearingTask(mMin, mMax, getWorld(), new Callback()
 		{
@@ -127,6 +130,7 @@ public abstract class Maze<T extends INode>
 					@Override
 					public void onComplete()
 					{
+						mIsDrawing = false;
 						if(callback != null)
 							callback.onComplete();
 					}
@@ -222,15 +226,11 @@ public abstract class Maze<T extends INode>
 		}).start();
 	}
 	
-	void setDrawComplete()
-	{
-		mIsDrawing = false;
-	}
-	
 	public void generate(long seed, Callback callback)
 	{
 		Validate.notNull(mAlgorithm);
 		Validate.isTrue(!mIsGenerating);
+		Validate.isTrue(!mIsDrawing);
 		
 		mIsGenerating = true;
 		GenerationThread<T> thread = new GenerationThread<T>(this, callback);
