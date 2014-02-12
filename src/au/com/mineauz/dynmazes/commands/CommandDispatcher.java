@@ -6,6 +6,8 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
@@ -20,6 +22,8 @@ import org.bukkit.command.CommandSender;
  */
 public class CommandDispatcher
 {
+	public static Pattern usageArgumentPattern = Pattern.compile("(\\[<.*?>\\])|(\\[.*?\\])|(<.*?>)");
+	
 	private String mRootCommandDescription;
 	private HashMap<String, ICommand> mCommands;
 	
@@ -244,9 +248,31 @@ public class CommandDispatcher
 		return results;
 	}
 	
+	public static String colorUsage(String usage)
+	{
+		Matcher matcher = usageArgumentPattern.matcher(usage);
+		StringBuffer buffer = new StringBuffer();
+		
+		while(matcher.find())
+		{
+			String str;
+			if(matcher.group(1) != null)
+				str = ChatColor.GREEN + matcher.group(1);
+			else if(matcher.group(2) != null)
+				str = ChatColor.GREEN + matcher.group(2);
+			else
+				str = ChatColor.GOLD + matcher.group(3);
+			
+			matcher.appendReplacement(buffer, str);
+		}
+		
+		matcher.appendTail(buffer);
+		
+		return buffer.toString();
+	}
+	
 	private class InternalHelp implements ICommand
 	{
-
 		@Override
 		public String getName()
 		{
@@ -289,18 +315,20 @@ public class CommandDispatcher
 			if(args.length != 0)
 				return false;
 			
-			sender.sendMessage(ChatColor.GOLD + mRootCommandDescription);
-			sender.sendMessage(ChatColor.GOLD + "Commands: \n");
+			sender.sendMessage("");
+			sender.sendMessage(ChatColor.YELLOW + parent + ChatColor.GOLD + "<command>");
+			sender.sendMessage(ChatColor.GRAY + "\u25B7 " + mRootCommandDescription);
+			sender.sendMessage(ChatColor.YELLOW + "Available commands:");
 			
 			if(mDefaultCommand != null)
 			{
 				if(mDefaultCommand.getAllowedSenders().contains(CommandSenderType.from(sender)) && (mDefaultCommand.getPermission() == null || sender.hasPermission(mDefaultCommand.getPermission())))
 				{
-					sender.sendMessage(ChatColor.GOLD + parent + mDefaultCommand.getUsageString(mDefaultCommand.getName(), sender));
+					sender.sendMessage(ChatColor.WHITE + parent + ChatColor.YELLOW + colorUsage(mDefaultCommand.getUsageString(mDefaultCommand.getName(), sender)));
 					
 					String[] descriptionLines = mDefaultCommand.getDescription().split("\n");
 					for(String line : descriptionLines)
-						sender.sendMessage("  " + ChatColor.WHITE + line);
+						sender.sendMessage(ChatColor.GRAY + " \u25B7 " + line);
 				}
 			}
 			
@@ -314,11 +342,11 @@ public class CommandDispatcher
 					continue;
 				
 				
-				sender.sendMessage(ChatColor.GOLD + parent + command.getUsageString(command.getName(), sender));
+				sender.sendMessage(" " + ChatColor.WHITE + parent + ChatColor.YELLOW + colorUsage(command.getUsageString(command.getName(), sender)));
 				
 				String[] descriptionLines = command.getDescription().split("\n");
 				for(String line : descriptionLines)
-					sender.sendMessage("  " + ChatColor.WHITE + line);
+					sender.sendMessage(ChatColor.GRAY + " \u25B7 " + line);
 			}
 			return true;
 		}
