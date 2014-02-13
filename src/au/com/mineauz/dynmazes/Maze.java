@@ -80,6 +80,11 @@ public abstract class Maze<T extends INode>
 		return mName;
 	}
 	
+	public String getType()
+	{
+		return mType;
+	}
+	
 	public Algorithm getAlgorithm()
 	{
 		return mAlgorithm.getValue();
