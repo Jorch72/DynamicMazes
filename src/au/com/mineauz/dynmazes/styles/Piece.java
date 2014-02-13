@@ -25,6 +25,7 @@ public class Piece
 		mHeight = height;
 		
 		mBlocks = new StoredBlock[mSize * mSize * mHeight];
+		Arrays.fill(mBlocks, new StoredBlock());
 	}
 	
 	public void setFrom(Location minCorner)
@@ -128,7 +129,7 @@ public class Piece
 			mBlocks[id].read(parent.getConfigurationSection(key));
 		}
 	}
-
+	
 	public void setHeight( int height )
 	{
 		mHeight = (byte)height;

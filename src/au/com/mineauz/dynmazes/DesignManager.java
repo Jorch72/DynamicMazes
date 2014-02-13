@@ -8,6 +8,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -202,6 +203,25 @@ public class DesignManager implements Listener
 			
 			int centerX = (minX + maxX) / 2;
 			int centerZ = (minZ + maxZ) / 2;
+			
+			if(type.hasText())
+			{
+				Block b = loc.getWorld().getBlockAt(minX - 1, loc.getBlockY(), centerZ);
+				b.setType(Material.SIGN_POST);
+				Sign sign = (Sign)b.getState();
+				((org.bukkit.material.Sign)sign.getData()).setFacingDirection(BlockFace.WEST);
+				
+				int line = 0;
+				String[] lines = new String[4];
+				for(String part : type.getText().split(" "))
+					lines[line++] = part;
+
+				int start = 2 - line/2;
+				for(int i = 0; i < line; ++i)
+					sign.setLine(start+i, lines[i]);
+				
+				sign.update(true);
+			}
 			
 			// Print the connections
 			for(BlockFace con : type.getConnections())

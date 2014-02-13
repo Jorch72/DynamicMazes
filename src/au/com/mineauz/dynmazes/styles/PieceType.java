@@ -23,9 +23,28 @@ public enum PieceType
 	EndN(BlockFace.NORTH),
 	EndE(BlockFace.EAST),
 	EndS(BlockFace.SOUTH),
-	EndW(BlockFace.WEST);
+	EndW(BlockFace.WEST),
+	StartN("Starting Location", BlockFace.NORTH),
+	StartE("Starting Location", BlockFace.EAST),
+	StartS("Starting Location", BlockFace.SOUTH),
+	StartW("Starting Location", BlockFace.WEST),
+	FinishN("Finish Location", BlockFace.NORTH),
+	FinishE("Finish Location", BlockFace.EAST),
+	FinishS("Finish Location", BlockFace.SOUTH),
+	FinishW("Finish Location", BlockFace.WEST);
+	
+	public static PieceType[] StartPieces = new PieceType[] {StartN, StartE, StartS, StartW};
+	public static PieceType[] FinishPieces = new PieceType[] {FinishN, FinishE, FinishS, FinishW};
+	public static PieceType[] NormalPieces = new PieceType[] {StraightNS, StraightWE, CornerNW, CornerNE, CornerSW, CornerSE, TeeN, TeeE, TeeS, TeeW, Cross, EndN, EndE, EndS, EndW};
 	
 	private Collection<BlockFace> mConnections;
+	private String mText;
+	
+	private PieceType(String text, BlockFace... connections)
+	{
+		mText = text;
+		mConnections = Arrays.asList(connections);
+	}
 	
 	private PieceType(BlockFace... connections)
 	{
@@ -50,5 +69,15 @@ public enum PieceType
 		}
 		
 		return others;
+	}
+	
+	public boolean hasText()
+	{
+		return mText != null;
+	}
+	
+	public String getText()
+	{
+		return mText;
 	}
 }

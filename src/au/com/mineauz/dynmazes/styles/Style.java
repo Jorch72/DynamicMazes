@@ -108,7 +108,8 @@ public class Style
 			for(PieceType type : PieceType.values())
 			{
 				mPieces[type.ordinal()] = new Piece(mPieceSize, mHeight);
-				mPieces[type.ordinal()].read(pieces.getConfigurationSection(type.name()));
+				if(pieces.isConfigurationSection(type.name()))
+					mPieces[type.ordinal()].read(pieces.getConfigurationSection(type.name()));
 			}
 			
 			return true;

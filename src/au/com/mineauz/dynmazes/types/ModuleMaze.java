@@ -41,26 +41,29 @@ public class ModuleMaze extends Maze<ModuleNode>
 	{
 		super(name, "Module", loc.getWorld());
 		
+		int widthSize = (width + 2) * style.getPieceSize();
+		int lengthSize = (length + 2) * style.getPieceSize();
+		
 		switch(facing)
 		{
 		case NORTH:
-			setBounds(new BlockVector(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ() - (length * style.getPieceSize()) + 1), new BlockVector(loc.getBlockX() + (width * style.getPieceSize()), loc.getBlockY() + style.getHeight(), loc.getBlockZ() + 1));
+			setBounds(new BlockVector(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ() - lengthSize + 1), new BlockVector(loc.getBlockX() + widthSize, loc.getBlockY() + style.getHeight(), loc.getBlockZ() + 1));
 			mWidth = width;
 			mLength = length;
 			break;
 		case SOUTH:
-			setBounds(new BlockVector(loc.getBlockX() - (width * style.getPieceSize()) + 1, loc.getBlockY(), loc.getBlockZ()), new BlockVector(loc.getBlockX() + 1, loc.getBlockY() + style.getHeight(), loc.getBlockZ() + (length * style.getPieceSize())));
+			setBounds(new BlockVector(loc.getBlockX() - widthSize + 1, loc.getBlockY(), loc.getBlockZ()), new BlockVector(loc.getBlockX() + 1, loc.getBlockY() + style.getHeight(), loc.getBlockZ() + lengthSize));
 			mWidth = width;
 			mLength = length;
 			break;
 		case WEST:
-			setBounds(new BlockVector(loc.getBlockX() - (length * style.getPieceSize()) + 1, loc.getBlockY(), loc.getBlockZ() - (width * style.getPieceSize()) + 1), new BlockVector(loc.getBlockX() + 1, loc.getBlockY() + style.getHeight(), loc.getBlockZ() + 1));
+			setBounds(new BlockVector(loc.getBlockX() - lengthSize + 1, loc.getBlockY(), loc.getBlockZ() - widthSize + 1), new BlockVector(loc.getBlockX() + 1, loc.getBlockY() + style.getHeight(), loc.getBlockZ() + 1));
 			mWidth = length;
 			mLength = width;
 			break;
 		case EAST:
 		default:
-			setBounds(loc.toVector().toBlockVector(), new BlockVector(loc.getBlockX() + (length * style.getPieceSize()), loc.getBlockY() + style.getHeight(), loc.getBlockZ() + (width * style.getPieceSize())));
+			setBounds(loc.toVector().toBlockVector(), new BlockVector(loc.getBlockX() + lengthSize, loc.getBlockY() + style.getHeight(), loc.getBlockZ() + widthSize));
 			mWidth = length;
 			mLength = width;
 			break;
@@ -97,22 +100,24 @@ public class ModuleMaze extends Maze<ModuleNode>
 		mEntrance.addChild(root);
 		
 		if(highest.getX() == 0)
-			mExit = new ModuleNode(this, -1, highest.getY(), true);
+			mExit = new ModuleNode(this, -1, highest.getY(), 2);
 		else if(highest.getX() == mWidth - 1)
-			mExit = new ModuleNode(this, mWidth, highest.getY(), true);
+			mExit = new ModuleNode(this, mWidth, highest.getY(), 2);
 		else if(highest.getY() == 0)
-			mExit = new ModuleNode(this, highest.getX(), -1, true);
+			mExit = new ModuleNode(this, highest.getX(), -1, 2);
 		else
-			mExit = new ModuleNode(this, highest.getX(), mLength, true);
+			mExit = new ModuleNode(this, highest.getX(), mLength, 2);
 		
 		highest.addChild(mExit);
+		
+		allNodes.add(mEntrance);
+		allNodes.add(mExit);
 	}
 	
 	@Override
 	protected void placeNode(ModuleNode node, List<StoredBlock> blocks)
 	{
-		if(!node.isTerminus())
-			blocks.addAll(mStyle.getValue().getPiece(node.getType()).getBlocks(node.toLocation()));
+		blocks.addAll(mStyle.getValue().getPiece(node.getType()).getBlocks(node.toLocation()));
 	}
 	
 	@Override
@@ -126,19 +131,19 @@ public class ModuleMaze extends Maze<ModuleNode>
 		{
 		case 0:
 			node = getNodeAt(0, rand.nextInt(mLength));
-			mEntrance = new ModuleNode(this, -1, node.getY(), true);
+			mEntrance = new ModuleNode(this, -1, node.getY(), 1);
 			break;
 		case 1:
 			node = getNodeAt(mWidth - 1, rand.nextInt(mLength));
-			mEntrance = new ModuleNode(this, mWidth, node.getY(), true);
+			mEntrance = new ModuleNode(this, mWidth, node.getY(), 1);
 			break;
 		case 2:
 			node = getNodeAt(rand.nextInt(mWidth), 0);
-			mEntrance = new ModuleNode(this, node.getX(), -1, true);
+			mEntrance = new ModuleNode(this, node.getX(), -1, 1);
 			break;
 		case 3:
 			node = getNodeAt(rand.nextInt(mWidth), mLength - 1);
-			mEntrance = new ModuleNode(this, node.getX(), mLength, true);
+			mEntrance = new ModuleNode(this, node.getX(), mLength, 1);
 			break;
 		}
 		
@@ -241,9 +246,10 @@ public class ModuleMaze extends Maze<ModuleNode>
 					@Override
 					public void onComplete()
 					{
-						// Recalc bounds
+						int widthSize = (mWidth + 2) * newStyle.getPieceSize();
+						int lengthSize = (mLength + 2) * newStyle.getPieceSize();
 						
-						setBounds(getMinCorner(), new BlockVector(getMinCorner().getBlockX() + (mLength * newStyle.getPieceSize()), getMinCorner().getBlockY() + newStyle.getHeight(), getMinCorner().getBlockZ() + (mWidth * newStyle.getPieceSize())));
+						setBounds(getMinCorner(), new BlockVector(getMinCorner().getBlockX() + lengthSize, getMinCorner().getBlockY() + newStyle.getHeight(), getMinCorner().getBlockZ() + widthSize));
 						prepareArea(new StoredBlock(Material.BEDROCK), null);
 					}
 				});
@@ -264,7 +270,7 @@ class ModuleNode implements INode
 	
 	private ModuleMaze mMaze;
 	
-	private boolean mTerminus = false;
+	private int mType = 0;
 	
 	public ModuleNode(ModuleMaze maze, int x, int y)
 	{
@@ -275,16 +281,16 @@ class ModuleNode implements INode
 		mChildren = new HashSet<INode>();
 	}
 	
-	public ModuleNode(ModuleMaze maze, int x, int y, boolean terminus)
+	public ModuleNode(ModuleMaze maze, int x, int y, int type)
 	{
 		this(maze, x, y);
-		mTerminus = terminus;
+		mType = type;
 	}
 	
 	@Override
 	public INode[] getNeighbours()
 	{
-		if(mTerminus)
+		if(mType != 0)
 			return new INode[0];
 		
 		if(mX == 0)
@@ -319,7 +325,7 @@ class ModuleNode implements INode
 	@Override
 	public BlockVector toLocation()
 	{
-		return mMaze.getMinCorner().clone().add(new Vector(mX * mMaze.mStyle.getValue().getPieceSize(), 0, mY * mMaze.mStyle.getValue().getPieceSize())).toBlockVector();
+		return mMaze.getMinCorner().clone().add(new Vector(mX * mMaze.mStyle.getValue().getPieceSize() + mMaze.mStyle.getValue().getPieceSize(), 0, mY * mMaze.mStyle.getValue().getPieceSize() + mMaze.mStyle.getValue().getPieceSize())).toBlockVector();
 	}
 	
 	@Override
@@ -389,7 +395,13 @@ class ModuleNode implements INode
 		if(mParent != null)
 			others.add(toNode(mParent));
 		
-		for(PieceType type : PieceType.values())
+		PieceType[] set = PieceType.NormalPieces;
+		if(mType == 1)
+			set = PieceType.StartPieces;
+		else if(mType == 2)
+			set = PieceType.FinishPieces;
+		
+		for(PieceType type : set)
 		{
 			Set<BlockFace> types = new HashSet<BlockFace>(type.getConnections());
 			if(types.size() == others.size() && types.containsAll(others))
@@ -408,11 +420,6 @@ class ModuleNode implements INode
 	public int getY()
 	{
 		return mY;
-	}
-	
-	public boolean isTerminus()
-	{
-		return mTerminus;
 	}
 }
 
