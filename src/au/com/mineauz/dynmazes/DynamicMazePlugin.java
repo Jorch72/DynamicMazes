@@ -5,6 +5,7 @@ import java.io.File;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import au.com.mineauz.dynmazes.algorithm.BraidAlgorithm;
 import au.com.mineauz.dynmazes.algorithm.DepthFirstAlgorithm;
 import au.com.mineauz.dynmazes.algorithm.GrowingTreeAlgorithm;
 import au.com.mineauz.dynmazes.algorithm.PrimsAlgorithm;
@@ -40,6 +41,7 @@ public class DynamicMazePlugin extends JavaPlugin
 		MazeManager.registerAlgorithm("DepthFirst", DepthFirstAlgorithm.class);
 		MazeManager.registerAlgorithm("Prims", PrimsAlgorithm.class);
 		MazeManager.registerAlgorithm("GrowingTree", GrowingTreeAlgorithm.class);
+		MazeManager.registerAlgorithm("Braid", BraidAlgorithm.class);
 		
 		MazeCommand command = new MazeCommand();
 		command.registerAs(getCommand("dynmaze"));

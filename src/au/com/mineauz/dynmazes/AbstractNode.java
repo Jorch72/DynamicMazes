@@ -1,17 +1,17 @@
 package au.com.mineauz.dynmazes;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.LinkedList;
+import java.util.List;
 
 public abstract class AbstractNode implements INode
 {
-	private HashSet<INode> mParents;
-	private HashSet<INode> mChildren;
+	private LinkedList<INode> mParents;
+	private LinkedList<INode> mChildren;
 	
 	public AbstractNode()
 	{
-		mChildren = new HashSet<INode>();
-		mParents = new HashSet<INode>();
+		mChildren = new LinkedList<INode>();
+		mParents = new LinkedList<INode>();
 	}
 	
 	@Override
@@ -22,7 +22,7 @@ public abstract class AbstractNode implements INode
 	}
 
 	@Override
-	public Set<INode> getParents()
+	public List<INode> getParents()
 	{
 		return mParents;
 	}
@@ -34,7 +34,7 @@ public abstract class AbstractNode implements INode
 	}
 
 	@Override
-	public Set<INode> getChildren()
+	public List<INode> getChildren()
 	{
 		return mChildren;
 	}
