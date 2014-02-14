@@ -3,12 +3,15 @@ package au.com.mineauz.dynmazes.algorithm;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Random;
 
 import org.bukkit.configuration.ConfigurationSection;
 
 import au.com.mineauz.dynmazes.INode;
+import au.com.mineauz.dynmazes.flags.Flag;
 
 public class PrimsAlgorithm implements Algorithm
 {
@@ -83,5 +86,11 @@ public class PrimsAlgorithm implements Algorithm
 	@Override
 	public void save( ConfigurationSection section )
 	{
+	}
+	
+	@Override
+	public Map<String, Flag<?>> getFlags()
+	{
+		return Collections.emptyMap();
 	}
 }

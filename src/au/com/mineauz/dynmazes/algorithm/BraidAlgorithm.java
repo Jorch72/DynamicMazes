@@ -3,20 +3,24 @@ package au.com.mineauz.dynmazes.algorithm;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import org.bukkit.configuration.ConfigurationSection;
 
 import au.com.mineauz.dynmazes.INode;
+import au.com.mineauz.dynmazes.flags.Flag;
+import au.com.mineauz.dynmazes.flags.PercentFlag;
 
 public class BraidAlgorithm implements Algorithm
 {
 	private Random mRand;
 	
-	private double mRandChance = 0.5;
-	private double mDeadEndChance = 0.0;
+	private PercentFlag mRandChance = new PercentFlag(0.5);
+	private PercentFlag mDeadEndChance = new PercentFlag(0.0);
 	
 	public BraidAlgorithm()
 	{
@@ -25,7 +29,7 @@ public class BraidAlgorithm implements Algorithm
 	
 	private int select(List<INode> nodes)
 	{
-		if(mRand.nextDouble() < mRandChance)
+		if(mRand.nextDouble() < mRandChance.getValue())
 			return mRand.nextInt(nodes.size());
 		else
 			return nodes.size()-1;
@@ -98,7 +102,7 @@ public class BraidAlgorithm implements Algorithm
 			if(!isDeadEnd(node))
 				continue;
 			
-			if(mRand.nextDouble() < mDeadEndChance)
+			if(mRand.nextDouble() < mDeadEndChance.getValue())
 				continue;
 			
 			INode parent = node.getParents().get(0);
@@ -150,12 +154,12 @@ public class BraidAlgorithm implements Algorithm
 	
 	public double getRandomChance()
 	{
-		return mRandChance;
+		return mRandChance.getValue();
 	}
 	
 	public void setRandomChance(double chance)
 	{
-		mRandChance = chance;
+		mRandChance.setValue(chance);
 	}
 	
 	@Override
@@ -167,14 +171,23 @@ public class BraidAlgorithm implements Algorithm
 	@Override
 	public void read( ConfigurationSection section )
 	{
-		mRandChance = section.getDouble("chance");
-		mDeadEndChance = section.getDouble("deadEndChance");
+		mRandChance.setValue(section.getDouble("chance"));
+		mDeadEndChance.setValue(section.getDouble("deadEndChance"));
 	}
 	
 	@Override
 	public void save( ConfigurationSection section )
 	{
-		section.set("chance", mRandChance);
-		section.set("deadEndChance", mDeadEndChance);
+		section.set("chance", mRandChance.getValue());
+		section.set("deadEndChance", mDeadEndChance.getValue());
+	}
+	
+	@Override
+	public Map<String, Flag<?>> getFlags()
+	{
+		HashMap<String, Flag<?>> flags = new HashMap<String, Flag<?>>();
+		flags.put("rand-chance", mRandChance);
+		flags.put("dead-end-chance", mDeadEndChance);
+		return flags;
 	}
 }

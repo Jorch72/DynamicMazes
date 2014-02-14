@@ -43,7 +43,7 @@ public abstract class Maze<T extends INode>
 	private boolean mIsGenerating = false;
 	private boolean mIsDrawing = false;
 	
-	private AlgorithmFlag mAlgorithm;
+	private AlgorithmFlag mAlgorithm = new AlgorithmFlag();
 	
 	private HashMap<String, Flag<?>> mFlags;
 	
@@ -52,7 +52,6 @@ public abstract class Maze<T extends INode>
 		mType = type;
 		
 		mFlags = new HashMap<String, Flag<?>>();
-		mAlgorithm = new AlgorithmFlag();
 		mAlgorithm.setValue(new GrowingTreeAlgorithm());
 		((GrowingTreeAlgorithm)mAlgorithm.getValue()).setRandomChance(0.5);
 		mFlags.put("algorithm", mAlgorithm);
@@ -363,6 +362,8 @@ public abstract class Maze<T extends INode>
 	
 	public Map<String, Flag<?>> getFlags()
 	{
+		if(mAlgorithm.getValue() != null)
+			return Collections.unmodifiableMap(Util.union(mFlags, mAlgorithm.getValue().getFlags()));
 		return Collections.unmodifiableMap(mFlags);
 	}
 	
@@ -375,7 +376,7 @@ public abstract class Maze<T extends INode>
 	
 	public Flag<?> getFlag(String name)
 	{
-		return mFlags.get(name.toLowerCase());
+		return getFlags().get(name.toLowerCase());
 	}
 	
 	public <Type> void onFlagChanged(String name, Flag<Type> flag, Type oldValue)

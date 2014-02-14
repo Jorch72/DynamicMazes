@@ -2,7 +2,9 @@ package au.com.mineauz.dynmazes;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.bukkit.Location;
 import org.bukkit.block.BlockFace;
@@ -108,5 +110,12 @@ public class Util
 		if(matches.isEmpty())
 			return null;
 		return matches;
+	}
+	
+	public static <K,V> Map<K,V> union(Map<K, V> a, Map<K, V> b)
+	{
+		HashMap<K, V> map = new HashMap<K, V>(a);
+		map.putAll(b);
+		return map;
 	}
 }
