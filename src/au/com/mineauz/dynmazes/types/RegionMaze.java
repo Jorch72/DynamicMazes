@@ -431,7 +431,7 @@ public class RegionMaze extends Maze<RegionNode> implements GridBased<RegionNode
 		int wallSize = 1;
 		int height = 3;
 		
-		if(args.length == 5)
+		if(args.length == 3)
 		{
 			try
 			{
