@@ -18,6 +18,7 @@ import org.bukkit.util.Vector;
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.bukkit.BukkitUtil;
+import com.sk89q.worldedit.regions.EllipsoidRegion;
 import com.sk89q.worldedit.regions.Region;
 
 import au.com.mineauz.dynmazes.INode;
@@ -43,6 +44,7 @@ public class RegionMaze extends Maze<RegionNode>
 	
 	private BlockTypeFlag mPathMaterial = new BlockTypeFlag();
 	private BlockTypeFlag mFillMaterial = new BlockTypeFlag();
+	private BlockTypeFlag mExtFillMaterial = new BlockTypeFlag();
 	private BlockTypeFlag mWallMaterial = new BlockTypeFlag();
 	
 	public RegionMaze(String name, World world, Region region, int pathWidth, int wallWidth, int height)
@@ -53,16 +55,21 @@ public class RegionMaze extends Maze<RegionNode>
 		addFlag("wall-type", mWallMaterial);
 		addFlag("path-type", mPathMaterial);
 		addFlag("fill-type", mFillMaterial);
+		addFlag("out-fill-type", mExtFillMaterial);
 		
 		mWallMaterial.setValue(new StoredBlock(Material.LEAVES));
 		mPathMaterial.setValue(new StoredBlock(Material.GRAVEL));
 		mFillMaterial.setValue(new StoredBlock(Material.GRASS));
+		mExtFillMaterial.setValue(new StoredBlock(Material.GRASS));
 		
 		mPathWidth = pathWidth;
 		mWallWidth = wallWidth;
 		mHeight = height;
 		
-		setBounds(new BlockVector(mRegion.getMinimumPoint().getBlockX(), mRegion.getMinimumPoint().getBlockY() + 1, mRegion.getMinimumPoint().getBlockZ()), new BlockVector(mRegion.getMaximumPoint().getBlockX() + 1, mRegion.getMinimumPoint().getBlockY() + 2 + height, mRegion.getMaximumPoint().getBlockZ() + 1));
+		if(region instanceof EllipsoidRegion)
+			setBounds(new BlockVector(mRegion.getMinimumPoint().getBlockX(), mRegion.getCenter().getBlockY() + 1, mRegion.getMinimumPoint().getBlockZ()), new BlockVector(mRegion.getMaximumPoint().getBlockX() + 1, mRegion.getCenter().getBlockY() + 2 + height, mRegion.getMaximumPoint().getBlockZ() + 1));
+		else
+			setBounds(new BlockVector(mRegion.getMinimumPoint().getBlockX(), mRegion.getMinimumPoint().getBlockY() + 1, mRegion.getMinimumPoint().getBlockZ()), new BlockVector(mRegion.getMaximumPoint().getBlockX() + 1, mRegion.getMinimumPoint().getBlockY() + 2 + height, mRegion.getMaximumPoint().getBlockZ() + 1));
 		
 		mWidth = (mRegion.getWidth() - wallWidth) / (pathWidth + wallWidth);
 		mLength = (mRegion.getLength() - wallWidth) / (pathWidth + wallWidth);
@@ -382,6 +389,7 @@ public class RegionMaze extends Maze<RegionNode>
 		
 		mPathMaterial = (BlockTypeFlag)getFlag("path-type");
 		mFillMaterial = (BlockTypeFlag)getFlag("fill-type");
+		mExtFillMaterial = (BlockTypeFlag)getFlag("out-fill-type");
 		mWallMaterial = (BlockTypeFlag)getFlag("wall-type");
 		
 		mRegion = WorldEditUtil.loadRegion(section.getConfigurationSection("region"));
