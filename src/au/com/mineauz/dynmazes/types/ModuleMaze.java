@@ -315,7 +315,7 @@ class ModuleNode extends AbstractGridNode
 				return type;
 		}
 		
-		System.out.println(String.format("Unknown configuration: %d childs %s parent", getChildren().size(), getParent()));
+		System.out.println(String.format("Unknown configuration: %d childs %s parents", getChildren().size(), getParents().size()));
 		return PieceType.Cross;
 	}
 }

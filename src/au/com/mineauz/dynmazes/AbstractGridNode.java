@@ -83,8 +83,8 @@ public abstract class AbstractGridNode extends AbstractNode
 		for(INode child : getChildren())
 			others.add(toNode((AbstractGridNode)child));
 		
-		if(getParent() != null)
-			others.add(toNode((AbstractGridNode)getParent()));
+		for(INode parent : getParents())
+			others.add(toNode((AbstractGridNode)parent));
 		
 		return others;
 	}

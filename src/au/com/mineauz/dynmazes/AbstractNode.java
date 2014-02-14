@@ -5,31 +5,32 @@ import java.util.Set;
 
 public abstract class AbstractNode implements INode
 {
-	private INode mParent;
+	private HashSet<INode> mParents;
 	private HashSet<INode> mChildren;
 	
 	public AbstractNode()
 	{
 		mChildren = new HashSet<INode>();
+		mParents = new HashSet<INode>();
 	}
 	
 	@Override
 	public void addChild( INode node )
 	{
-		node.setParent(this);
+		node.addParent(this);
 		mChildren.add(node);
 	}
 
 	@Override
-	public INode getParent()
+	public Set<INode> getParents()
 	{
-		return mParent;
+		return mParents;
 	}
 
 	@Override
-	public void setParent( INode node )
+	public void addParent( INode node )
 	{
-		mParent = node;
+		mParents.add(node);
 	}
 
 	@Override
@@ -41,15 +42,17 @@ public abstract class AbstractNode implements INode
 	@Override
 	public int getDepth()
 	{
-		INode node = this;
-		int count = -1;
+		if(mParents.isEmpty())
+			return 0;
 		
-		while(node != null)
+		int count = Integer.MAX_VALUE;
+		for(INode parent : mParents)
 		{
-			node = node.getParent();
-			++count;
+			int dist = parent.getDepth();
+			if(dist < count)
+				count = dist;
 		}
 		
-		return count;
+		return count + 1;
 	}
 }
