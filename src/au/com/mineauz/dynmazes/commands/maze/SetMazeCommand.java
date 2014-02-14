@@ -98,12 +98,14 @@ public class SetMazeCommand implements ICommand
 		catch(IllegalArgumentException e)
 		{
 			sender.sendMessage(ChatColor.RED + String.format("Usage: %s%s %s %s %s", parent, label, args[0], args[1], e.getMessage()));
+			return true;
 		}
 		catch(BadArgumentException e)
 		{
 			String cmdString = ChatColor.GRAY + parent + label;
 			for(int i = 0; i < args.length; ++i)
 			{
+				cmdString += " ";
 				if(i == e.getArgument() + 2)
 					cmdString += ChatColor.RED + args[i] + ChatColor.GRAY;
 				else
@@ -112,6 +114,7 @@ public class SetMazeCommand implements ICommand
 			
 			sender.sendMessage(ChatColor.RED + "Error in command: " + cmdString);
 			sender.sendMessage(ChatColor.RED + " " + e.getMessage());
+			return true;
 		}
 		
 		final Object lastValue = flag.getValue();
