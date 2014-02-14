@@ -361,18 +361,6 @@ public abstract class Maze<T extends INode>
 		}
 	}
 	
-	protected static int getDepth(INode node)
-	{
-		int depth = -1;
-		while(node != null)
-		{
-			++depth;
-			node = node.getParent();
-		}
-		
-		return depth;
-	}
-	
 	public Map<String, Flag<?>> getFlags()
 	{
 		return Collections.unmodifiableMap(mFlags);

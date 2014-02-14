@@ -89,7 +89,7 @@ public class ModuleMaze extends Maze<ModuleNode> implements GridBased<ModuleNode
 		{
 			if(node.getX() == 0 || node.getY() == 0 || node.getX() == mWidth-1 || node.getY() == mLength-1)
 			{
-				int depth = getDepth(node);
+				int depth = node.getDepth();
 				if(depth > score)
 				{
 					highest = node;

@@ -14,4 +14,6 @@ public interface INode
 	
 	public void addChild(INode node);
 	public Set<INode> getChildren();
+	
+	public int getDepth();
 }

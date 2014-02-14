@@ -37,4 +37,19 @@ public abstract class AbstractNode implements INode
 	{
 		return mChildren;
 	}
+	
+	@Override
+	public int getDepth()
+	{
+		INode node = this;
+		int count = -1;
+		
+		while(node != null)
+		{
+			node = node.getParent();
+			++count;
+		}
+		
+		return count;
+	}
 }

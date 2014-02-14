@@ -114,7 +114,7 @@ public class RegionMaze extends Maze<RegionNode> implements GridBased<RegionNode
 			
 			if(node.isOnEdge())
 			{
-				int depth = getDepth(node);
+				int depth = node.getDepth();
 				if(depth > score)
 				{
 					highest = node;
