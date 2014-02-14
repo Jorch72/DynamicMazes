@@ -1,7 +1,6 @@
 package au.com.mineauz.dynmazes.types;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -15,14 +14,15 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.BlockVector;
 import org.bukkit.util.Vector;
 
-import au.com.mineauz.dynmazes.INode;
+import au.com.mineauz.dynmazes.AbstractGridNode;
+import au.com.mineauz.dynmazes.GridBased;
 import au.com.mineauz.dynmazes.Maze;
 import au.com.mineauz.dynmazes.Util;
 import au.com.mineauz.dynmazes.MazeManager.MazeCommand;
 import au.com.mineauz.dynmazes.flags.BlockTypeFlag;
 import au.com.mineauz.dynmazes.styles.StoredBlock;
 
-public class GridMaze extends Maze<GridNode>
+public class GridMaze extends Maze<GridNode> implements GridBased<GridNode>
 {
 	static BlockFace[] corners = new BlockFace[] {BlockFace.NORTH_EAST, BlockFace.SOUTH_EAST, BlockFace.SOUTH_WEST, BlockFace.NORTH_WEST};
 	static BlockFace[] directions = {BlockFace.SOUTH, BlockFace.WEST, BlockFace.NORTH, BlockFace.EAST};
@@ -105,9 +105,22 @@ public class GridMaze extends Maze<GridNode>
 		}
 	}
 	
-	GridNode getNodeAt(int x, int y)
+	@Override
+	public GridNode getNodeAt(int x, int y)
 	{
 		return ((List<GridNode>)allNodes).get(x + y * mWidth);
+	}
+	
+	@Override
+	public int getLength()
+	{
+		return mLength;
+	}
+	
+	@Override
+	public int getWidth()
+	{
+		return mWidth;
 	}
 
 	@Override
@@ -429,142 +442,21 @@ public class GridMaze extends Maze<GridNode>
 	}
 }
 
-class GridNode implements INode
+class GridNode extends AbstractGridNode
 {
-	private int mX;
-	private int mY;
-	
-	private INode mParent;
-	private HashSet<INode> mChildren;
-	
-	private GridMaze mMaze;
-	
 	public GridNode(GridMaze maze, int x, int y)
 	{
-		mX = x;
-		mY = y;
-		
-		mMaze = maze;
-		
-		mChildren = new HashSet<INode>();
+		super(maze, x, y);
+	}
+	
+	private GridMaze getMaze()
+	{
+		return (GridMaze)maze;
 	}
 	
 	@Override
 	public BlockVector toLocation()
 	{
-		return mMaze.getMinCorner().clone().add(new Vector(mMaze.mWallWidth + mX * (mMaze.mPathWidth + mMaze.mWallWidth), 0, mMaze.mWallWidth + mY * (mMaze.mPathWidth + mMaze.mWallWidth))).toBlockVector();
+		return getMaze().getMinCorner().clone().add(new Vector(getMaze().mWallWidth + x * (getMaze().mPathWidth + getMaze().mWallWidth), 0, getMaze().mWallWidth + y * (getMaze().mPathWidth + getMaze().mWallWidth))).toBlockVector();
 	}
-	
-	@Override
-	public int hashCode()
-	{
-		return mX | mY << 16;
-	}
-	
-	@Override
-	public boolean equals( Object obj )
-	{
-		if(!(obj instanceof GridNode))
-			return false;
-		
-		GridNode other = (GridNode)obj;
-		
-		return mX == other.mX && mY == other.mY;
-	}
-
-	@Override
-	public INode[] getNeighbours()
-	{
-		if(mX == 0)
-		{
-			if(mY == 0)
-				return new INode[] {mMaze.getNodeAt(mX + 1, mY), mMaze.getNodeAt(mX, mY + 1)};
-			if(mY == mMaze.mLength - 1)
-				return new INode[] {mMaze.getNodeAt(mX + 1, mY), mMaze.getNodeAt(mX, mY - 1)};
-			
-			return new INode[] {mMaze.getNodeAt(mX + 1, mY), mMaze.getNodeAt(mX, mY - 1), mMaze.getNodeAt(mX, mY + 1)};
-		}
-		else if(mX == mMaze.mWidth - 1)
-		{
-			if(mY == 0)
-				return new INode[] {mMaze.getNodeAt(mX - 1, mY), mMaze.getNodeAt(mX, mY + 1)};
-			if(mY == mMaze.mLength - 1)
-				return new INode[] {mMaze.getNodeAt(mX - 1, mY), mMaze.getNodeAt(mX, mY - 1)};
-			
-			return new INode[] {mMaze.getNodeAt(mX - 1, mY), mMaze.getNodeAt(mX, mY - 1), mMaze.getNodeAt(mX, mY + 1)};
-		}
-		else
-		{
-			if(mY == 0)
-				return new INode[] {mMaze.getNodeAt(mX + 1, mY), mMaze.getNodeAt(mX - 1, mY), mMaze.getNodeAt(mX, mY + 1)};
-			if(mY == mMaze.mLength - 1)
-				return new INode[] {mMaze.getNodeAt(mX + 1, mY), mMaze.getNodeAt(mX - 1, mY), mMaze.getNodeAt(mX, mY - 1)};
-			
-			return new INode[] {mMaze.getNodeAt(mX + 1, mY), mMaze.getNodeAt(mX - 1, mY), mMaze.getNodeAt(mX, mY - 1), mMaze.getNodeAt(mX, mY + 1)};
-		}
-	}
-
-	@Override
-	public void addChild( INode node )
-	{
-		node.setParent(this);
-		mChildren.add(node);
-	}
-
-	@Override
-	public INode getParent()
-	{
-		return mParent;
-	}
-
-	@Override
-	public void setParent( INode node )
-	{
-		mParent = node;
-	}
-
-	@Override
-	public Set<INode> getChildren()
-	{
-		return mChildren;
-	}
-	
-	private BlockFace toNode(INode node)
-	{
-		int xx = ((GridNode)node).mX - mX;
-		int yy = ((GridNode)node).mY - mY;
-		
-		for(BlockFace dir : GridMaze.directions)
-		{
-			if(dir.getModX() == xx && dir.getModZ() == yy)
-				return dir;
-		}
-		
-		return BlockFace.SELF;
-		
-	}
-	
-	public Set<BlockFace> getConnections()
-	{
-		HashSet<BlockFace> others = new HashSet<BlockFace>(mChildren.size() + 1);
-		
-		for(INode child : mChildren)
-			others.add(toNode(child));
-		
-		if(mParent != null)
-			others.add(toNode(mParent));
-		
-		return others;
-	}
-	
-	public int getX()
-	{
-		return mX;
-	}
-	
-	public int getY()
-	{
-		return mY;
-	}
-	
 }

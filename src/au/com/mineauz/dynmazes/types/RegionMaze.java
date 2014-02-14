@@ -2,7 +2,6 @@ package au.com.mineauz.dynmazes.types;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -21,6 +20,8 @@ import com.sk89q.worldedit.bukkit.BukkitUtil;
 import com.sk89q.worldedit.regions.EllipsoidRegion;
 import com.sk89q.worldedit.regions.Region;
 
+import au.com.mineauz.dynmazes.AbstractGridNode;
+import au.com.mineauz.dynmazes.GridBased;
 import au.com.mineauz.dynmazes.INode;
 import au.com.mineauz.dynmazes.Maze;
 import au.com.mineauz.dynmazes.MazeManager.MazeCommand;
@@ -28,7 +29,7 @@ import au.com.mineauz.dynmazes.flags.BlockTypeFlag;
 import au.com.mineauz.dynmazes.misc.WorldEditUtil;
 import au.com.mineauz.dynmazes.styles.StoredBlock;
 
-public class RegionMaze extends Maze<RegionNode>
+public class RegionMaze extends Maze<RegionNode> implements GridBased<RegionNode>
 {
 	private Region mRegion;
 	
@@ -356,9 +357,22 @@ public class RegionMaze extends Maze<RegionNode>
 		}
 	}
 	
-	RegionNode getNodeAt(int x, int y)
+	@Override
+	public RegionNode getNodeAt(int x, int y)
 	{
 		return ((List<RegionNode>)allNodes).get(x + y * mWidth);
+	}
+	
+	@Override
+	public int getLength()
+	{
+		return mLength;
+	}
+	
+	@Override
+	public int getWidth()
+	{
+		return mWidth;
 	}
 	
 	@Override
@@ -457,49 +471,24 @@ public class RegionMaze extends Maze<RegionNode>
 	}
 }
 
-class RegionNode implements INode
+class RegionNode extends AbstractGridNode
 {
-	private int mX;
-	private int mY;
-	
-	private INode mParent;
-	private HashSet<INode> mChildren;
-	
-	private RegionMaze mMaze;
-	
 	public RegionNode(RegionMaze maze, int x, int y)
 	{
-		mX = x;
-		mY = y;
-		
-		mMaze = maze;
-		
-		mChildren = new HashSet<INode>();
+		super(maze, x, y);
+	}
+	
+	private RegionMaze getMaze()
+	{
+		return (RegionMaze)maze;
 	}
 	
 	@Override
 	public BlockVector toLocation()
 	{
-		return mMaze.getMinCorner().clone().add(new Vector(mMaze.mWallWidth + mX * (mMaze.mPathWidth + mMaze.mWallWidth), 0, mMaze.mWallWidth + mY * (mMaze.mPathWidth + mMaze.mWallWidth))).toBlockVector();
+		return getMaze().getMinCorner().clone().add(new Vector(getMaze().mWallWidth + x * (getMaze().mPathWidth + getMaze().mWallWidth), 0, getMaze().mWallWidth + y * (getMaze().mPathWidth + getMaze().mWallWidth))).toBlockVector();
 	}
 	
-	@Override
-	public int hashCode()
-	{
-		return mX | mY << 16;
-	}
-	
-	@Override
-	public boolean equals( Object obj )
-	{
-		if(!(obj instanceof RegionNode))
-			return false;
-		
-		RegionNode other = (RegionNode)obj;
-		
-		return mX == other.mX && mY == other.mY;
-	}
-
 	private INode[] removeNulls(INode... nodes)
 	{
 		int count = nodes.length;
@@ -524,124 +513,28 @@ class RegionNode implements INode
 	@Override
 	public INode[] getNeighbours()
 	{
-		if(mX == 0)
-		{
-			if(mY == 0)
-				return removeNulls(mMaze.getNodeAt(mX + 1, mY), mMaze.getNodeAt(mX, mY + 1));
-			if(mY == mMaze.mLength - 1)
-				return removeNulls(mMaze.getNodeAt(mX + 1, mY), mMaze.getNodeAt(mX, mY - 1));
-			
-			return removeNulls(mMaze.getNodeAt(mX + 1, mY), mMaze.getNodeAt(mX, mY - 1), mMaze.getNodeAt(mX, mY + 1));
-		}
-		else if(mX == mMaze.mWidth - 1)
-		{
-			if(mY == 0)
-				return removeNulls(mMaze.getNodeAt(mX - 1, mY), mMaze.getNodeAt(mX, mY + 1));
-			if(mY == mMaze.mLength - 1)
-				return removeNulls(mMaze.getNodeAt(mX - 1, mY), mMaze.getNodeAt(mX, mY - 1));
-			
-			return removeNulls(mMaze.getNodeAt(mX - 1, mY), mMaze.getNodeAt(mX, mY - 1), mMaze.getNodeAt(mX, mY + 1));
-		}
-		else
-		{
-			if(mY == 0)
-				return removeNulls(mMaze.getNodeAt(mX + 1, mY), mMaze.getNodeAt(mX - 1, mY), mMaze.getNodeAt(mX, mY + 1));
-			if(mY == mMaze.mLength - 1)
-				return removeNulls(mMaze.getNodeAt(mX + 1, mY), mMaze.getNodeAt(mX - 1, mY), mMaze.getNodeAt(mX, mY - 1));
-			
-			return removeNulls(mMaze.getNodeAt(mX + 1, mY), mMaze.getNodeAt(mX - 1, mY), mMaze.getNodeAt(mX, mY - 1), mMaze.getNodeAt(mX, mY + 1));
-		}
+		return removeNulls(super.getNeighbours());
 	}
 	
 	public boolean isOnEdge()
 	{
-		if(mX == 0)
+		if(x == 0)
 			return true;
-		else if(mX == mMaze.mWidth - 1)
+		else if(x == maze.getWidth() - 1)
 			return true;
-		else if(mY == 0)
+		else if(y == 0)
 			return true;
-		else if(mY == mMaze.mLength - 1)
+		else if(y == maze.getLength() - 1)
 			return true;
-		else if(mMaze.getNodeAt(mX + 1, mY) == null)
+		else if(maze.getNodeAt(x + 1, y) == null)
 			return true;
-		else if(mMaze.getNodeAt(mX - 1, mY) == null)
+		else if(maze.getNodeAt(x - 1, y) == null)
 			return true;
-		else if(mMaze.getNodeAt(mX, mY + 1) == null)
+		else if(maze.getNodeAt(x, y + 1) == null)
 			return true;
-		else if(mMaze.getNodeAt(mX, mY - 1) == null)
+		else if(maze.getNodeAt(x, y - 1) == null)
 			return true;
 		else
 			return false;
 	}
-
-	@Override
-	public void addChild( INode node )
-	{
-		node.setParent(this);
-		mChildren.add(node);
-	}
-
-	@Override
-	public INode getParent()
-	{
-		return mParent;
-	}
-
-	@Override
-	public void setParent( INode node )
-	{
-		mParent = node;
-	}
-
-	@Override
-	public Set<INode> getChildren()
-	{
-		return mChildren;
-	}
-	
-	private BlockFace toNode(INode node)
-	{
-		int xx = ((RegionNode)node).mX - mX;
-		int yy = ((RegionNode)node).mY - mY;
-		
-		for(BlockFace dir : GridMaze.directions)
-		{
-			if(dir.getModX() == xx && dir.getModZ() == yy)
-				return dir;
-		}
-		
-		return BlockFace.SELF;
-		
-	}
-	
-	public Set<BlockFace> getConnections()
-	{
-		HashSet<BlockFace> others = new HashSet<BlockFace>(mChildren.size() + 1);
-		
-		for(INode child : mChildren)
-			others.add(toNode(child));
-		
-		if(mParent != null)
-			others.add(toNode(mParent));
-		
-		return others;
-	}
-	
-	public int getX()
-	{
-		return mX;
-	}
-	
-	public int getY()
-	{
-		return mY;
-	}
-	
-	@Override
-	public String toString()
-	{
-		return String.format("{%d,%d}", mX, mY);
-	}
-	
 }

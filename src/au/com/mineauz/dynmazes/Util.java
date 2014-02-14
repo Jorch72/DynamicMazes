@@ -11,9 +11,9 @@ import org.bukkit.util.Vector;
 
 public class Util
 {
-	private static BlockFace[] mDirOrder = {BlockFace.SOUTH, BlockFace.SOUTH_SOUTH_WEST, BlockFace.SOUTH_WEST, BlockFace.WEST_SOUTH_WEST, BlockFace.WEST, BlockFace.WEST_NORTH_WEST, BlockFace.NORTH_WEST, BlockFace.NORTH_NORTH_WEST, BlockFace.NORTH, BlockFace.NORTH_NORTH_EAST, BlockFace.NORTH_EAST, BlockFace.EAST_NORTH_EAST, BlockFace.EAST, BlockFace.EAST_SOUTH_EAST, BlockFace.SOUTH_EAST, BlockFace.SOUTH_SOUTH_EAST};
-	private static BlockFace[] mDirOrderSimple = {BlockFace.SOUTH, BlockFace.SOUTH_WEST, BlockFace.WEST, BlockFace.NORTH_WEST, BlockFace.NORTH, BlockFace.NORTH_EAST, BlockFace.EAST, BlockFace.SOUTH_EAST};
-	private static BlockFace[] mDirOrderSimpler = {BlockFace.SOUTH, BlockFace.WEST, BlockFace.NORTH, BlockFace.EAST};
+	public static BlockFace[] dirOrder = {BlockFace.SOUTH, BlockFace.SOUTH_SOUTH_WEST, BlockFace.SOUTH_WEST, BlockFace.WEST_SOUTH_WEST, BlockFace.WEST, BlockFace.WEST_NORTH_WEST, BlockFace.NORTH_WEST, BlockFace.NORTH_NORTH_WEST, BlockFace.NORTH, BlockFace.NORTH_NORTH_EAST, BlockFace.NORTH_EAST, BlockFace.EAST_NORTH_EAST, BlockFace.EAST, BlockFace.EAST_SOUTH_EAST, BlockFace.SOUTH_EAST, BlockFace.SOUTH_SOUTH_EAST};
+	public static BlockFace[] dirOrderSimple = {BlockFace.SOUTH, BlockFace.SOUTH_WEST, BlockFace.WEST, BlockFace.NORTH_WEST, BlockFace.NORTH, BlockFace.NORTH_EAST, BlockFace.EAST, BlockFace.SOUTH_EAST};
+	public static BlockFace[] dirOrderSimpler = {BlockFace.SOUTH, BlockFace.WEST, BlockFace.NORTH, BlockFace.EAST};
 	
 	public static BlockFace toFacing(float yaw)
 	{
@@ -21,7 +21,7 @@ public class Util
 			yaw += 360;
 		
 		float current = -11.25f;
-		for(BlockFace dir : mDirOrder)
+		for(BlockFace dir : dirOrder)
 		{
 			if(yaw >= current && yaw < current + 22.5f)
 				return dir;
@@ -38,7 +38,7 @@ public class Util
 			yaw += 360;
 		
 		float current = -22.5f;
-		for(BlockFace dir : mDirOrderSimple)
+		for(BlockFace dir : dirOrderSimple)
 		{
 			if(yaw >= current && yaw < current + 45f)
 				return dir;
@@ -55,7 +55,7 @@ public class Util
 			yaw += 360;
 		
 		float current = -45f;
-		for(BlockFace dir : mDirOrderSimpler)
+		for(BlockFace dir : dirOrderSimpler)
 		{
 			if(yaw >= current && yaw < current + 90f)
 				return dir;
@@ -73,7 +73,7 @@ public class Util
 		
 		BlockVector block = vec.toBlockVector();
 		
-		for(BlockFace dir : mDirOrderSimpler)
+		for(BlockFace dir : dirOrderSimpler)
 		{
 			if(dir.getModX() == block.getBlockX() && dir.getModZ() == block.getBlockZ())
 				return dir;

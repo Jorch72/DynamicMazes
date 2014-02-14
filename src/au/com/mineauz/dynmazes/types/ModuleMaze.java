@@ -15,7 +15,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.BlockVector;
 import org.bukkit.util.Vector;
 
-import au.com.mineauz.dynmazes.INode;
+import au.com.mineauz.dynmazes.AbstractGridNode;
+import au.com.mineauz.dynmazes.GridBased;
 import au.com.mineauz.dynmazes.Maze;
 import au.com.mineauz.dynmazes.MazeManager.MazeCommand;
 import au.com.mineauz.dynmazes.Util;
@@ -27,7 +28,7 @@ import au.com.mineauz.dynmazes.styles.StoredBlock;
 import au.com.mineauz.dynmazes.styles.Style;
 import au.com.mineauz.dynmazes.styles.StyleManager;
 
-public class ModuleMaze extends Maze<ModuleNode>
+public class ModuleMaze extends Maze<ModuleNode> implements GridBased<ModuleNode>
 {
 	int mWidth;
 	int mLength;
@@ -201,9 +202,22 @@ public class ModuleMaze extends Maze<ModuleNode>
 		}
 	}
 	
-	ModuleNode getNodeAt(int x, int y)
+	@Override
+	public ModuleNode getNodeAt(int x, int y)
 	{
 		return ((List<ModuleNode>)allNodes).get(x + y * mWidth);
+	}
+	
+	@Override
+	public int getLength()
+	{
+		return mLength;
+	}
+	
+	@Override
+	public int getWidth()
+	{
+		return mWidth;
 	}
 	
 	@Override
@@ -258,142 +272,35 @@ public class ModuleMaze extends Maze<ModuleNode>
 	}
 }
 
-class ModuleNode implements INode
+class ModuleNode extends AbstractGridNode
 {
-	private static BlockFace[] directions = {BlockFace.SOUTH, BlockFace.WEST, BlockFace.NORTH, BlockFace.EAST};
-	
-	private int mX;
-	private int mY;
-	
-	private INode mParent;
-	private HashSet<INode> mChildren;
-	
-	private ModuleMaze mMaze;
-	
 	private int mType = 0;
 	
 	public ModuleNode(ModuleMaze maze, int x, int y)
 	{
-		mMaze = maze;
-		mX = x;
-		mY = y;
-		
-		mChildren = new HashSet<INode>();
+		super(maze, x, y);
 	}
 	
 	public ModuleNode(ModuleMaze maze, int x, int y, int type)
 	{
-		this(maze, x, y);
+		super(maze, x, y);
 		mType = type;
 	}
 	
-	@Override
-	public INode[] getNeighbours()
+	private ModuleMaze getMaze()
 	{
-		if(mType != 0)
-			return new INode[0];
-		
-		if(mX == 0)
-		{
-			if(mY == 0)
-				return new INode[] {mMaze.getNodeAt(mX + 1, mY), mMaze.getNodeAt(mX, mY + 1)};
-			if(mY == mMaze.mLength - 1)
-				return new INode[] {mMaze.getNodeAt(mX + 1, mY), mMaze.getNodeAt(mX, mY - 1)};
-			
-			return new INode[] {mMaze.getNodeAt(mX + 1, mY), mMaze.getNodeAt(mX, mY - 1), mMaze.getNodeAt(mX, mY + 1)};
-		}
-		else if(mX == mMaze.mWidth - 1)
-		{
-			if(mY == 0)
-				return new INode[] {mMaze.getNodeAt(mX - 1, mY), mMaze.getNodeAt(mX, mY + 1)};
-			if(mY == mMaze.mLength - 1)
-				return new INode[] {mMaze.getNodeAt(mX - 1, mY), mMaze.getNodeAt(mX, mY - 1)};
-			
-			return new INode[] {mMaze.getNodeAt(mX - 1, mY), mMaze.getNodeAt(mX, mY - 1), mMaze.getNodeAt(mX, mY + 1)};
-		}
-		else
-		{
-			if(mY == 0)
-				return new INode[] {mMaze.getNodeAt(mX + 1, mY), mMaze.getNodeAt(mX - 1, mY), mMaze.getNodeAt(mX, mY + 1)};
-			if(mY == mMaze.mLength - 1)
-				return new INode[] {mMaze.getNodeAt(mX + 1, mY), mMaze.getNodeAt(mX - 1, mY), mMaze.getNodeAt(mX, mY - 1)};
-			
-			return new INode[] {mMaze.getNodeAt(mX + 1, mY), mMaze.getNodeAt(mX - 1, mY), mMaze.getNodeAt(mX, mY - 1), mMaze.getNodeAt(mX, mY + 1)};
-		}
+		return (ModuleMaze)maze;
 	}
 	
 	@Override
 	public BlockVector toLocation()
 	{
-		return mMaze.getMinCorner().clone().add(new Vector(mX * mMaze.mStyle.getValue().getPieceSize() + mMaze.mStyle.getValue().getPieceSize(), 0, mY * mMaze.mStyle.getValue().getPieceSize() + mMaze.mStyle.getValue().getPieceSize())).toBlockVector();
-	}
-	
-	@Override
-	public int hashCode()
-	{
-		return mX | mY << 16;
-	}
-	
-	@Override
-	public boolean equals( Object obj )
-	{
-		if(!(obj instanceof ModuleNode))
-			return false;
-		
-		ModuleNode other = (ModuleNode)obj;
-		
-		return mX == other.mX && mY == other.mY;
-	}
-	
-	@Override
-	public void addChild( INode node )
-	{
-		node.setParent(this);
-		mChildren.add(node);
-	}
-
-	@Override
-	public INode getParent()
-	{
-		return mParent;
-	}
-
-	@Override
-	public void setParent( INode node )
-	{
-		mParent = node;
-	}
-
-	@Override
-	public Set<INode> getChildren()
-	{
-		return mChildren;
-	}
-	
-	private BlockFace toNode(INode node)
-	{
-		int xx = ((ModuleNode)node).mX - mX;
-		int yy = ((ModuleNode)node).mY - mY;
-		
-		for(BlockFace dir : directions)
-		{
-			if(dir.getModX() == xx && dir.getModZ() == yy)
-				return dir;
-		}
-		
-		return BlockFace.SELF;
-		
+		return getMaze().getMinCorner().clone().add(new Vector(x * getMaze().mStyle.getValue().getPieceSize() + getMaze().mStyle.getValue().getPieceSize(), 0, y * getMaze().mStyle.getValue().getPieceSize() + getMaze().mStyle.getValue().getPieceSize())).toBlockVector();
 	}
 	
 	public PieceType getType()
 	{
-		HashSet<BlockFace> others = new HashSet<BlockFace>(mChildren.size() + 1);
-		
-		for(INode child : mChildren)
-			others.add(toNode(child));
-		
-		if(mParent != null)
-			others.add(toNode(mParent));
+		Set<BlockFace> others = getConnections();
 		
 		PieceType[] set = PieceType.NormalPieces;
 		if(mType == 1)
@@ -408,18 +315,8 @@ class ModuleNode implements INode
 				return type;
 		}
 		
-		System.out.println(String.format("Unknown configuration: %d childs %s parent", mChildren.size(), mParent));
+		System.out.println(String.format("Unknown configuration: %d childs %s parent", getChildren().size(), getParent()));
 		return PieceType.Cross;
-	}
-	
-	public int getX()
-	{
-		return mX;
-	}
-	
-	public int getY()
-	{
-		return mY;
 	}
 }
 
