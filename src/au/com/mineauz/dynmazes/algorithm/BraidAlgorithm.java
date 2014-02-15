@@ -1,5 +1,6 @@
 package au.com.mineauz.dynmazes.algorithm;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -42,13 +43,25 @@ public class BraidAlgorithm implements Algorithm
 	
 	private boolean isParentOf(INode parent, INode node)
 	{
-		if(node.getParents().contains(parent))
-			return true;
+		ArrayDeque<INode> nodes = new ArrayDeque<INode>();
+		HashSet<INode> visited = new HashSet<INode>();
+		nodes.add(node);
 		
-		for(INode parentNode : node.getParents())
+		while(!nodes.isEmpty())
 		{
-			if(isParentOf(parent, parentNode))
+			INode test = nodes.poll();
+			
+			if(!visited.add(test))
+				continue;
+			
+			if(test.equals(parent))
 				return true;
+			
+			for(INode parentNode : test.getParents())
+			{
+				if(!visited.contains(parentNode))
+					nodes.add(parentNode);
+			}
 		}
 		
 		return false;
@@ -92,7 +105,7 @@ public class BraidAlgorithm implements Algorithm
 		// Rules for braiding:
 		// If not a dead end, do nothing
 		// If adjacent to a dead end, punch through to it
-		
+
 		// Process the nodes removing dead ends
 		for(INode node : visited)
 		{
@@ -107,6 +120,7 @@ public class BraidAlgorithm implements Algorithm
 			
 			INode parent = node.getParents().get(0);
 			INode destination = null;
+			
 			INode[] neighbours = node.getNeighbours();
 			for(INode neighbour : neighbours)
 			{

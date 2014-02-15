@@ -1,7 +1,11 @@
 package au.com.mineauz.dynmazes;
 
+import java.util.AbstractMap;
+import java.util.ArrayDeque;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map.Entry;
 
 public abstract class AbstractNode implements INode
 {
@@ -45,14 +49,27 @@ public abstract class AbstractNode implements INode
 		if(mParents.isEmpty())
 			return 0;
 		
-		int count = Integer.MAX_VALUE;
-		for(INode parent : mParents)
+		ArrayDeque<Entry<INode, Integer>> nodes = new ArrayDeque<Entry<INode, Integer>>();
+		HashSet<INode> visited = new HashSet<INode>();
+		nodes.add(new AbstractMap.SimpleEntry<INode, Integer>(this, 0));
+		
+		while(!nodes.isEmpty())
 		{
-			int dist = parent.getDepth();
-			if(dist < count)
-				count = dist;
+			Entry<INode, Integer> node = nodes.poll();
+			
+			if(!visited.add(node.getKey()))
+				continue;
+			
+			if(node.getKey().getParents().isEmpty())
+				return node.getValue();
+			
+			for(INode parent : node.getKey().getParents())
+			{
+				if(!visited.contains(parent))
+					nodes.add(new AbstractMap.SimpleEntry<INode, Integer>(parent, node.getValue() + 1));
+			}
 		}
 		
-		return count + 1;
+		return 0;
 	}
 }
