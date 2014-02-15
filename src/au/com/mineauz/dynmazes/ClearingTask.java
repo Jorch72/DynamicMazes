@@ -85,7 +85,7 @@ public class ClearingTask extends NotifiableTask implements Runnable
 			}
 			
 			mStage = 1;
-			DependencySortThread thread = new DependencySortThread(mBlocks, mMin.getBlockY()-1);
+			DependencySortThread thread = new DependencySortThread(mBlocks, mMin.getBlockY());
 			thread.start();
 			mFuture = thread.getFuture();
 		}
