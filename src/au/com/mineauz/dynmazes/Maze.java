@@ -237,6 +237,8 @@ public abstract class Maze<T extends INode>
 		Validate.isTrue(!mIsDrawing);
 		
 		mIsGenerating = true;
+		if(seed != -1)
+			mAlgorithm.getValue().setSeed(seed);
 		GenerationThread<T> thread = new GenerationThread<T>(this, callback);
 		thread.start();
 	}
