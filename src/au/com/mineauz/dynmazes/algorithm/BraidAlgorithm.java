@@ -1,5 +1,6 @@
 package au.com.mineauz.dynmazes.algorithm;
 
+import java.util.AbstractMap;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,6 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Map.Entry;
 
 import org.bukkit.configuration.ConfigurationSection;
 
@@ -65,6 +67,45 @@ public class BraidAlgorithm implements Algorithm
 		}
 		
 		return false;
+	}
+	
+	private int distanceTo(INode from, INode to)
+	{
+		ArrayDeque<Entry<INode, Integer>> nodes = new ArrayDeque<Entry<INode, Integer>>();
+		
+		HashMap<INode, Integer> visited = new HashMap<INode, Integer>();
+		HashMap<INode, INode> map = new HashMap<INode, INode>();
+		
+		nodes.add(new AbstractMap.SimpleEntry<INode, Integer>(from, 0));
+		visited.put(from, 0);
+		map.put(from, from);
+		
+		nodes.add(new AbstractMap.SimpleEntry<INode, Integer>(to, 0));
+		visited.put(to, 0);
+		map.put(to, to);
+		
+		while(!nodes.isEmpty())
+		{
+			Entry<INode, Integer> node = nodes.poll();
+			INode source = map.get(node.getKey());
+			
+			for(INode parent : node.getKey().getParents())
+			{
+				if(!visited.containsKey(parent))
+				{
+					nodes.add(new AbstractMap.SimpleEntry<INode, Integer>(parent, node.getValue() + 1));
+					visited.put(parent, node.getValue() + 1);
+					map.put(parent, source);
+				}
+				else
+				{
+					if(!source.equals(map.get(parent)))
+						return visited.get(parent) + node.getValue();
+				}
+			}
+		}
+		
+		throw new IllegalStateException();
 	}
 	
 	@Override
@@ -138,8 +179,23 @@ public class BraidAlgorithm implements Algorithm
 			{
 				if(neighbours.length > 1)
 				{
-					while(destination == null || destination.equals(parent))
-						destination = neighbours[mRand.nextInt(neighbours.length)];
+					int lowest = -1;
+					int lowestDist = Integer.MAX_VALUE;
+					
+					for(int i = 0; i < neighbours.length; ++i)
+					{
+						if(node.getParents().contains(neighbours[i]))
+							continue;
+						
+						int dist = distanceTo(node, neighbours[i]);
+						if(dist < lowestDist)
+						{
+							lowestDist = dist;
+							lowest = i;
+						}
+					}
+					
+					destination = neighbours[lowest];
 				}
 				else
 					destination = neighbours[0];
