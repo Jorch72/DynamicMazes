@@ -46,7 +46,7 @@ public class ListMazeCommand implements ICommand
 	@Override
 	public EnumSet<CommandSenderType> getAllowedSenders()
 	{
-		return EnumSet.of(CommandSenderType.Player);
+		return EnumSet.of(CommandSenderType.Player, CommandSenderType.Console);
 	}
 
 	@Override

@@ -43,7 +43,7 @@ public class SetMazeCommand implements ICommand
 	@Override
 	public String getUsageString( String label, CommandSender sender )
 	{
-		return label + " <maze> <option> <value>";
+		return label + " <maze> <option> [value]";
 	}
 
 	@Override
@@ -87,6 +87,12 @@ public class SetMazeCommand implements ICommand
 			}
 			
 			sender.sendMessage(ChatColor.RED + options);
+			return true;
+		}
+		
+		if(args.length == 2)
+		{
+			sender.sendMessage(ChatColor.GREEN + args[1] + " is set to " + flag.getValueString());
 			return true;
 		}
 		
