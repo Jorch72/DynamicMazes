@@ -28,7 +28,7 @@ public class ListMazeCommand implements ICommand
 	@Override
 	public String getPermission()
 	{
-		return null;
+		return "dynamicmazes.command.maze.list";
 	}
 
 	@Override

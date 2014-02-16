@@ -8,8 +8,37 @@ main: au.com.mineauz.dynmazes.DynamicMazePlugin
 permissions:
   dynamicmazes.command.maze:
     default: true
-  dynamicmazes.command.maze.style:
+  dynamicmazes.command.maze.new:
     default: op
+  dynamicmazes.command.maze.delete:
+    default: op
+  dynamicmazes.command.maze.set:
+    default: op
+  dynamicmazes.command.maze.info:
+    default: op
+  dynamicmazes.command.maze.list:
+    default: op
+  dynamicmazes.command.maze.generate:
+    default: op
+  dynamicmazes.command.design:
+    default: op
+
+  dynamicmazes.admin:
+    default: op
+    children:
+      dynamicmazes.mod: true
+      dynamicmazes.command.maze.new: true
+      dynamicmazes.command.maze.delete: true
+      dynamicmazes.command.maze.set: true
+      dynamicmazes.command.design: true
+      
+  dynamicmazes.mod:
+    default: false
+    children:
+      dynamicmazes.command.maze: true
+      dynamicmazes.command.maze.generate: true
+      dynamicmazes.command.maze.list: true
+      dynamicmazes.command.maze.info: true
 
 commands:
   dynmaze:

@@ -37,7 +37,7 @@ public class SetMazeCommand implements ICommand
 	@Override
 	public String getPermission()
 	{
-		return null;
+		return "dynamicmazes.command.maze.set";
 	}
 
 	@Override

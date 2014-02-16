@@ -33,7 +33,7 @@ public class InfoMazeCommand implements ICommand
 	@Override
 	public String getPermission()
 	{
-		return null;
+		return "dynamicmazes.command.maze.info";
 	}
 
 	@Override

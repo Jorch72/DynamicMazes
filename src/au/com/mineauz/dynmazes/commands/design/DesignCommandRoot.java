@@ -36,7 +36,7 @@ public class DesignCommandRoot extends CommandDispatcher implements ICommand
 	@Override
 	public String getPermission()
 	{
-		return null;
+		return "dynamicmazes.command.design";
 	}
 
 	@Override
