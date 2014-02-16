@@ -310,7 +310,7 @@ public class StoredBlock
 			
 		case VINE:
 			return BlockFace.UP;
-	
+			
 		default:
 			return BlockFace.SELF;
 		}
@@ -338,6 +338,26 @@ public class StoredBlock
 	public boolean isAir()
 	{
 		return mType == Material.AIR;
+	}
+	
+	public boolean isSolid()
+	{
+		return mType.isSolid();
+	}
+	
+	public boolean isLiquid()
+	{
+		return mType == Material.WATER || mType == Material.LAVA || mType == Material.STATIONARY_WATER || mType == Material.STATIONARY_LAVA;
+	}
+	
+	public Material getType()
+	{
+		return mType;
+	}
+	
+	public MaterialData getData()
+	{
+		return mType.getNewData((byte)mData);
 	}
 	
 	@Override

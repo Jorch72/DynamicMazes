@@ -47,10 +47,12 @@ public class DependencySortThread extends Thread
 			for(int i = 0; i < mList.size(); ++i)
 			{
 				StoredBlock block = mList.get(i);
+				if(block.isAir())
+					continue;
 				
 				BlockFace face = block.getDependantFace();
 						
-				if(face == BlockFace.SELF || (face == BlockFace.DOWN && block.getLocation().getBlockY() == mFloorLevel))
+				if(!block.isLiquid() && (face == BlockFace.SELF || (face == BlockFace.DOWN && block.getLocation().getBlockY() == mFloorLevel)))
 					blocksToAdd.add(block);
 				else
 					dependencies.put(block.getLocationRelative(face), block);

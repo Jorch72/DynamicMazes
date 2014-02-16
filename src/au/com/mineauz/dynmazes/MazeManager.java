@@ -16,6 +16,7 @@ import java.util.LinkedList;
 
 import org.apache.commons.lang.Validate;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
@@ -138,6 +139,22 @@ public class MazeManager
 	public static Maze<?> getMaze(String name)
 	{
 		return mMazes.get(name.toLowerCase());
+	}
+	
+	public static Maze<?> getMazeAt(Location loc)
+	{
+		for(Maze<?> maze : mMazes.values())
+		{
+			if(loc.getWorld().equals(maze.getWorld()))
+			{
+				if(loc.getBlockX() >= maze.getMinCorner().getBlockX() && loc.getBlockX() < maze.getMaxCorner().getBlockX() &&
+					loc.getBlockY() >= maze.getMinCorner().getBlockY() && loc.getBlockY() < maze.getMaxCorner().getBlockY() &&
+					loc.getBlockZ() >= maze.getMinCorner().getBlockZ() && loc.getBlockZ() < maze.getMaxCorner().getBlockZ())
+					return maze;
+			}
+		}
+		
+		return null;
 	}
 	
 	public static Collection<String> getMazeNames()

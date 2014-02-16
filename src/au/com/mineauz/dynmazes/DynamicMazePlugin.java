@@ -11,6 +11,7 @@ import au.com.mineauz.dynmazes.algorithm.GrowingTreeAlgorithm;
 import au.com.mineauz.dynmazes.algorithm.PrimsAlgorithm;
 import au.com.mineauz.dynmazes.commands.MazeCommand;
 import au.com.mineauz.dynmazes.styles.StyleManager;
+import au.com.mineauz.dynmazes.types.CubeMaze;
 import au.com.mineauz.dynmazes.types.GridMaze;
 import au.com.mineauz.dynmazes.types.ModuleMaze;
 import au.com.mineauz.dynmazes.types.RegionMaze;
@@ -34,6 +35,7 @@ public class DynamicMazePlugin extends JavaPlugin
 		
 		MazeManager.registerType("Module", ModuleMaze.class);
 		MazeManager.registerType("Grid", GridMaze.class);
+		MazeManager.registerType("Cube", CubeMaze.class);
 		
 		if(Bukkit.getPluginManager().isPluginEnabled("WorldEdit"))
 			MazeManager.registerType("Region", RegionMaze.class);
@@ -45,6 +47,8 @@ public class DynamicMazePlugin extends JavaPlugin
 		
 		MazeCommand command = new MazeCommand();
 		command.registerAs(getCommand("dynmaze"));
+		
+		Bukkit.getPluginManager().registerEvents(new WorldLockingHandler(), this);
 		
 		Bukkit.getScheduler().runTask(this, new Runnable()
 		{
