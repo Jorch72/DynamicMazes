@@ -61,7 +61,7 @@ public abstract class AbstractGridNode extends AbstractNode
 		return y;
 	}
 	
-	private BlockFace toNode(AbstractGridNode node)
+	public BlockFace toNode(AbstractGridNode node)
 	{
 		int xx = node.x - x;
 		int yy = node.y - y;

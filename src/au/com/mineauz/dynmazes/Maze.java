@@ -22,6 +22,7 @@ import au.com.mineauz.dynmazes.algorithm.GrowingTreeAlgorithm;
 import au.com.mineauz.dynmazes.flags.AlgorithmFlag;
 import au.com.mineauz.dynmazes.flags.Flag;
 import au.com.mineauz.dynmazes.flags.FlagIO;
+import au.com.mineauz.dynmazes.misc.BlockLocation;
 import au.com.mineauz.dynmazes.misc.Callback;
 import au.com.mineauz.dynmazes.styles.StoredBlock;
 
@@ -385,4 +386,7 @@ public abstract class Maze<T extends INode>
 	{
 		
 	}
+	
+	public abstract BlockLocation getStartPoint();
+	public abstract BlockLocation getEndPoint();
 }

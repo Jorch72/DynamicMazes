@@ -21,6 +21,7 @@ import au.com.mineauz.dynmazes.Util;
 import au.com.mineauz.dynmazes.MazeManager.MazeCommand;
 import au.com.mineauz.dynmazes.flags.BlockTypeFlag;
 import au.com.mineauz.dynmazes.misc.BadArgumentException;
+import au.com.mineauz.dynmazes.misc.BlockLocation;
 import au.com.mineauz.dynmazes.styles.StoredBlock;
 
 public class CubeMaze extends Maze<CubeNode> implements CubeBased<CubeNode>
@@ -559,6 +560,18 @@ public class CubeMaze extends Maze<CubeNode> implements CubeBased<CubeNode>
 		mWallMaterial = (BlockTypeFlag)getFlag("wall-type");
 		mRoofMaterial = (BlockTypeFlag)getFlag("roof-type");
 		mLadderWallMaterial = (BlockTypeFlag)getFlag("ladder-wall-type");
+	}
+	
+	@Override
+	public BlockLocation getStartPoint()
+	{
+		return new BlockLocation(mEntrance.toLocation(), mEntrance.toNode((AbstractGridNode3D)mEntrance.getChildren().get(0)));
+	}
+	
+	@Override
+	public BlockLocation getEndPoint()
+	{
+		return new BlockLocation(mExit.toLocation(), mExit.toNode((AbstractGridNode3D)mExit.getParents().get(0)));
 	}
 }
 

@@ -27,6 +27,7 @@ import au.com.mineauz.dynmazes.Maze;
 import au.com.mineauz.dynmazes.MazeManager.MazeCommand;
 import au.com.mineauz.dynmazes.flags.BlockTypeFlag;
 import au.com.mineauz.dynmazes.misc.BadArgumentException;
+import au.com.mineauz.dynmazes.misc.BlockLocation;
 import au.com.mineauz.dynmazes.misc.WorldEditUtil;
 import au.com.mineauz.dynmazes.styles.StoredBlock;
 
@@ -469,6 +470,18 @@ public class RegionMaze extends Maze<RegionNode> implements GridBased<RegionNode
 		}
 		
 		return new RegionMaze(name, player.getWorld(), region, pathSize, wallSize, height);
+	}
+	
+	@Override
+	public BlockLocation getStartPoint()
+	{
+		return new BlockLocation(mEntrance.toLocation(), mEntrance.toNode((AbstractGridNode)mEntrance.getChildren().get(0)));
+	}
+	
+	@Override
+	public BlockLocation getEndPoint()
+	{
+		return new BlockLocation(mExit.toLocation(), mExit.toNode((AbstractGridNode)mExit.getParents().get(0)));
 	}
 }
 

@@ -23,6 +23,7 @@ import au.com.mineauz.dynmazes.Util;
 import au.com.mineauz.dynmazes.flags.Flag;
 import au.com.mineauz.dynmazes.flags.StyleFlag;
 import au.com.mineauz.dynmazes.misc.BadArgumentException;
+import au.com.mineauz.dynmazes.misc.BlockLocation;
 import au.com.mineauz.dynmazes.misc.Callback;
 import au.com.mineauz.dynmazes.styles.PieceType;
 import au.com.mineauz.dynmazes.styles.StoredBlock;
@@ -270,6 +271,18 @@ public class ModuleMaze extends Maze<ModuleNode> implements GridBased<ModuleNode
 				});
 			}
 		}
+	}
+	
+	@Override
+	public BlockLocation getStartPoint()
+	{
+		return new BlockLocation(mEntrance.toLocation(), mEntrance.toNode((AbstractGridNode)mEntrance.getChildren().get(0)));
+	}
+	
+	@Override
+	public BlockLocation getEndPoint()
+	{
+		return new BlockLocation(mExit.toLocation(), mExit.toNode((AbstractGridNode)mExit.getParents().get(0)));
 	}
 }
 

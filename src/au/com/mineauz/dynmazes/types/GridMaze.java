@@ -21,6 +21,7 @@ import au.com.mineauz.dynmazes.Util;
 import au.com.mineauz.dynmazes.MazeManager.MazeCommand;
 import au.com.mineauz.dynmazes.flags.BlockTypeFlag;
 import au.com.mineauz.dynmazes.misc.BadArgumentException;
+import au.com.mineauz.dynmazes.misc.BlockLocation;
 import au.com.mineauz.dynmazes.styles.StoredBlock;
 
 public class GridMaze extends Maze<GridNode> implements GridBased<GridNode>
@@ -440,6 +441,18 @@ public class GridMaze extends Maze<GridNode> implements GridBased<GridNode>
 		mPathMaterial = (BlockTypeFlag)getFlag("path-type");
 		mFillMaterial = (BlockTypeFlag)getFlag("fill-type");
 		mWallMaterial = (BlockTypeFlag)getFlag("wall-type");
+	}
+	
+	@Override
+	public BlockLocation getStartPoint()
+	{
+		return new BlockLocation(mEntrance.toLocation(), mEntrance.toNode((AbstractGridNode)mEntrance.getChildren().get(0)));
+	}
+	
+	@Override
+	public BlockLocation getEndPoint()
+	{
+		return new BlockLocation(mExit.toLocation(), mExit.toNode((AbstractGridNode)mExit.getParents().get(0)));
 	}
 }
 
