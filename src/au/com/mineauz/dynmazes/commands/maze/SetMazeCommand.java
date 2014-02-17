@@ -67,10 +67,7 @@ public class SetMazeCommand implements ICommand
 		
 		final Maze<?> maze = MazeManager.getMaze(args[0]);
 		if(maze == null)
-		{
-			sender.sendMessage(ChatColor.RED + "There is no maze by the name " + args[0]);
-			return true;
-		}
+			throw new BadArgumentException(0, "There is no maze by the name " + args[0]);
 		
 		final Flag<Object> flag = (Flag<Object>)maze.getFlag(args[1]);
 		

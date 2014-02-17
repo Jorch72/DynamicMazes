@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import au.com.mineauz.dynmazes.DesignManager;
 import au.com.mineauz.dynmazes.commands.CommandSenderType;
 import au.com.mineauz.dynmazes.commands.ICommand;
+import au.com.mineauz.dynmazes.misc.BadArgumentException;
 import au.com.mineauz.dynmazes.styles.Style;
 import au.com.mineauz.dynmazes.styles.StyleManager;
 
@@ -59,10 +60,7 @@ public class EditDesignCommand implements ICommand
 			return false;
 		
 		if(!StyleManager.styleExists(args[0]))
-		{
-			sender.sendMessage(ChatColor.RED + args[0] + " is not a style");
-			return true;
-		}
+			throw new BadArgumentException(0, args[0] + " is not a style");
 		
 		Style style = StyleManager.getStyle(args[0]);
 		

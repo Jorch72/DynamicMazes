@@ -20,6 +20,7 @@ import au.com.mineauz.dynmazes.Maze;
 import au.com.mineauz.dynmazes.Util;
 import au.com.mineauz.dynmazes.MazeManager.MazeCommand;
 import au.com.mineauz.dynmazes.flags.BlockTypeFlag;
+import au.com.mineauz.dynmazes.misc.BadArgumentException;
 import au.com.mineauz.dynmazes.styles.StoredBlock;
 
 public class CubeMaze extends Maze<CubeNode> implements CubeBased<CubeNode>
@@ -443,7 +444,7 @@ public class CubeMaze extends Maze<CubeNode> implements CubeBased<CubeNode>
 	}
 	
 	@MazeCommand(command="new")
-	public static CubeMaze newMaze(Player player, String name, String[] args) throws IllegalArgumentException, NoSuchFieldException
+	public static CubeMaze newMaze(Player player, String name, String[] args) throws BadArgumentException, NoSuchFieldException
 	{
 		if(args.length != 3 && args.length != 6)
 			throw new NoSuchFieldException("<width> <length> <height> [<pathSize> <wallSize> <wallHeight>]");
@@ -457,33 +458,33 @@ public class CubeMaze extends Maze<CubeNode> implements CubeBased<CubeNode>
 		{
 			width = Integer.parseInt(args[0]);
 			if(width <= 1)
-				throw new IllegalArgumentException("Width cannot be less than 2");
+				throw new BadArgumentException(0, "Width cannot be less than 2");
 		}
 		catch(NumberFormatException e)
 		{
-			throw new IllegalArgumentException("Width must be a whole number larger than 1");
+			throw new BadArgumentException(0, "Width must be a whole number larger than 1");
 		}
 		
 		try
 		{
 			length = Integer.parseInt(args[1]);
 			if(length <= 1)
-				throw new IllegalArgumentException("Length cannot be less than 2");
+				throw new BadArgumentException(1, "Length cannot be less than 2");
 		}
 		catch(NumberFormatException e)
 		{
-			throw new IllegalArgumentException("Length must be a whole number larger than 1");
+			throw new BadArgumentException(1, "Length must be a whole number larger than 1");
 		}
 		
 		try
 		{
 			height = Integer.parseInt(args[2]);
 			if(height <= 1)
-				throw new IllegalArgumentException("Height cannot be less than 2");
+				throw new BadArgumentException(2, "Height cannot be less than 2");
 		}
 		catch(NumberFormatException e)
 		{
-			throw new IllegalArgumentException("Height must be a whole number larger than 1");
+			throw new BadArgumentException(2, "Height must be a whole number larger than 1");
 		}
 		
 		if(args.length == 6)
@@ -492,33 +493,33 @@ public class CubeMaze extends Maze<CubeNode> implements CubeBased<CubeNode>
 			{
 				pathSize = Integer.parseInt(args[3]);
 				if(pathSize < 1)
-					throw new IllegalArgumentException("PathSize cannot be less than 1");
+					throw new BadArgumentException(3, "PathSize cannot be less than 1");
 			}
 			catch(NumberFormatException e)
 			{
-				throw new IllegalArgumentException("PathSize must be a whole number larger than 0");
+				throw new BadArgumentException(3, "PathSize must be a whole number larger than 0");
 			}
 			
 			try
 			{
 				wallSize = Integer.parseInt(args[4]);
 				if(wallSize < 1)
-					throw new IllegalArgumentException("WallSize cannot be less than 1");
+					throw new BadArgumentException(4, "WallSize cannot be less than 1");
 			}
 			catch(NumberFormatException e)
 			{
-				throw new IllegalArgumentException("WallSize must be a whole number larger than 0");
+				throw new BadArgumentException(4, "WallSize must be a whole number larger than 0");
 			}
 			
 			try
 			{
 				wallHeight = Integer.parseInt(args[5]);
 				if(wallHeight < 0)
-					throw new IllegalArgumentException("WallHeight cannot be less than 0");
+					throw new BadArgumentException(5, "WallHeight cannot be less than 0");
 			}
 			catch(NumberFormatException e)
 			{
-				throw new IllegalArgumentException("WallHeight must be a positive whole number");
+				throw new BadArgumentException(5, "WallHeight must be a positive whole number");
 			}
 		}
 					

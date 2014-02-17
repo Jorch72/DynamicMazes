@@ -1,5 +1,6 @@
 package au.com.mineauz.dynmazes.commands.maze;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
@@ -12,6 +13,7 @@ import au.com.mineauz.dynmazes.MazeManager;
 import au.com.mineauz.dynmazes.Util;
 import au.com.mineauz.dynmazes.commands.CommandSenderType;
 import au.com.mineauz.dynmazes.commands.ICommand;
+import au.com.mineauz.dynmazes.misc.BadArgumentException;
 import au.com.mineauz.dynmazes.misc.ConfirmationPrompt;
 
 public class NewMazeCommand implements ICommand
@@ -60,25 +62,15 @@ public class NewMazeCommand implements ICommand
 		
 		String name = args[0];
 		if(!Util.isNameOk(name))
-		{
-			sender.sendMessage(ChatColor.RED + "Name has invalid characters in it. Only letters, numbers, and _ may be used.");
-			return true;
-		}
+			throw new BadArgumentException(0, "Name has invalid characters in it. Only letters, numbers, and _ may be used.");
 		
 		if(MazeManager.getMaze(name) != null)
-		{
-			sender.sendMessage(ChatColor.RED + "A maze by that name already exists.");
-			return true;
-		}
+			throw new BadArgumentException(0, "A maze by that name already exists.");
 		
 		if(args.length == 1 || !MazeManager.isMazeType(args[1]))
 		{
-			if(args.length == 1)
-				sender.sendMessage(ChatColor.RED + "Maze type missing.");
-			else
-				sender.sendMessage(ChatColor.RED + args[1] + " is not a maze type.");
-			
-			sender.sendMessage(ChatColor.YELLOW + "Available maze types:");
+			ArrayList<String> lines = new ArrayList<String>();
+			lines.add(ChatColor.YELLOW + "Available maze types:");
 			StringBuilder builder = new StringBuilder();
 			boolean odd = true;
 			for(String type : MazeManager.getMazeTypes())
@@ -95,10 +87,15 @@ public class NewMazeCommand implements ICommand
 					builder.append(ChatColor.GRAY);
 				
 				builder.append(type);
+				odd = !odd;
 			}
 			
-			sender.sendMessage(builder.toString());
-			return true;
+			lines.add(builder.toString());
+			
+			if(args.length == 1)
+				throw new BadArgumentException(1, "Maze type missing.").addInfo(lines);
+			else
+				throw new BadArgumentException(1, args[1] + " is not a maze type.").addInfo(lines);
 		}
 
 		try
@@ -107,9 +104,9 @@ public class NewMazeCommand implements ICommand
 			
 			prompt.launch();
 		}
-		catch(IllegalArgumentException e)
+		catch(BadArgumentException e)
 		{
-			sender.sendMessage(ChatColor.RED + e.getMessage());
+			throw new BadArgumentException(e.getArgument()+2, e.getMessage());
 		}
 		catch(NoSuchFieldException e)
 		{

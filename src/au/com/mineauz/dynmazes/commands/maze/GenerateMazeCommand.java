@@ -11,6 +11,7 @@ import au.com.mineauz.dynmazes.MazeManager;
 import au.com.mineauz.dynmazes.Util;
 import au.com.mineauz.dynmazes.commands.CommandSenderType;
 import au.com.mineauz.dynmazes.commands.ICommand;
+import au.com.mineauz.dynmazes.misc.BadArgumentException;
 import au.com.mineauz.dynmazes.misc.Callback;
 
 public class GenerateMazeCommand implements ICommand
@@ -60,10 +61,7 @@ public class GenerateMazeCommand implements ICommand
 		
 		final Maze<?> maze = MazeManager.getMaze(args[0]);
 		if(maze == null)
-		{
-			sender.sendMessage(ChatColor.RED + "There is no maze by the name " + args[0]);
-			return true;
-		}
+			throw new BadArgumentException(0, "There is no maze " + args[0]);
 		
 		if(maze.isGenerating() || maze.isDrawing())
 		{

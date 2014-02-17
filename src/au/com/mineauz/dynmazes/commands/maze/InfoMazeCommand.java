@@ -15,6 +15,7 @@ import au.com.mineauz.dynmazes.Util;
 import au.com.mineauz.dynmazes.commands.CommandSenderType;
 import au.com.mineauz.dynmazes.commands.ICommand;
 import au.com.mineauz.dynmazes.flags.Flag;
+import au.com.mineauz.dynmazes.misc.BadArgumentException;
 
 public class InfoMazeCommand implements ICommand
 {
@@ -63,10 +64,7 @@ public class InfoMazeCommand implements ICommand
 		Maze<?> maze = MazeManager.getMaze(args[0]);
 		
 		if(maze == null)
-		{
-			sender.sendMessage(ChatColor.RED + "No maze by the name " + args[0] + " exists");
-			return true;
-		}
+			throw new BadArgumentException(0, "There is no maze " + args[0]);
 		
 		ArrayList<String> flags = new ArrayList<String>();
 		for(Entry<String, Flag<?>> flag : maze.getFlags().entrySet())

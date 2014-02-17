@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import au.com.mineauz.dynmazes.DesignManager;
 import au.com.mineauz.dynmazes.commands.CommandSenderType;
 import au.com.mineauz.dynmazes.commands.ICommand;
+import au.com.mineauz.dynmazes.misc.BadArgumentException;
 import au.com.mineauz.dynmazes.styles.Style;
 
 public class NewDesignCommand implements ICommand
@@ -71,30 +72,22 @@ public class NewDesignCommand implements ICommand
 		{
 			size = Integer.parseInt(args[args.length - 2]);
 			if(size < 4 || size > 10)
-			{
-				sender.sendMessage(ChatColor.RED + "Piece size is out of range. Allowed range is 4 - 10 inclusive.");
-				return true;
-			}
+				throw new BadArgumentException(args.length-2, "Piece size is out of range. Allowed range is 4 - 10 inclusive.");
 		}
 		catch(NumberFormatException e)
 		{
-			sender.sendMessage(ChatColor.RED + "Piece size should be value from 4 - 10 inclusive.");
-			return true;
+			throw new BadArgumentException(args.length-2, "Piece size should be number from 4 - 10 inclusive.");
 		}
 		
 		try
 		{
 			height = Integer.parseInt(args[args.length - 1]);
 			if(height < 3 || height > 40)
-			{
-				sender.sendMessage(ChatColor.RED + "Piece height is out of range. Allowed range is 3 - 40 inclusive.");
-				return true;
-			}
+				throw new BadArgumentException(args.length-1, "Piece height is out of range. Allowed range is 3 - 40 inclusive.");
 		}
 		catch(NumberFormatException e)
 		{
-			sender.sendMessage(ChatColor.RED + "Piece height should be value from 4 - 100 inclusive.");
-			return true;
+			throw new BadArgumentException(args.length-1, "Piece height should be number from 4 - 100 inclusive.");
 		}
 		
 		try

@@ -12,6 +12,8 @@ import java.util.regex.Pattern;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
+import au.com.mineauz.dynmazes.misc.BadArgumentException;
+
 /**
  * This allows sub commands to be handled in a clean easily expandable way.
  * Just create a new command that implements ICommand
@@ -121,8 +123,41 @@ public class CommandDispatcher
 			return true;
 		}
 		
-		if(!com.onCommand(sender, parent, subCommand, subArgs))
-			sender.sendMessage(ChatColor.RED + "Usage: " + parent + com.getUsageString(subCommand, sender));
+		try
+		{
+			if(!com.onCommand(sender, parent, subCommand, subArgs))
+				sender.sendMessage(ChatColor.RED + "Usage: " + parent + com.getUsageString(subCommand, sender));
+		}
+		catch(BadArgumentException e)
+		{
+			String cmdString = ChatColor.GRAY + parent;
+			for(int i = 0; i < args.length; ++i)
+			{
+				if(i == e.getArgument() + 1)
+					cmdString += ChatColor.RED + args[i] + ChatColor.GRAY;
+				else
+					cmdString += args[i];
+				
+				cmdString += " ";
+			}
+			
+			if(e.getArgument() >= args.length - 1)
+				cmdString += ChatColor.RED + "?";
+			
+			sender.sendMessage(ChatColor.RED + "Error in command: " + cmdString);
+			sender.sendMessage(ChatColor.RED + " " + e.getMessage());
+			
+			for(String line : e.getInfoLines())
+				sender.sendMessage(ChatColor.GRAY + " " + line);
+		}
+		catch(IllegalArgumentException e)
+		{
+			sender.sendMessage(ChatColor.RED + e.getMessage());
+		}
+		catch(IllegalStateException e)
+		{
+			sender.sendMessage(ChatColor.RED + e.getMessage());
+		}
 		
 		return true;
 	}

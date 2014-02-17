@@ -26,6 +26,7 @@ import au.com.mineauz.dynmazes.INode;
 import au.com.mineauz.dynmazes.Maze;
 import au.com.mineauz.dynmazes.MazeManager.MazeCommand;
 import au.com.mineauz.dynmazes.flags.BlockTypeFlag;
+import au.com.mineauz.dynmazes.misc.BadArgumentException;
 import au.com.mineauz.dynmazes.misc.WorldEditUtil;
 import au.com.mineauz.dynmazes.styles.StoredBlock;
 
@@ -410,7 +411,7 @@ public class RegionMaze extends Maze<RegionNode> implements GridBased<RegionNode
 	}
 	
 	@MazeCommand(command="new")
-	public static RegionMaze newMaze(Player player, String name, String[] args) throws IllegalArgumentException, NoSuchFieldException
+	public static RegionMaze newMaze(Player player, String name, String[] args) throws BadArgumentException, NoSuchFieldException
 	{
 		if(args.length != 0 && args.length != 3)
 			throw new NoSuchFieldException("[<pathSize> <wallSize> <height>]");
@@ -420,11 +421,11 @@ public class RegionMaze extends Maze<RegionNode> implements GridBased<RegionNode
 		{
 			region = WorldEdit.getInstance().getSession(player.getName()).getSelection(BukkitUtil.getLocalWorld(player.getWorld()));
 			if(region == null)
-				throw new IllegalArgumentException("You have nothing selected");
+				throw new IllegalStateException("You have nothing selected");
 		}
 		catch ( IncompleteRegionException e )
 		{
-			throw new IllegalArgumentException("Your selection is imcomplete");
+			throw new IllegalStateException("Your selection is imcomplete");
 		}
 		
 		int pathSize = 1;
@@ -437,33 +438,33 @@ public class RegionMaze extends Maze<RegionNode> implements GridBased<RegionNode
 			{
 				pathSize = Integer.parseInt(args[0]);
 				if(pathSize < 1)
-					throw new IllegalArgumentException("PathSize cannot be less than 1");
+					throw new BadArgumentException(0, "PathSize cannot be less than 1");
 			}
 			catch(NumberFormatException e)
 			{
-				throw new IllegalArgumentException("PathSize must be a whole number larger than 0");
+				throw new BadArgumentException(0, "PathSize must be a whole number larger than 0");
 			}
 			
 			try
 			{
 				wallSize = Integer.parseInt(args[1]);
 				if(wallSize < 1)
-					throw new IllegalArgumentException("WallSize cannot be less than 1");
+					throw new BadArgumentException(1, "WallSize cannot be less than 1");
 			}
 			catch(NumberFormatException e)
 			{
-				throw new IllegalArgumentException("WallSize must be a whole number larger than 0");
+				throw new BadArgumentException(1, "WallSize must be a whole number larger than 0");
 			}
 			
 			try
 			{
 				height = Integer.parseInt(args[2]);
 				if(height < 0)
-					throw new IllegalArgumentException("Height cannot be less than 0");
+					throw new BadArgumentException(2, "Height cannot be less than 0");
 			}
 			catch(NumberFormatException e)
 			{
-				throw new IllegalArgumentException("Height must be a positive whole number");
+				throw new BadArgumentException(2, "Height must be a positive whole number");
 			}
 		}
 		

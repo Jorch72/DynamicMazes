@@ -22,6 +22,7 @@ import au.com.mineauz.dynmazes.MazeManager.MazeCommand;
 import au.com.mineauz.dynmazes.Util;
 import au.com.mineauz.dynmazes.flags.Flag;
 import au.com.mineauz.dynmazes.flags.StyleFlag;
+import au.com.mineauz.dynmazes.misc.BadArgumentException;
 import au.com.mineauz.dynmazes.misc.Callback;
 import au.com.mineauz.dynmazes.styles.PieceType;
 import au.com.mineauz.dynmazes.styles.StoredBlock;
@@ -152,14 +153,14 @@ public class ModuleMaze extends Maze<ModuleNode> implements GridBased<ModuleNode
 	}
 	
 	@MazeCommand( command="new" )
-	public static ModuleMaze newMaze(Player player, String name, String[] args) throws IllegalArgumentException, NoSuchFieldException
+	public static ModuleMaze newMaze(Player player, String name, String[] args) throws BadArgumentException, NoSuchFieldException
 	{
 		if(args.length != 3)
 			throw new NoSuchFieldException("<style> <width> <length>");
 		
 		Style style = StyleManager.getStyle(args[0]);
 		if(style == null)
-			throw new IllegalArgumentException("Cannot find style " + args[0]);
+			throw new BadArgumentException(0, "Cannot find style " + args[0]);
 		
 		int width, length;
 		
@@ -167,22 +168,22 @@ public class ModuleMaze extends Maze<ModuleNode> implements GridBased<ModuleNode
 		{
 			width = Integer.parseInt(args[1]);
 			if(width <= 1)
-				throw new IllegalArgumentException("Width cannot be less than 2");
+				throw new BadArgumentException(1, "Width cannot be less than 2");
 		}
 		catch(NumberFormatException e)
 		{
-			throw new IllegalArgumentException("Width must be a whole number larger than 1");
+			throw new BadArgumentException(1, "Width must be a whole number larger than 1");
 		}
 		
 		try
 		{
 			length = Integer.parseInt(args[2]);
 			if(length <= 1)
-				throw new IllegalArgumentException("Length cannot be less than 2");
+				throw new BadArgumentException(2, "Length cannot be less than 2");
 		}
 		catch(NumberFormatException e)
 		{
-			throw new IllegalArgumentException("Length must be a whole number larger than 1");
+			throw new BadArgumentException(2, "Length must be a whole number larger than 1");
 		}
 		
 		return new ModuleMaze(name, style, player.getLocation(), width, length, Util.toFacingSimplest(player.getEyeLocation().getYaw()));

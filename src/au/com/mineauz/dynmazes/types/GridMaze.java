@@ -20,6 +20,7 @@ import au.com.mineauz.dynmazes.Maze;
 import au.com.mineauz.dynmazes.Util;
 import au.com.mineauz.dynmazes.MazeManager.MazeCommand;
 import au.com.mineauz.dynmazes.flags.BlockTypeFlag;
+import au.com.mineauz.dynmazes.misc.BadArgumentException;
 import au.com.mineauz.dynmazes.styles.StoredBlock;
 
 public class GridMaze extends Maze<GridNode> implements GridBased<GridNode>
@@ -341,7 +342,7 @@ public class GridMaze extends Maze<GridNode> implements GridBased<GridNode>
 	}
 	
 	@MazeCommand(command="new")
-	public static GridMaze newMaze(Player player, String name, String[] args) throws IllegalArgumentException, NoSuchFieldException
+	public static GridMaze newMaze(Player player, String name, String[] args) throws BadArgumentException, NoSuchFieldException
 	{
 		if(args.length != 2 && args.length != 5)
 			throw new NoSuchFieldException("<width> <length> [<pathSize> <wallSize> <height>]");
@@ -355,22 +356,22 @@ public class GridMaze extends Maze<GridNode> implements GridBased<GridNode>
 		{
 			width = Integer.parseInt(args[0]);
 			if(width <= 1)
-				throw new IllegalArgumentException("Width cannot be less than 2");
+				throw new BadArgumentException(0, "Width cannot be less than 2");
 		}
 		catch(NumberFormatException e)
 		{
-			throw new IllegalArgumentException("Width must be a whole number larger than 1");
+			throw new BadArgumentException(0, "Width must be a whole number larger than 1");
 		}
 		
 		try
 		{
 			length = Integer.parseInt(args[1]);
 			if(length <= 1)
-				throw new IllegalArgumentException("Length cannot be less than 2");
+				throw new BadArgumentException(1, "Length cannot be less than 2");
 		}
 		catch(NumberFormatException e)
 		{
-			throw new IllegalArgumentException("Length must be a whole number larger than 1");
+			throw new BadArgumentException(1, "Length must be a whole number larger than 1");
 		}
 		
 		if(args.length == 5)
@@ -379,33 +380,33 @@ public class GridMaze extends Maze<GridNode> implements GridBased<GridNode>
 			{
 				pathSize = Integer.parseInt(args[2]);
 				if(pathSize < 1)
-					throw new IllegalArgumentException("PathSize cannot be less than 1");
+					throw new BadArgumentException(2, "PathSize cannot be less than 1");
 			}
 			catch(NumberFormatException e)
 			{
-				throw new IllegalArgumentException("PathSize must be a whole number larger than 0");
+				throw new BadArgumentException(2, "PathSize must be a whole number larger than 0");
 			}
 			
 			try
 			{
 				wallSize = Integer.parseInt(args[3]);
 				if(wallSize < 1)
-					throw new IllegalArgumentException("WallSize cannot be less than 1");
+					throw new BadArgumentException(3, "WallSize cannot be less than 1");
 			}
 			catch(NumberFormatException e)
 			{
-				throw new IllegalArgumentException("WallSize must be a whole number larger than 0");
+				throw new BadArgumentException(3, "WallSize must be a whole number larger than 0");
 			}
 			
 			try
 			{
 				height = Integer.parseInt(args[4]);
 				if(height < 0)
-					throw new IllegalArgumentException("Height cannot be less than 0");
+					throw new BadArgumentException(4, "Height cannot be less than 0");
 			}
 			catch(NumberFormatException e)
 			{
-				throw new IllegalArgumentException("Height must be a positive whole number");
+				throw new BadArgumentException(4, "Height must be a positive whole number");
 			}
 		}
 					

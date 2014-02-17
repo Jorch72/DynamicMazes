@@ -23,6 +23,7 @@ import org.bukkit.entity.Player;
 import com.google.common.base.Throwables;
 
 import au.com.mineauz.dynmazes.algorithm.Algorithm;
+import au.com.mineauz.dynmazes.misc.BadArgumentException;
 import au.com.mineauz.dynmazes.misc.Callback;
 import au.com.mineauz.dynmazes.misc.ConfirmationPrompt;
 import au.com.mineauz.dynmazes.styles.StoredBlock;
@@ -76,7 +77,7 @@ public class MazeManager
 		}
 	}
 	
-	public static ConfirmationPrompt createMaze(final Player player, String name, String type, String[] args) throws IllegalArgumentException, NoSuchFieldException
+	public static ConfirmationPrompt createMaze(final Player player, String name, String type, String[] args) throws BadArgumentException, NoSuchFieldException
 	{
 		MazeDefinition def = mMazeTypes.get(type.toLowerCase());
 		if(def == null)

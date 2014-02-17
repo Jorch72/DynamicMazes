@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import au.com.mineauz.dynmazes.DesignManager;
 import au.com.mineauz.dynmazes.commands.CommandSenderType;
 import au.com.mineauz.dynmazes.commands.ICommand;
+import au.com.mineauz.dynmazes.misc.BadArgumentException;
 
 public class ChangeHeightDesignCommand implements ICommand
 {
@@ -69,15 +70,11 @@ public class ChangeHeightDesignCommand implements ICommand
 		{
 			height = Integer.parseInt(args[0]);
 			if(height < 3 || height > 40)
-			{
-				sender.sendMessage(ChatColor.RED + "Height is out of range. Valid range is 3 - 40 inclusive.");
-				return true;
-			}
+				throw new BadArgumentException(0, "Height is out of range. Valid range is 3 - 40 inclusive.");
 		}
 		catch(NumberFormatException e)
 		{
-			sender.sendMessage(ChatColor.RED + "Height must be a number between 3 and 40 inclusive");
-			return true;
+			throw new BadArgumentException(0, "Height must be a number between 3 and 40 inclusive");
 		}
 		
 		manager.setHeight(height);

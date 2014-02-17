@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.bukkit.command.CommandSender;
 
+import au.com.mineauz.dynmazes.misc.BadArgumentException;
+
 public interface ICommand 
 {
 	/**
@@ -49,7 +51,7 @@ public interface ICommand
 	 * @param args The arguments for this command
 	 * @return True if this command was executed. False otherwise
 	 */
-	public boolean onCommand(CommandSender sender, String parent, String label, String[] args);
+	public boolean onCommand(CommandSender sender, String parent, String label, String[] args) throws BadArgumentException;
 	
 	/**
 	 * Called when tab complete is used on this command. 

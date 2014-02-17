@@ -1,10 +1,16 @@
 package au.com.mineauz.dynmazes.misc;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
 public class BadArgumentException extends RuntimeException
 {
 	private static final long serialVersionUID = -5099437186563532852L;
 	
 	private int mArg;
+	private ArrayList<String> mInfoLines;
 	
 	public BadArgumentException(int argument)
 	{
@@ -20,5 +26,29 @@ public class BadArgumentException extends RuntimeException
 	public int getArgument()
 	{
 		return mArg;
+	}
+	
+	public BadArgumentException addInfo(String line)
+	{
+		if(mInfoLines == null)
+			mInfoLines = new ArrayList<String>();
+		mInfoLines.add(line);
+		
+		return this;
+	}
+	public BadArgumentException addInfo(Collection<String> lines)
+	{
+		if(mInfoLines == null)
+			mInfoLines = new ArrayList<String>();
+		mInfoLines.addAll(lines);
+		
+		return this;
+	}
+	
+	public List<String> getInfoLines()
+	{
+		if(mInfoLines == null)
+			return Collections.emptyList();
+		return mInfoLines;
 	}
 }
