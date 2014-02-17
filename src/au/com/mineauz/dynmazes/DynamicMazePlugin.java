@@ -10,6 +10,7 @@ import au.com.mineauz.dynmazes.algorithm.DepthFirstAlgorithm;
 import au.com.mineauz.dynmazes.algorithm.GrowingTreeAlgorithm;
 import au.com.mineauz.dynmazes.algorithm.PrimsAlgorithm;
 import au.com.mineauz.dynmazes.commands.MazeCommand;
+import au.com.mineauz.dynmazes.minigames.MinigamesCompat;
 import au.com.mineauz.dynmazes.styles.StyleManager;
 import au.com.mineauz.dynmazes.types.CubeMaze;
 import au.com.mineauz.dynmazes.types.GridMaze;
@@ -24,6 +25,8 @@ public class DynamicMazePlugin extends JavaPlugin
 	{
 		return mInstance;
 	}
+	
+	private MazeCommand mMazeCommand;
 	
 	@Override
 	public void onEnable()
@@ -45,10 +48,13 @@ public class DynamicMazePlugin extends JavaPlugin
 		MazeManager.registerAlgorithm("GrowingTree", GrowingTreeAlgorithm.class);
 		MazeManager.registerAlgorithm("Braid", BraidAlgorithm.class);
 		
-		MazeCommand command = new MazeCommand();
-		command.registerAs(getCommand("dynmaze"));
+		mMazeCommand = new MazeCommand();
+		mMazeCommand.registerAs(getCommand("dynmaze"));
 		
 		Bukkit.getPluginManager().registerEvents(new WorldLockingHandler(), this);
+		
+		if(Bukkit.getPluginManager().isPluginEnabled("Minigames"))
+			MinigamesCompat.initialize(this);
 		
 		Bukkit.getScheduler().runTask(this, new Runnable()
 		{
@@ -58,5 +64,10 @@ public class DynamicMazePlugin extends JavaPlugin
 				MazeManager.loadMazes();
 			}
 		});
+	}
+	
+	public MazeCommand getMazeCommand()
+	{
+		return mMazeCommand;
 	}
 }

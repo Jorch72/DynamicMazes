@@ -17,6 +17,20 @@ public class Util
 	public static BlockFace[] dirOrderSimple = {BlockFace.SOUTH, BlockFace.SOUTH_WEST, BlockFace.WEST, BlockFace.NORTH_WEST, BlockFace.NORTH, BlockFace.NORTH_EAST, BlockFace.EAST, BlockFace.SOUTH_EAST};
 	public static BlockFace[] dirOrderSimpler = {BlockFace.SOUTH, BlockFace.WEST, BlockFace.NORTH, BlockFace.EAST};
 	
+	public static float toYaw(BlockFace face)
+	{
+		float current = 0;
+		for(BlockFace f : dirOrder)
+		{
+			if(f == face)
+				return current;
+			
+			current += 22.5f;
+		}
+		
+		return 0;
+	}
+	
 	public static BlockFace toFacing(float yaw)
 	{
 		if(yaw < 0)

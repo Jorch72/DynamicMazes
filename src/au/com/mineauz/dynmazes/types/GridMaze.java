@@ -446,7 +446,14 @@ public class GridMaze extends Maze<GridNode> implements GridBased<GridNode>
 	@Override
 	public BlockLocation getStartPoint()
 	{
-		return new BlockLocation(mEntrance.toLocation(), mEntrance.toNode((AbstractGridNode)mEntrance.getChildren().get(0)));
+		if(mEntrance == null)
+			return null;
+		
+		BlockVector vec = mEntrance.toLocation();
+		vec.setX(vec.getX() + mPathWidth / 2);
+		vec.setZ(vec.getZ() + mPathWidth / 2);
+		
+		return new BlockLocation(vec, mEntrance.toNode((AbstractGridNode)mEntrance.getChildren().get(0)));
 	}
 	
 	@Override

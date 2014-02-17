@@ -5,6 +5,8 @@ version: 1.0
 
 main: au.com.mineauz.dynmazes.DynamicMazePlugin
 
+softdepend: [Minigames]
+
 permissions:
   dynamicmazes.command.maze:
     default: true

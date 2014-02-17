@@ -18,6 +18,12 @@ public class FlagIO
 		mKnownTypes.put("Algorithm", AlgorithmFlag.class);
 		mKnownTypes.put("BlockType", BlockTypeFlag.class);
 		mKnownTypes.put("Style", StyleFlag.class);
+		mKnownTypes.put("Boolean", BooleanFlag.class);
+	}
+	
+	public static void addKnownType(String type, Class<? extends Flag<?>> typeClass)
+	{
+		mKnownTypes.put(type, typeClass);
 	}
 	
 	public static void saveFlags(Map<String, Flag<?>> flags, ConfigurationSection root)

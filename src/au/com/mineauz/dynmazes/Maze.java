@@ -382,6 +382,11 @@ public abstract class Maze<T extends INode>
 		return getFlags().get(name.toLowerCase());
 	}
 	
+	public boolean hasFlag(String name)
+	{
+		return getFlags().containsKey(name.toLowerCase());
+	}
+	
 	public <Type> void onFlagChanged(String name, Flag<Type> flag, Type oldValue)
 	{
 		
