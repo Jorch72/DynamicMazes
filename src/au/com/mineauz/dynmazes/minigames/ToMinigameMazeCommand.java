@@ -89,9 +89,12 @@ public class ToMinigameMazeCommand implements ICommand
 		
 		BlockLocation loc = maze.getStartPoint();
 		if(loc != null)
-			game.addStartLocation(new Location(maze.getWorld(), loc.getX(), loc.getY() + 1, loc.getZ(), Util.toYaw(loc.getFace()), 0));
+			game.addStartLocation(new Location(maze.getWorld(), loc.getX(), loc.getY(), loc.getZ(), Util.toYaw(loc.getFace()), 0));
 		else
 			game.addStartLocation(new Location(maze.getWorld(), maze.getMinCorner().getX(), maze.getMinCorner().getY(), maze.getMinCorner().getZ()));
+		
+		MinigamesCompat.addFinishSign(maze);
+		MinigamesCompat.addQuitSign(maze);
 		
 		// TODO: Place stuff in maze as needed
 		

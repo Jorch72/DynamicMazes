@@ -452,6 +452,7 @@ public class GridMaze extends Maze<GridNode> implements GridBased<GridNode>
 		BlockVector vec = mEntrance.toLocation();
 		vec.setX(vec.getX() + mPathWidth / 2);
 		vec.setZ(vec.getZ() + mPathWidth / 2);
+		vec.setY(vec.getY() + 1);
 		
 		return new BlockLocation(vec, mEntrance.toNode((AbstractGridNode)mEntrance.getChildren().get(0)));
 	}
@@ -459,7 +460,15 @@ public class GridMaze extends Maze<GridNode> implements GridBased<GridNode>
 	@Override
 	public BlockLocation getEndPoint()
 	{
-		return new BlockLocation(mExit.toLocation(), mExit.toNode((AbstractGridNode)mExit.getParents().get(0)));
+		if(mExit == null)
+			return null;
+		
+		BlockVector vec = mExit.toLocation();
+		vec.setX(vec.getX() + mPathWidth / 2);
+		vec.setZ(vec.getZ() + mPathWidth / 2);
+		vec.setY(vec.getY() + 1);
+		
+		return new BlockLocation(vec, mExit.toNode((AbstractGridNode)mExit.getParents().get(0)));
 	}
 }
 

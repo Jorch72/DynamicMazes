@@ -1,9 +1,12 @@
 package au.com.mineauz.dynmazes.minigames;
 
-import java.util.LinkedList;
-
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.Sign;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -96,11 +99,61 @@ public class MinigamesCompat implements Listener
 				{
 					minigame.setRegenerating(false);
 					BlockLocation loc = maze.getStartPoint();
-					minigame.setStartLocation(new Location(maze.getWorld(), loc.getX(), loc.getY() + 1, loc.getZ(), Util.toYaw(loc.getFace()), 0));
+					minigame.setStartLocation(new Location(maze.getWorld(), loc.getX(), loc.getY(), loc.getZ(), Util.toYaw(loc.getFace()), 0));
+					addFinishSign(maze);
+					addQuitSign(maze);
 				}
 			});
 		}
 	}
 	
+	public static void addFinishSign(Maze<?> maze)
+	{
+		BlockLocation loc = maze.getEndPoint();
+		if(loc == null)
+			return;
+		
+		Block block = maze.getWorld().getBlockAt(loc.getX(), loc.getY(), loc.getZ());
+		block.setType(Material.SIGN_POST);
+		
+		BlockState state = block.getState();
+		if(!(state instanceof Sign))
+		{
+			DynamicMazePlugin.getInstance().getLogger().warning("Could not place finish sign for " + maze.getName());
+			return;
+		}
+		
+		Sign sign = (Sign)state;
+		sign.setLine(0, ChatColor.DARK_BLUE + "[Minigame]");
+		sign.setLine(1, ChatColor.GREEN + "Finish");
+		
+		((org.bukkit.material.Sign)sign.getData()).setFacingDirection(loc.getFace());
+		
+		sign.update(true);
+	}
 	
+	public static void addQuitSign(Maze<?> maze)
+	{
+		BlockLocation loc = maze.getStartPoint();
+		if(loc == null)
+			return;
+		
+		Block block = maze.getWorld().getBlockAt(loc.getX(), loc.getY(), loc.getZ());
+		block.setType(Material.SIGN_POST);
+		
+		BlockState state = block.getState();
+		if(!(state instanceof Sign))
+		{
+			DynamicMazePlugin.getInstance().getLogger().warning("Could not place finish sign for " + maze.getName());
+			return;
+		}
+		
+		Sign sign = (Sign)state;
+		sign.setLine(0, ChatColor.DARK_BLUE + "[Minigame]");
+		sign.setLine(1, ChatColor.GREEN + "Quit");
+		
+		((org.bukkit.material.Sign)sign.getData()).setFacingDirection(loc.getFace());
+		
+		sign.update(true);
+	}
 }

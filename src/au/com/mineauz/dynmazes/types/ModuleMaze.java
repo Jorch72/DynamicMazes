@@ -276,13 +276,29 @@ public class ModuleMaze extends Maze<ModuleNode> implements GridBased<ModuleNode
 	@Override
 	public BlockLocation getStartPoint()
 	{
-		return new BlockLocation(mEntrance.toLocation(), mEntrance.toNode((AbstractGridNode)mEntrance.getChildren().get(0)));
+		if(mEntrance == null)
+			return null;
+		
+		BlockVector vec = mEntrance.toLocation();
+		vec.setX(vec.getX() + mStyle.getValue().getPieceSize() / 2);
+		vec.setZ(vec.getZ() + mStyle.getValue().getPieceSize() / 2);
+		vec.setY(vec.getY() + 1);
+		
+		return new BlockLocation(vec, mEntrance.toNode((AbstractGridNode)mEntrance.getChildren().get(0)));
 	}
 	
 	@Override
 	public BlockLocation getEndPoint()
 	{
-		return new BlockLocation(mExit.toLocation(), mExit.toNode((AbstractGridNode)mExit.getParents().get(0)));
+		if(mExit == null)
+			return null;
+		
+		BlockVector vec = mExit.toLocation();
+		vec.setX(vec.getX() + mStyle.getValue().getPieceSize() / 2);
+		vec.setZ(vec.getZ() + mStyle.getValue().getPieceSize() / 2);
+		vec.setY(vec.getY() + 1);
+		
+		return new BlockLocation(vec, mExit.toNode((AbstractGridNode)mExit.getParents().get(0)));
 	}
 }
 
