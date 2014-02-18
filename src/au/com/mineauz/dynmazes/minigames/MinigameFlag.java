@@ -51,6 +51,9 @@ public class MinigameFlag extends Flag<Minigame>
 	@Override
 	public String getValueString()
 	{
+		if(value == null)
+			return "*Invalid Value*";
+		
 		return value.getName();
 	}
 }

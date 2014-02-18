@@ -118,11 +118,13 @@ public class MinigamesCompat implements Listener
 		if(event.getMaze().hasFlag("minigame"))
 		{
 			Minigame minigame = (Minigame)event.getMaze().getFlag("minigame").getValue();
-			
-			if(!minigame.getPlayers().isEmpty())
-				event.setCancelled(true);
-			else
-				minigame.setRegenerating(true);
+			if(minigame != null)
+			{
+				if(!minigame.getPlayers().isEmpty())
+					event.setCancelled(true);
+				else
+					minigame.setRegenerating(true);
+			}
 		}
 	}
 	
@@ -132,12 +134,15 @@ public class MinigamesCompat implements Listener
 		if(event.getMaze().hasFlag("minigame"))
 		{
 			Minigame minigame = (Minigame)event.getMaze().getFlag("minigame").getValue();
-			minigame.setRegenerating(false);
-			
-			BlockLocation loc = event.getMaze().getStartPoint();
-			minigame.setStartLocation(new Location(event.getMaze().getWorld(), loc.getX(), loc.getY(), loc.getZ(), Util.toYaw(loc.getFace()), 0));
-			addFinishSign(event.getMaze());
-			addQuitSign(event.getMaze());
+			if(minigame != null)
+			{
+				minigame.setRegenerating(false);
+				
+				BlockLocation loc = event.getMaze().getStartPoint();
+				minigame.setStartLocation(new Location(event.getMaze().getWorld(), loc.getX(), loc.getY(), loc.getZ(), Util.toYaw(loc.getFace()), 0));
+				addFinishSign(event.getMaze());
+				addQuitSign(event.getMaze());
+			}
 		}
 	}
 	
