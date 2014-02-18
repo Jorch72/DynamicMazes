@@ -66,8 +66,8 @@ public class CubeMaze extends Maze<CubeNode> implements CubeBased<CubeNode>
 		mGenStartRoom.setValue(false);
 		mGenFinishRoom.setValue(false);
 		
-		int widthSize = wallWidth + (wallWidth + pathWidth) * (width + 1);
-		int lengthSize = wallWidth + (wallWidth + pathWidth) * (length + 1);
+		int widthSize = wallWidth + (wallWidth + pathWidth) * (width + 2);
+		int lengthSize = wallWidth + (wallWidth + pathWidth) * (length + 2);
 		int heightSize = (wallHeight + 2) * height;
 		
 		mHeight = height;
@@ -75,23 +75,23 @@ public class CubeMaze extends Maze<CubeNode> implements CubeBased<CubeNode>
 		switch(facing)
 		{
 		case NORTH:
-			setBounds(new BlockVector(loc.getBlockX() - (wallWidth + (wallWidth + pathWidth)), loc.getBlockY(), loc.getBlockZ() - lengthSize + 1), new BlockVector(loc.getBlockX() + widthSize, loc.getBlockY() + heightSize, loc.getBlockZ() + 1 + (wallWidth + (wallWidth + pathWidth))));
+			setBounds(new BlockVector(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ() - lengthSize + 1), new BlockVector(loc.getBlockX() + widthSize, loc.getBlockY() + heightSize, loc.getBlockZ() + 1));
 			mWidth = width;
 			mLength = length;
 			break;
 		case SOUTH:
-			setBounds(new BlockVector(loc.getBlockX() - widthSize + 1, loc.getBlockY(), loc.getBlockZ() - (wallWidth + (wallWidth + pathWidth))), new BlockVector(loc.getBlockX() + 1 + (wallWidth + (wallWidth + pathWidth)), loc.getBlockY() + heightSize, loc.getBlockZ() + lengthSize));
+			setBounds(new BlockVector(loc.getBlockX() - widthSize + 1, loc.getBlockY(), loc.getBlockZ()), new BlockVector(loc.getBlockX() + 1, loc.getBlockY() + heightSize, loc.getBlockZ() + lengthSize));
 			mWidth = width;
 			mLength = length;
 			break;
 		case WEST:
-			setBounds(new BlockVector(loc.getBlockX() - lengthSize + 1, loc.getBlockY(), loc.getBlockZ() - widthSize + 1), new BlockVector(loc.getBlockX() + 1 + (wallWidth + (wallWidth + pathWidth)), loc.getBlockY() + heightSize, loc.getBlockZ() + 1 + (wallWidth + (wallWidth + pathWidth))));
+			setBounds(new BlockVector(loc.getBlockX() - lengthSize + 1, loc.getBlockY(), loc.getBlockZ() - widthSize + 1), new BlockVector(loc.getBlockX() + 1, loc.getBlockY() + heightSize, loc.getBlockZ() + 1));
 			mWidth = length;
 			mLength = width;
 			break;
 		case EAST:
 		default:
-			setBounds(new BlockVector(loc.getBlockX() - (wallWidth + (wallWidth + pathWidth)), loc.getBlockY(), loc.getBlockZ() - (wallWidth + (wallWidth + pathWidth))), new BlockVector(loc.getBlockX() + lengthSize, loc.getBlockY() + heightSize, loc.getBlockZ() + widthSize));
+			setBounds(new BlockVector(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ()), new BlockVector(loc.getBlockX() + lengthSize, loc.getBlockY() + heightSize, loc.getBlockZ() + widthSize));
 			mWidth = length;
 			mLength = width;
 			break;

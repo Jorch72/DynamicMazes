@@ -101,8 +101,6 @@ public class ToMinigameMazeCommand implements ICommand
 		MinigamesCompat.addFinishSign(maze);
 		MinigamesCompat.addQuitSign(maze);
 		
-		// TODO: Place stuff in maze as needed
-		
 		MazeManager.saveMaze(maze);
 		sender.sendMessage(ChatColor.GREEN + "This maze is now linked to " + game.getName());
 		
