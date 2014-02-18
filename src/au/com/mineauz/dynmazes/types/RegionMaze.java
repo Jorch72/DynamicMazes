@@ -79,7 +79,6 @@ public class RegionMaze extends Maze<RegionNode> implements GridBased<RegionNode
 		mWidth = (mRegion.getWidth() - wallWidth) / (pathWidth + wallWidth);
 		mLength = (mRegion.getLength() - wallWidth) / (pathWidth + wallWidth);
 		
-		// TODO: Recalc the size based on the width/length
 		int width = wallWidth + (pathWidth + wallWidth) * (mWidth+1);
 		int length = wallWidth + (pathWidth + wallWidth) * (mLength+1);
 		

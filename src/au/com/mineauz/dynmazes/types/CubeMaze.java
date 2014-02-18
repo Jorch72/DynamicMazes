@@ -20,6 +20,7 @@ import au.com.mineauz.dynmazes.Maze;
 import au.com.mineauz.dynmazes.Util;
 import au.com.mineauz.dynmazes.MazeManager.MazeCommand;
 import au.com.mineauz.dynmazes.flags.BlockTypeFlag;
+import au.com.mineauz.dynmazes.flags.BooleanFlag;
 import au.com.mineauz.dynmazes.misc.BadArgumentException;
 import au.com.mineauz.dynmazes.misc.BlockLocation;
 import au.com.mineauz.dynmazes.styles.StoredBlock;
@@ -44,7 +45,8 @@ public class CubeMaze extends Maze<CubeNode> implements CubeBased<CubeNode>
 	private BlockTypeFlag mRoofMaterial = new BlockTypeFlag();
 	private BlockTypeFlag mFillMaterial = new BlockTypeFlag();
 	private BlockTypeFlag mWallMaterial = new BlockTypeFlag();
-	private BlockTypeFlag mLadderWallMaterial = new BlockTypeFlag();
+	private BooleanFlag mGenStartRoom = new BooleanFlag();
+	private BooleanFlag mGenFinishRoom = new BooleanFlag();
 	
 	public CubeMaze(String name, Location loc, BlockFace facing, int width, int length, int height, int pathWidth, int wallWidth, int wallHeight)
 	{
@@ -54,16 +56,18 @@ public class CubeMaze extends Maze<CubeNode> implements CubeBased<CubeNode>
 		addFlag("path-type", mPathMaterial);
 		addFlag("roof-type", mRoofMaterial);
 		addFlag("fill-type", mFillMaterial);
-		addFlag("ladder-wall-type", mLadderWallMaterial);
+		addFlag("gen-start-room", mGenStartRoom);
+		addFlag("gen-finish-room", mGenFinishRoom);
 		
 		mWallMaterial.setValue(new StoredBlock(Material.LEAVES));
-		mLadderWallMaterial.setValue(new StoredBlock(Material.LOG));
-		mPathMaterial.setValue(new StoredBlock(Material.GRAVEL));
-		mRoofMaterial.setValue(new StoredBlock(Material.WOOD));
-		mFillMaterial.setValue(new StoredBlock(Material.GRASS));
+		mPathMaterial.setValue(new StoredBlock(Material.GRASS));
+		mRoofMaterial.setValue(new StoredBlock(Material.SMOOTH_BRICK));
+		mFillMaterial.setValue(new StoredBlock(Material.SMOOTH_BRICK));
+		mGenStartRoom.setValue(false);
+		mGenFinishRoom.setValue(false);
 		
-		int widthSize = wallWidth + (wallWidth + pathWidth) * width;
-		int lengthSize = wallWidth + (wallWidth + pathWidth) * length;
+		int widthSize = wallWidth + (wallWidth + pathWidth) * (width + 1);
+		int lengthSize = wallWidth + (wallWidth + pathWidth) * (length + 1);
 		int heightSize = (wallHeight + 2) * height;
 		
 		mHeight = height;
@@ -71,23 +75,23 @@ public class CubeMaze extends Maze<CubeNode> implements CubeBased<CubeNode>
 		switch(facing)
 		{
 		case NORTH:
-			setBounds(new BlockVector(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ() - lengthSize + 1), new BlockVector(loc.getBlockX() + widthSize, loc.getBlockY() + heightSize, loc.getBlockZ() + 1));
+			setBounds(new BlockVector(loc.getBlockX() - (wallWidth + (wallWidth + pathWidth)), loc.getBlockY(), loc.getBlockZ() - lengthSize + 1), new BlockVector(loc.getBlockX() + widthSize, loc.getBlockY() + heightSize, loc.getBlockZ() + 1 + (wallWidth + (wallWidth + pathWidth))));
 			mWidth = width;
 			mLength = length;
 			break;
 		case SOUTH:
-			setBounds(new BlockVector(loc.getBlockX() - widthSize + 1, loc.getBlockY(), loc.getBlockZ()), new BlockVector(loc.getBlockX() + 1, loc.getBlockY() + heightSize, loc.getBlockZ() + lengthSize));
+			setBounds(new BlockVector(loc.getBlockX() - widthSize + 1, loc.getBlockY(), loc.getBlockZ() - (wallWidth + (wallWidth + pathWidth))), new BlockVector(loc.getBlockX() + 1 + (wallWidth + (wallWidth + pathWidth)), loc.getBlockY() + heightSize, loc.getBlockZ() + lengthSize));
 			mWidth = width;
 			mLength = length;
 			break;
 		case WEST:
-			setBounds(new BlockVector(loc.getBlockX() - lengthSize + 1, loc.getBlockY(), loc.getBlockZ() - widthSize + 1), new BlockVector(loc.getBlockX() + 1, loc.getBlockY() + heightSize, loc.getBlockZ() + 1));
+			setBounds(new BlockVector(loc.getBlockX() - lengthSize + 1, loc.getBlockY(), loc.getBlockZ() - widthSize + 1), new BlockVector(loc.getBlockX() + 1 + (wallWidth + (wallWidth + pathWidth)), loc.getBlockY() + heightSize, loc.getBlockZ() + 1 + (wallWidth + (wallWidth + pathWidth))));
 			mWidth = length;
 			mLength = width;
 			break;
 		case EAST:
 		default:
-			setBounds(loc.toVector().toBlockVector(), new BlockVector(loc.getBlockX() + lengthSize, loc.getBlockY() + heightSize, loc.getBlockZ() + widthSize));
+			setBounds(new BlockVector(loc.getBlockX() - (wallWidth + (wallWidth + pathWidth)), loc.getBlockY(), loc.getBlockZ() - (wallWidth + (wallWidth + pathWidth))), new BlockVector(loc.getBlockX() + lengthSize, loc.getBlockY() + heightSize, loc.getBlockZ() + widthSize));
 			mWidth = length;
 			mLength = width;
 			break;
@@ -211,14 +215,15 @@ public class CubeMaze extends Maze<CubeNode> implements CubeBased<CubeNode>
 	protected void placeNode( CubeNode node, List<StoredBlock> blocks )
 	{
 		BlockVector origin = node.toLocation();
-		// TODO: Placeing it correctly
-		
+	
 		Set<BlockFace> connections = node.getConnections();
 		
 		int holeSize = mPathWidth % 2 == 0 ? 2 : Math.min(3, mPathWidth);
 		int holeOffset = (mPathWidth - holeSize) / 2;
 		boolean down = connections.contains(BlockFace.DOWN);
 		boolean up = connections.contains(BlockFace.UP);
+		
+		boolean isStandalone = (node == mEntrance || node == mExit);
 		
 		// Path Center
 		for(int x = 0; x < mPathWidth; ++x)
@@ -234,6 +239,15 @@ public class CubeMaze extends Maze<CubeNode> implements CubeBased<CubeNode>
 				vec.setZ(vec.getZ() + z);
 				block.setLocation(vec);
 				blocks.add(block);
+				
+				if(isStandalone)
+				{
+					block = mRoofMaterial.getValue().clone();
+					vec = vec.clone();
+					vec.setY(vec.getY() - 1);
+					block.setLocation(vec);
+					blocks.add(block);
+				}
 			}
 		}
 		
@@ -354,8 +368,8 @@ public class CubeMaze extends Maze<CubeNode> implements CubeBased<CubeNode>
 		// Do the corner walls
 		for(BlockFace corner : corners)
 		{
-			if((corner.getModX() < 0 && node.getX() != 0) ||
-				(corner.getModZ() < 0 && node.getZ() != 0))
+			if((corner.getModX() < 0 && (node.getX() != 0 && !isStandalone)) ||
+				(corner.getModZ() < 0 && (node.getZ() != 0 && !isStandalone)))
 				continue;
 			
 			BlockVector newOrigin = origin.clone();
@@ -393,8 +407,8 @@ public class CubeMaze extends Maze<CubeNode> implements CubeBased<CubeNode>
 		// Do middle walls
 		for(BlockFace face : directions)
 		{
-			if((face.getModX() < 0 && node.getX() != 0) ||
-				(face.getModZ() < 0 && node.getZ() != 0) ||
+			if((face.getModX() < 0 && (node.getX() != 0 && !isStandalone)) ||
+				(face.getModZ() < 0 && (node.getZ() != 0 && !isStandalone)) ||
 				face.getModY() != 0)
 				continue;
 			
@@ -440,8 +454,15 @@ public class CubeMaze extends Maze<CubeNode> implements CubeBased<CubeNode>
 				}
 			}
 		}
-		
-		
+	}
+	
+	@Override
+	protected void placeOther( List<StoredBlock> blocks )
+	{
+		if(mGenStartRoom.getValue())
+			placeNode(mEntrance, blocks);
+		if(mGenFinishRoom.getValue())
+			placeNode(mExit, blocks);
 	}
 	
 	@MazeCommand(command="new")
@@ -559,7 +580,8 @@ public class CubeMaze extends Maze<CubeNode> implements CubeBased<CubeNode>
 		mFillMaterial = (BlockTypeFlag)getFlag("fill-type");
 		mWallMaterial = (BlockTypeFlag)getFlag("wall-type");
 		mRoofMaterial = (BlockTypeFlag)getFlag("roof-type");
-		mLadderWallMaterial = (BlockTypeFlag)getFlag("ladder-wall-type");
+		mGenStartRoom = (BooleanFlag)getFlag("gen-start-room");
+		mGenFinishRoom = (BooleanFlag)getFlag("gen-finish-room");
 	}
 	
 	@Override
@@ -606,6 +628,6 @@ class CubeNode extends AbstractGridNode3D
 	@Override
 	public BlockVector toLocation()
 	{
-		return getMaze().getMinCorner().clone().add(new Vector(getMaze().mWallWidth + x * (getMaze().mPathWidth + getMaze().mWallWidth), y * (getMaze().mWallHeight + 2), getMaze().mWallWidth + z * (getMaze().mPathWidth + getMaze().mWallWidth))).toBlockVector();
+		return getMaze().getMinCorner().clone().add(new Vector(getMaze().mWallWidth + (x+1) * (getMaze().mPathWidth + getMaze().mWallWidth), y * (getMaze().mWallHeight + 2), getMaze().mWallWidth + (z+1) * (getMaze().mPathWidth + getMaze().mWallWidth))).toBlockVector();
 	}
 }
