@@ -86,6 +86,8 @@ public class ToMinigameMazeCommand implements ICommand
 		
 		((MinigameFlag)maze.getFlag("minigame")).setValue(game);
 		((BooleanFlag)maze.getFlag("regen-on-end")).setValue(true);
+		((BooleanFlag)maze.getFlag("gen-start-room")).setValue(true);
+		((BooleanFlag)maze.getFlag("gen-finish-room")).setValue(true);
 		
 		BlockLocation loc = maze.getStartPoint();
 		if(loc != null)

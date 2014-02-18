@@ -20,6 +20,7 @@ import au.com.mineauz.dynmazes.Maze;
 import au.com.mineauz.dynmazes.Util;
 import au.com.mineauz.dynmazes.MazeManager.MazeCommand;
 import au.com.mineauz.dynmazes.flags.BlockTypeFlag;
+import au.com.mineauz.dynmazes.flags.BooleanFlag;
 import au.com.mineauz.dynmazes.misc.BadArgumentException;
 import au.com.mineauz.dynmazes.misc.BlockLocation;
 import au.com.mineauz.dynmazes.styles.StoredBlock;
@@ -41,7 +42,10 @@ public class GridMaze extends Maze<GridNode> implements GridBased<GridNode>
 	
 	private BlockTypeFlag mPathMaterial = new BlockTypeFlag();
 	private BlockTypeFlag mFillMaterial = new BlockTypeFlag();
+	private BlockTypeFlag mOutFillMaterial = new BlockTypeFlag();
 	private BlockTypeFlag mWallMaterial = new BlockTypeFlag();
+	private BooleanFlag mGenStartRoom = new BooleanFlag();
+	private BooleanFlag mGenFinishRoom = new BooleanFlag();
 	
 	public GridMaze(String name, Location loc, BlockFace facing, int width, int length, int pathWidth, int wallWidth, int height)
 	{
@@ -50,13 +54,19 @@ public class GridMaze extends Maze<GridNode> implements GridBased<GridNode>
 		addFlag("wall-type", mWallMaterial);
 		addFlag("path-type", mPathMaterial);
 		addFlag("fill-type", mFillMaterial);
+		addFlag("out-fill-type", mOutFillMaterial);
+		addFlag("gen-start-room", mGenStartRoom);
+		addFlag("gen-finish-room", mGenFinishRoom);
 		
 		mWallMaterial.setValue(new StoredBlock(Material.LEAVES));
 		mPathMaterial.setValue(new StoredBlock(Material.GRAVEL));
 		mFillMaterial.setValue(new StoredBlock(Material.GRASS));
+		mOutFillMaterial.setValue(new StoredBlock(Material.GRASS));
+		mGenStartRoom.setValue(false);
+		mGenFinishRoom.setValue(false);
 		
-		int widthSize = wallWidth + (wallWidth + pathWidth) * width;
-		int lengthSize = wallWidth + (wallWidth + pathWidth) * length;
+		int widthSize = wallWidth + (wallWidth + pathWidth) * (width + 2);
+		int lengthSize = wallWidth + (wallWidth + pathWidth) * (length + 2);
 		
 		switch(facing)
 		{
@@ -209,10 +219,13 @@ public class GridMaze extends Maze<GridNode> implements GridBased<GridNode>
 		
 		Set<BlockFace> connections = node.getConnections();
 		
+		boolean doNegX = node.getX() == 0 || node == mEntrance || node == mExit;
+		boolean doNegY = node.getY() == 0 || node == mEntrance || node == mExit;
+		
 		for(BlockFace face : connections)
 		{
-			if((face.getModX() < 0 && node.getX() != 0) ||
-				(face.getModZ() < 0 && node.getY() != 0))
+			if((face.getModX() < 0 && !doNegX) ||
+				(face.getModZ() < 0 && !doNegY))
 				continue;
 			
 			BlockVector newOrigin = origin.clone();
@@ -255,8 +268,8 @@ public class GridMaze extends Maze<GridNode> implements GridBased<GridNode>
 		// Do the corner walls
 		for(BlockFace corner : corners)
 		{
-			if((corner.getModX() < 0 && node.getX() != 0) ||
-				(corner.getModZ() < 0 && node.getY() != 0))
+			if((corner.getModX() < 0 && !doNegX) ||
+				(corner.getModZ() < 0 && !doNegY))
 				continue;
 			
 			BlockVector newOrigin = origin.clone();
@@ -293,8 +306,8 @@ public class GridMaze extends Maze<GridNode> implements GridBased<GridNode>
 		// Do middle walls
 		for(BlockFace face : directions)
 		{
-			if((face.getModX() < 0 && node.getX() != 0) ||
-				(face.getModZ() < 0 && node.getY() != 0))
+			if((face.getModX() < 0 && !doNegX) ||
+				(face.getModZ() < 0 && !doNegY))
 				continue;
 			
 			if(connections.contains(face))
@@ -339,7 +352,30 @@ public class GridMaze extends Maze<GridNode> implements GridBased<GridNode>
 				}
 			}
 		}
-
+	}
+	
+	@Override
+	protected void placeOther( List<StoredBlock> blocks )
+	{
+		for(int x = getMinCorner().getBlockX(); x < getMaxCorner().getBlockX(); ++x)
+		{
+			for(int z = getMinCorner().getBlockZ(); z < getMaxCorner().getBlockZ(); ++z)
+			{
+				if(x < getMinCorner().getBlockX() + (mPathWidth + mWallWidth) || x >= (getMaxCorner().getBlockX() - (mPathWidth + mWallWidth)) ||
+					z < getMinCorner().getBlockZ() + (mPathWidth + mWallWidth) || z >= (getMaxCorner().getBlockZ() - (mPathWidth + mWallWidth)))
+				{
+					StoredBlock block = mOutFillMaterial.getValue().clone();
+					BlockVector vec = new BlockVector(x, getMinCorner().getBlockY(), z);
+					block.setLocation(vec);
+					blocks.add(block);
+				}
+			}
+		}
+		
+		if(mGenStartRoom.getValue())
+			placeNode(mEntrance, blocks);
+		if(mGenFinishRoom.getValue())
+			placeNode(mExit, blocks);
 	}
 	
 	@MazeCommand(command="new")
@@ -440,7 +476,11 @@ public class GridMaze extends Maze<GridNode> implements GridBased<GridNode>
 		
 		mPathMaterial = (BlockTypeFlag)getFlag("path-type");
 		mFillMaterial = (BlockTypeFlag)getFlag("fill-type");
+		mOutFillMaterial = (BlockTypeFlag)getFlag("out-fill-type");
 		mWallMaterial = (BlockTypeFlag)getFlag("wall-type");
+		
+		mGenStartRoom = (BooleanFlag)getFlag("gen-start-room");
+		mGenFinishRoom = (BooleanFlag)getFlag("gen-finish-room");
 	}
 	
 	@Override
@@ -487,6 +527,6 @@ class GridNode extends AbstractGridNode
 	@Override
 	public BlockVector toLocation()
 	{
-		return getMaze().getMinCorner().clone().add(new Vector(getMaze().mWallWidth + x * (getMaze().mPathWidth + getMaze().mWallWidth), 0, getMaze().mWallWidth + y * (getMaze().mPathWidth + getMaze().mWallWidth))).toBlockVector();
+		return getMaze().getMinCorner().clone().add(new Vector(getMaze().mWallWidth + (x+1) * (getMaze().mPathWidth + getMaze().mWallWidth), 0, getMaze().mWallWidth + (y+1) * (getMaze().mPathWidth + getMaze().mWallWidth))).toBlockVector();
 	}
 }

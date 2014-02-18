@@ -71,6 +71,8 @@ public class DrawingTask<T extends INode> extends NotifiableTask implements Runn
 				mMaze.placeNode(node, mBlocks);
 			}
 			
+			mMaze.placeOther(mBlocks);
+			
 			DependencySortThread thread = new DependencySortThread(mBlocks, mFloorLevel);
 			mFuture = thread.getFuture();
 			

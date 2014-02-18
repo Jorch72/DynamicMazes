@@ -285,6 +285,8 @@ public abstract class Maze<T extends INode>
 	protected abstract T findStart();
 
 	protected abstract void placeNode( T node, List<StoredBlock> blocks );
+	
+	protected void placeOther(List<StoredBlock> blocks) {}
 
 	
 	public final void save(File file)
