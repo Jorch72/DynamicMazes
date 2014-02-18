@@ -20,4 +20,11 @@ public interface INode
 	 * traversing the hierarchy
 	 */
 	public int getDepth();
+	
+	/**
+	 * Gets the distance in steps from this node to the specified node
+	 */
+	public int getDistance(INode other);
+	
+	public boolean isParentOf(INode node);
 }

@@ -1,7 +1,5 @@
 package au.com.mineauz.dynmazes.algorithm;
 
-import java.util.AbstractMap;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -10,8 +8,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Map.Entry;
-
 import org.bukkit.configuration.ConfigurationSection;
 
 import au.com.mineauz.dynmazes.INode;
@@ -41,71 +37,6 @@ public class BraidAlgorithm implements Algorithm
 	private boolean isDeadEnd(INode node)
 	{
 		return (node.getChildren().size() + node.getParents().size()) == 1;
-	}
-	
-	private boolean isParentOf(INode parent, INode node)
-	{
-		ArrayDeque<INode> nodes = new ArrayDeque<INode>();
-		HashSet<INode> visited = new HashSet<INode>();
-		nodes.add(node);
-		
-		while(!nodes.isEmpty())
-		{
-			INode test = nodes.poll();
-			
-			if(!visited.add(test))
-				continue;
-			
-			if(test.equals(parent))
-				return true;
-			
-			for(INode parentNode : test.getParents())
-			{
-				if(!visited.contains(parentNode))
-					nodes.add(parentNode);
-			}
-		}
-		
-		return false;
-	}
-	
-	private int distanceTo(INode from, INode to)
-	{
-		ArrayDeque<Entry<INode, Integer>> nodes = new ArrayDeque<Entry<INode, Integer>>();
-		
-		HashMap<INode, Integer> visited = new HashMap<INode, Integer>();
-		HashMap<INode, INode> map = new HashMap<INode, INode>();
-		
-		nodes.add(new AbstractMap.SimpleEntry<INode, Integer>(from, 0));
-		visited.put(from, 0);
-		map.put(from, from);
-		
-		nodes.add(new AbstractMap.SimpleEntry<INode, Integer>(to, 0));
-		visited.put(to, 0);
-		map.put(to, to);
-		
-		while(!nodes.isEmpty())
-		{
-			Entry<INode, Integer> node = nodes.poll();
-			INode source = map.get(node.getKey());
-			
-			for(INode parent : node.getKey().getParents())
-			{
-				if(!visited.containsKey(parent))
-				{
-					nodes.add(new AbstractMap.SimpleEntry<INode, Integer>(parent, node.getValue() + 1));
-					visited.put(parent, node.getValue() + 1);
-					map.put(parent, source);
-				}
-				else
-				{
-					if(!source.equals(map.get(parent)))
-						return visited.get(parent) + node.getValue();
-				}
-			}
-		}
-		
-		throw new IllegalStateException();
 	}
 	
 	@Override
@@ -187,7 +118,7 @@ public class BraidAlgorithm implements Algorithm
 						if(node.getParents().contains(neighbours[i]))
 							continue;
 						
-						int dist = distanceTo(node, neighbours[i]);
+						int dist = node.getDistance(neighbours[i]);
 						if(dist < lowestDist)
 						{
 							lowestDist = dist;
@@ -201,7 +132,7 @@ public class BraidAlgorithm implements Algorithm
 					destination = neighbours[0];
 			}
 			
-			if(isParentOf(destination, node))
+			if(destination.isParentOf(node))
 				destination.addChild(node);
 			else
 				node.addChild(destination);
