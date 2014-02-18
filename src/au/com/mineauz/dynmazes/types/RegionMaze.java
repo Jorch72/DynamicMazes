@@ -26,6 +26,7 @@ import au.com.mineauz.dynmazes.INode;
 import au.com.mineauz.dynmazes.Maze;
 import au.com.mineauz.dynmazes.MazeManager.MazeCommand;
 import au.com.mineauz.dynmazes.flags.BlockTypeFlag;
+import au.com.mineauz.dynmazes.flags.BooleanFlag;
 import au.com.mineauz.dynmazes.misc.BadArgumentException;
 import au.com.mineauz.dynmazes.misc.BlockLocation;
 import au.com.mineauz.dynmazes.misc.WorldEditUtil;
@@ -49,6 +50,8 @@ public class RegionMaze extends Maze<RegionNode> implements GridBased<RegionNode
 	private BlockTypeFlag mFillMaterial = new BlockTypeFlag();
 	private BlockTypeFlag mExtFillMaterial = new BlockTypeFlag();
 	private BlockTypeFlag mWallMaterial = new BlockTypeFlag();
+	private BooleanFlag mGenStartRoom = new BooleanFlag();
+	private BooleanFlag mGenFinishRoom = new BooleanFlag();
 	
 	public RegionMaze(String name, World world, Region region, int pathWidth, int wallWidth, int height)
 	{
@@ -59,23 +62,31 @@ public class RegionMaze extends Maze<RegionNode> implements GridBased<RegionNode
 		addFlag("path-type", mPathMaterial);
 		addFlag("fill-type", mFillMaterial);
 		addFlag("out-fill-type", mExtFillMaterial);
+		addFlag("gen-start-room", mGenStartRoom);
+		addFlag("gen-finish-room", mGenFinishRoom);
 		
 		mWallMaterial.setValue(new StoredBlock(Material.LEAVES));
 		mPathMaterial.setValue(new StoredBlock(Material.GRAVEL));
 		mFillMaterial.setValue(new StoredBlock(Material.GRASS));
 		mExtFillMaterial.setValue(new StoredBlock(Material.GRASS));
+		mGenStartRoom.setValue(false);
+		mGenFinishRoom.setValue(false);
 		
 		mPathWidth = pathWidth;
 		mWallWidth = wallWidth;
 		mHeight = height;
 		
-		if(region instanceof EllipsoidRegion)
-			setBounds(new BlockVector(mRegion.getMinimumPoint().getBlockX(), mRegion.getCenter().getBlockY() + 1, mRegion.getMinimumPoint().getBlockZ()), new BlockVector(mRegion.getMaximumPoint().getBlockX() + 1, mRegion.getCenter().getBlockY() + 2 + height, mRegion.getMaximumPoint().getBlockZ() + 1));
-		else
-			setBounds(new BlockVector(mRegion.getMinimumPoint().getBlockX(), mRegion.getMinimumPoint().getBlockY() + 1, mRegion.getMinimumPoint().getBlockZ()), new BlockVector(mRegion.getMaximumPoint().getBlockX() + 1, mRegion.getMinimumPoint().getBlockY() + 2 + height, mRegion.getMaximumPoint().getBlockZ() + 1));
-		
 		mWidth = (mRegion.getWidth() - wallWidth) / (pathWidth + wallWidth);
 		mLength = (mRegion.getLength() - wallWidth) / (pathWidth + wallWidth);
+		
+		// TODO: Recalc the size based on the width/length
+		int width = wallWidth + (pathWidth + wallWidth) * (mWidth+1);
+		int length = wallWidth + (pathWidth + wallWidth) * (mLength+1);
+		
+		if(region instanceof EllipsoidRegion)
+			setBounds(new BlockVector(mRegion.getMinimumPoint().getBlockX() - (pathWidth + wallWidth), mRegion.getCenter().getBlockY() + 1, mRegion.getMinimumPoint().getBlockZ() - (pathWidth + wallWidth)), new BlockVector(mRegion.getMinimumPoint().getBlockX() + width, mRegion.getCenter().getBlockY() + 2 + height, mRegion.getMinimumPoint().getBlockZ() + length));
+		else
+			setBounds(new BlockVector(mRegion.getMinimumPoint().getBlockX() - (pathWidth + wallWidth), mRegion.getMinimumPoint().getBlockY() + 1, mRegion.getMinimumPoint().getBlockZ() - (pathWidth + wallWidth)), new BlockVector(mRegion.getMinimumPoint().getBlockX() + width, mRegion.getMinimumPoint().getBlockY() + 2 + height, mRegion.getMinimumPoint().getBlockZ() + length));
 	}
 	
 	protected RegionMaze()
@@ -93,7 +104,7 @@ public class RegionMaze extends Maze<RegionNode> implements GridBased<RegionNode
 		{
 			for(int x = 0; x < mWidth; ++x)
 			{
-				com.sk89q.worldedit.Vector vec = new com.sk89q.worldedit.Vector(getMinCorner().getBlockX() + mWallWidth + x * (mWallWidth + mPathWidth), middle, getMinCorner().getBlockZ() + mWallWidth + y * (mWallWidth + mPathWidth));
+				com.sk89q.worldedit.Vector vec = new com.sk89q.worldedit.Vector(getMinCorner().getBlockX() + mWallWidth + (x+1) * (mWallWidth + mPathWidth) + mPathWidth/2f, middle, getMinCorner().getBlockZ() + mWallWidth + (y+1) * (mWallWidth + mPathWidth) + mPathWidth/2f);
 				if(mRegion.contains(vec))
 					allNodes.add(new RegionNode(this, x, y));
 				else
@@ -227,10 +238,13 @@ public class RegionMaze extends Maze<RegionNode> implements GridBased<RegionNode
 		
 		Set<BlockFace> connections = node.getConnections();
 		
+		boolean doNegX = node.getX() == 0 || node == mEntrance || node == mExit || node.isOnEdge();
+		boolean doNegY = node.getY() == 0 || node == mEntrance || node == mExit || node.isOnEdge();
+		
 		for(BlockFace face : connections)
 		{
-			if((face.getModX() < 0 && (node.getX() != 0 && !node.isOnEdge())) ||
-				(face.getModZ() < 0 && (node.getY() != 0 && !node.isOnEdge())))
+			if((face.getModX() < 0 && !doNegX) ||
+				(face.getModZ() < 0 && !doNegY))
 				continue;
 			
 			BlockVector newOrigin = origin.clone();
@@ -273,8 +287,8 @@ public class RegionMaze extends Maze<RegionNode> implements GridBased<RegionNode
 		// Do the corner walls
 		for(BlockFace corner : GridMaze.corners)
 		{
-			if((corner.getModX() < 0 && (node.getX() != 0 && !node.isOnEdge())) ||
-				(corner.getModZ() < 0 && (node.getY() != 0 && !node.isOnEdge())))
+			if((corner.getModX() < 0 && !doNegX) ||
+				(corner.getModZ() < 0 && !doNegY))
 				continue;
 			
 			BlockVector newOrigin = origin.clone();
@@ -311,8 +325,8 @@ public class RegionMaze extends Maze<RegionNode> implements GridBased<RegionNode
 		// Do middle walls
 		for(BlockFace face : GridMaze.directions)
 		{
-			if((face.getModX() < 0 && (node.getX() != 0 && !node.isOnEdge())) ||
-				(face.getModZ() < 0 && (node.getY() != 0 && !node.isOnEdge())))
+			if((face.getModX() < 0 && !doNegX) ||
+				(face.getModZ() < 0 && !doNegY))
 				continue;
 			
 			if(connections.contains(face))
@@ -360,8 +374,58 @@ public class RegionMaze extends Maze<RegionNode> implements GridBased<RegionNode
 	}
 	
 	@Override
+	protected void placeOther( List<StoredBlock> blocks )
+	{
+		float size = (mPathWidth + mWallWidth);
+		
+		for(int x = -1; x <= mWidth; ++x)
+		{
+			for(int z = -1; z <= mLength; ++z)
+			{
+				if(x < 0 || z < 0 || x == mWidth || z == mLength || getNodeAt(x, z) == null)
+				{
+					int startX = getMinCorner().getBlockX() + mWallWidth + (x+1) * (mPathWidth + mWallWidth);
+					int startZ = getMinCorner().getBlockZ() + mWallWidth + (z+1) * (mPathWidth + mWallWidth);
+					
+					boolean toRight = getNodeAt(x+1, z) == null;
+					boolean toBottom = getNodeAt(x, z+1) == null;
+					boolean rightBottom = getNodeAt(x+1, z+1) == null;
+					
+					for(int xx = startX - (x == -1 ? 1 : 0); xx < startX + size; ++xx)
+					{
+						for(int zz = startZ - (z == -1 ? 1 : 0); zz < startZ + size; ++zz)
+						{
+							if(!toRight && xx == startX + size - 1)
+								continue;
+							
+							if(!toBottom && zz == startZ + size - 1)
+								continue;
+							
+							if(!rightBottom && xx == startX + size - 1 && zz == startZ + size - 1)
+								continue;
+							
+							StoredBlock block = mExtFillMaterial.getValue().clone();
+							BlockVector vec = new BlockVector(xx, getMinCorner().getBlockY(), zz);
+							block.setLocation(vec);
+							blocks.add(block);
+						}
+					}
+				}
+			}
+		}
+		
+		if(mGenStartRoom.getValue())
+			placeNode(mEntrance, blocks);
+		if(mGenFinishRoom.getValue())
+			placeNode(mExit, blocks);
+	}
+	
+	@Override
 	public RegionNode getNodeAt(int x, int y)
 	{
+		if(x < 0 || y < 0 || x >= mWidth || y >= mLength)
+			return null;
+		
 		return ((List<RegionNode>)allNodes).get(x + y * mWidth);
 	}
 	
@@ -407,6 +471,9 @@ public class RegionMaze extends Maze<RegionNode> implements GridBased<RegionNode
 		mFillMaterial = (BlockTypeFlag)getFlag("fill-type");
 		mExtFillMaterial = (BlockTypeFlag)getFlag("out-fill-type");
 		mWallMaterial = (BlockTypeFlag)getFlag("wall-type");
+		
+		mGenStartRoom = (BooleanFlag)getFlag("gen-start-room");
+		mGenFinishRoom = (BooleanFlag)getFlag("gen-finish-room");
 		
 		mRegion = WorldEditUtil.loadRegion(section.getConfigurationSection("region"));
 	}
@@ -516,7 +583,7 @@ class RegionNode extends AbstractGridNode
 	@Override
 	public BlockVector toLocation()
 	{
-		return getMaze().getMinCorner().clone().add(new Vector(getMaze().mWallWidth + x * (getMaze().mPathWidth + getMaze().mWallWidth), 0, getMaze().mWallWidth + y * (getMaze().mPathWidth + getMaze().mWallWidth))).toBlockVector();
+		return getMaze().getMinCorner().clone().add(new Vector(getMaze().mWallWidth + (x+1) * (getMaze().mPathWidth + getMaze().mWallWidth), 0, getMaze().mWallWidth + (y+1) * (getMaze().mPathWidth + getMaze().mWallWidth))).toBlockVector();
 	}
 	
 	private INode[] removeNulls(INode... nodes)
