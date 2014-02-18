@@ -19,6 +19,8 @@ import org.bukkit.util.BlockVector;
 
 import au.com.mineauz.dynmazes.algorithm.Algorithm;
 import au.com.mineauz.dynmazes.algorithm.GrowingTreeAlgorithm;
+import au.com.mineauz.dynmazes.events.MazePostDrawEvent;
+import au.com.mineauz.dynmazes.events.MazePreGenerateEvent;
 import au.com.mineauz.dynmazes.flags.AlgorithmFlag;
 import au.com.mineauz.dynmazes.flags.Flag;
 import au.com.mineauz.dynmazes.flags.FlagIO;
@@ -190,6 +192,7 @@ public abstract class Maze<T extends INode>
 					public void onComplete()
 					{
 						mIsDrawing = false;
+						Bukkit.getPluginManager().callEvent(new MazePostDrawEvent(Maze.this));
 
 						if(callback != null)
 							callback.onComplete();
@@ -236,6 +239,16 @@ public abstract class Maze<T extends INode>
 		Validate.notNull(mAlgorithm);
 		Validate.isTrue(!mIsGenerating);
 		Validate.isTrue(!mIsDrawing);
+		
+		MazePreGenerateEvent event = new MazePreGenerateEvent(this);
+		Bukkit.getPluginManager().callEvent(event);
+		if(event.isCancelled())
+		{
+			if(callback != null)
+				callback.onFailure(new IllegalStateException("This maze cannot be regenerated at the moment."));
+			return;
+		}
+		
 		
 		mIsGenerating = true;
 		if(seed != -1)

@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 import org.apache.commons.lang.Validate;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -23,6 +24,8 @@ import org.bukkit.entity.Player;
 import com.google.common.base.Throwables;
 
 import au.com.mineauz.dynmazes.algorithm.Algorithm;
+import au.com.mineauz.dynmazes.events.MazeCreateEvent;
+import au.com.mineauz.dynmazes.events.MazeDeleteEvent;
 import au.com.mineauz.dynmazes.misc.BadArgumentException;
 import au.com.mineauz.dynmazes.misc.Callback;
 import au.com.mineauz.dynmazes.misc.ConfirmationPrompt;
@@ -102,7 +105,7 @@ public class MazeManager
 				public void onComplete()
 				{
 					mMazes.put(maze.getName().toLowerCase(), maze);
-					
+					Bukkit.getPluginManager().callEvent(new MazeCreateEvent(maze));
 					saveMaze(maze);
 					maze.prepareArea(new StoredBlock(Material.BEDROCK), new Callback()
 					{
@@ -169,6 +172,7 @@ public class MazeManager
 	
 	public static void deleteMaze(final Maze<?> maze, final Callback callback)
 	{
+		Bukkit.getPluginManager().callEvent(new MazeDeleteEvent(maze));
 		maze.clear(true, new Callback()
 		{
 			@Override

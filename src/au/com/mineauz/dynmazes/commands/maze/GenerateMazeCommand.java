@@ -82,13 +82,20 @@ public class GenerateMazeCommand implements ICommand
 			}
 		}
 		
+		sender.sendMessage(ChatColor.GREEN + maze.getName() + " is being generated");
+		
 		maze.generate(seed, new Callback()
 		{
 			@Override
 			public void onFailure( Throwable exception )
 			{
-				sender.sendMessage(ChatColor.RED + "An error occured while generating the maze");
-				exception.printStackTrace();
+				if(exception instanceof IllegalStateException)
+					sender.sendMessage(ChatColor.RED + exception.getMessage());
+				else
+				{
+					sender.sendMessage(ChatColor.RED + "An error occured while generating the maze");
+					exception.printStackTrace();
+				}
 			}
 			
 			@Override
@@ -97,8 +104,6 @@ public class GenerateMazeCommand implements ICommand
 				sender.sendMessage(ChatColor.GREEN + maze.getName() + " was generated successfully");
 			}
 		});
-		
-		sender.sendMessage(ChatColor.GREEN + maze.getName() + " is being generated");
 		
 		return true;
 	}

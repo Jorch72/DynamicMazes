@@ -19,6 +19,8 @@ import au.com.mineauz.dynmazes.DynamicMazePlugin;
 import au.com.mineauz.dynmazes.Maze;
 import au.com.mineauz.dynmazes.MazeManager;
 import au.com.mineauz.dynmazes.Util;
+import au.com.mineauz.dynmazes.events.MazePostDrawEvent;
+import au.com.mineauz.dynmazes.events.MazePreGenerateEvent;
 import au.com.mineauz.dynmazes.flags.Flag;
 import au.com.mineauz.dynmazes.flags.FlagIO;
 import au.com.mineauz.dynmazes.misc.BlockLocation;
@@ -84,26 +86,58 @@ public class MinigamesCompat implements Listener
 		final Maze<?> maze = getMazeFor(minigame);
 		if(maze != null && ((Flag<Boolean>)maze.getFlag("regen-on-end")).getValue())
 		{
-			minigame.setRegenerating(true);
-			maze.generate(-1, new Callback()
+			Bukkit.getScheduler().runTaskLater(DynamicMazePlugin.getInstance(), new Runnable()
 			{
 				@Override
-				public void onFailure( Throwable exception )
+				public void run()
 				{
-					exception.printStackTrace();
-					minigame.setRegenerating(false);
+					minigame.setRegenerating(true);
+					maze.generate(-1, new Callback()
+					{
+						@Override
+						public void onFailure( Throwable exception )
+						{
+							exception.printStackTrace();
+							minigame.setRegenerating(false);
+						}
+						
+						@Override
+						public void onComplete()
+						{
+							minigame.setRegenerating(false);
+						}
+					});
 				}
-				
-				@Override
-				public void onComplete()
-				{
-					minigame.setRegenerating(false);
-					BlockLocation loc = maze.getStartPoint();
-					minigame.setStartLocation(new Location(maze.getWorld(), loc.getX(), loc.getY(), loc.getZ(), Util.toYaw(loc.getFace()), 0));
-					addFinishSign(maze);
-					addQuitSign(maze);
-				}
-			});
+			}, 5);
+		}
+	}
+	
+	@EventHandler(priority=EventPriority.HIGHEST, ignoreCancelled=true)
+	private void onMazePregenerate(MazePreGenerateEvent event)
+	{
+		if(event.getMaze().hasFlag("minigame"))
+		{
+			Minigame minigame = (Minigame)event.getMaze().getFlag("minigame").getValue();
+			
+			if(!minigame.getPlayers().isEmpty())
+				event.setCancelled(true);
+			else
+				minigame.setRegenerating(true);
+		}
+	}
+	
+	@EventHandler
+	private void onMazeGenerated(MazePostDrawEvent event)
+	{
+		if(event.getMaze().hasFlag("minigame"))
+		{
+			Minigame minigame = (Minigame)event.getMaze().getFlag("minigame").getValue();
+			minigame.setRegenerating(false);
+			
+			BlockLocation loc = event.getMaze().getStartPoint();
+			minigame.setStartLocation(new Location(event.getMaze().getWorld(), loc.getX(), loc.getY(), loc.getZ(), Util.toYaw(loc.getFace()), 0));
+			addFinishSign(event.getMaze());
+			addQuitSign(event.getMaze());
 		}
 	}
 	
