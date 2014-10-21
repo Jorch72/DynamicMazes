@@ -7,10 +7,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 
-import com.pauldavdesign.mineauz.minigames.Minigames;
-import com.pauldavdesign.mineauz.minigames.gametypes.MinigameType;
-import com.pauldavdesign.mineauz.minigames.minigame.Minigame;
-
 import au.com.mineauz.dynmazes.Maze;
 import au.com.mineauz.dynmazes.MazeManager;
 import au.com.mineauz.dynmazes.Util;
@@ -19,6 +15,9 @@ import au.com.mineauz.dynmazes.commands.ICommand;
 import au.com.mineauz.dynmazes.flags.BooleanFlag;
 import au.com.mineauz.dynmazes.misc.BadArgumentException;
 import au.com.mineauz.dynmazes.misc.BlockLocation;
+import au.com.mineauz.minigames.Minigames;
+import au.com.mineauz.minigames.gametypes.MinigameType;
+import au.com.mineauz.minigames.minigame.Minigame;
 
 public class ToMinigameMazeCommand implements ICommand
 {
@@ -75,7 +74,7 @@ public class ToMinigameMazeCommand implements ICommand
 			throw new BadArgumentException(0, maze.getName() + " is already a minigame");
 		
 		Minigame game = new Minigame(args[1]);
-		game.setScoreType("Custom");
+		game.setMechanic("Custom");
 		game.setType(MinigameType.SINGLEPLAYER);
 				
 		Minigames.plugin.mdata.addMinigame(game);
@@ -102,7 +101,7 @@ public class ToMinigameMazeCommand implements ICommand
 		MinigamesCompat.addQuitSign(maze);
 		
 		MazeManager.saveMaze(maze);
-		sender.sendMessage(ChatColor.GREEN + "This maze is now linked to " + game.getName());
+		sender.sendMessage(ChatColor.GREEN + "This maze is now linked to " + game.getName(false));
 		
 		return true;
 	}

@@ -6,12 +6,11 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.entity.Player;
 
-import com.pauldavdesign.mineauz.minigames.Minigames;
-import com.pauldavdesign.mineauz.minigames.minigame.Minigame;
-
 import au.com.mineauz.dynmazes.Util;
 import au.com.mineauz.dynmazes.flags.Flag;
 import au.com.mineauz.dynmazes.misc.BadArgumentException;
+import au.com.mineauz.minigames.Minigames;
+import au.com.mineauz.minigames.minigame.Minigame;
 
 public class MinigameFlag extends Flag<Minigame>
 {
@@ -39,7 +38,7 @@ public class MinigameFlag extends Flag<Minigame>
 	@Override
 	public void save( ConfigurationSection section )
 	{
-		section.set("value", value.getName());
+		section.set("value", value.getName(false));
 	}
 
 	@Override
@@ -54,6 +53,6 @@ public class MinigameFlag extends Flag<Minigame>
 		if(value == null)
 			return "*Invalid Value*";
 		
-		return value.getName();
+		return value.getName(false);
 	}
 }

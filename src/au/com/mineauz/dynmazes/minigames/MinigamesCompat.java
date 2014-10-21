@@ -11,10 +11,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
-import com.pauldavdesign.mineauz.minigames.events.EndMinigameEvent;
-import com.pauldavdesign.mineauz.minigames.events.QuitMinigameEvent;
-import com.pauldavdesign.mineauz.minigames.minigame.Minigame;
-
 import au.com.mineauz.dynmazes.DynamicMazePlugin;
 import au.com.mineauz.dynmazes.Maze;
 import au.com.mineauz.dynmazes.MazeManager;
@@ -25,6 +21,9 @@ import au.com.mineauz.dynmazes.flags.Flag;
 import au.com.mineauz.dynmazes.flags.FlagIO;
 import au.com.mineauz.dynmazes.misc.BlockLocation;
 import au.com.mineauz.dynmazes.misc.Callback;
+import au.com.mineauz.minigames.events.EndMinigameEvent;
+import au.com.mineauz.minigames.events.QuitMinigameEvent;
+import au.com.mineauz.minigames.minigame.Minigame;
 
 public class MinigamesCompat implements Listener
 {
@@ -63,9 +62,6 @@ public class MinigamesCompat implements Listener
 	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
 	private void onMinigameEnd(EndMinigameEvent event)
 	{
-		if(event.isCancelled()) // Minigames 1.6.2 and earlier dont implement Cancellable
-			return;
-		
 		if(event.getMinigame().getPlayers().size() == event.getWinners().size() && event.getMinigame().getPlayers().containsAll(event.getWinners()))
 			minigameFinished(event.getMinigame());
 	}
@@ -73,9 +69,6 @@ public class MinigamesCompat implements Listener
 	@EventHandler(priority=EventPriority.MONITOR, ignoreCancelled=true)
 	private void onMinigameEnd(QuitMinigameEvent event)
 	{
-		if(event.isCancelled()) // Minigames 1.6.2 and earlier dont implement Cancellable
-			return;
-		
 		if(event.getMinigame().getPlayers().size() == 1 && event.getMinigame().getPlayers().contains(event.getMinigamePlayer()))
 			minigameFinished(event.getMinigame());
 	}
