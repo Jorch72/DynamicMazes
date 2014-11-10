@@ -2,22 +2,25 @@ package au.com.mineauz.dynmazes.styles;
 
 import java.io.File;
 import java.io.IOException;
-
+import java.util.List;
 import org.apache.commons.lang.Validate;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
+
 public class Style
 {
 	private String mName;
-	private Piece[] mPieces;
+	private ListMultimap<PieceType, Piece> mPieces;
 	private byte mPieceSize;
 	private byte mHeight;
 	
 	public Style()
 	{
-		mPieces = new Piece[PieceType.values().length];
+		mPieces = ArrayListMultimap.create(); 
 	}
 	
 	public Style(String name, byte size, byte height)
@@ -29,18 +32,19 @@ public class Style
 		mName = name;
 		mHeight = height;
 		
-		mPieces = new Piece[PieceType.values().length];
+		mPieces = ArrayListMultimap.create();
 	}
 	
-	public void setPiece(PieceType type, Piece piece)
+	public void setPieces(PieceType type, List<Piece> pieces)
 	{
-		Validate.notNull(piece);
-		mPieces[type.ordinal()] = piece;
+		Validate.notNull(pieces);
+		mPieces.removeAll(type);
+		mPieces.putAll(type, pieces);
 	}
 	
-	public Piece getPiece(PieceType type)
+	public List<Piece> getPieces(PieceType type)
 	{
-		return mPieces[type.ordinal()];
+		return mPieces.get(type);
 	}
 	
 	public String getName()
@@ -57,7 +61,7 @@ public class Style
 	{
 		Validate.isTrue(height >= 3 && height <= 40);
 		mHeight = (byte)height;
-		for(Piece piece : mPieces)
+		for(Piece piece : mPieces.values())
 			piece.setHeight(height);
 	}
 	
@@ -80,8 +84,12 @@ public class Style
 			
 			for(PieceType type : PieceType.values())
 			{
-				ConfigurationSection piece = pieces.createSection(type.name());
-				mPieces[type.ordinal()].save(piece);
+				List<Piece> versions = mPieces.get(type);
+				for (int i = 0; i < versions.size(); ++i)
+				{
+					ConfigurationSection piece = pieces.createSection(type.name() + "-" + i);
+					versions.get(i).save(piece);
+				}
 			}
 			
 			out.save(file);
@@ -105,11 +113,17 @@ public class Style
 			
 			ConfigurationSection pieces = input.getConfigurationSection("pieces");
 			
-			for(PieceType type : PieceType.values())
+			for(String key : pieces.getKeys(false))
 			{
-				mPieces[type.ordinal()] = new Piece(mPieceSize, mHeight);
-				if(pieces.isConfigurationSection(type.name()))
-					mPieces[type.ordinal()].read(pieces.getConfigurationSection(type.name()));
+				PieceType type;
+				if (key.contains("-"))
+					type = PieceType.valueOf(key.split("-")[0]);
+				else
+					type = PieceType.valueOf(key);
+				
+				Piece piece = new Piece(mPieceSize, mHeight);
+				piece.read(pieces.getConfigurationSection(key));
+				mPieces.put(type, piece);
 			}
 			
 			return true;

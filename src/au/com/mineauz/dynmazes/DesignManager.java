@@ -1,8 +1,9 @@
 package au.com.mineauz.dynmazes;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -14,11 +15,14 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.util.BlockVector;
 
 import au.com.mineauz.dynmazes.misc.Callback;
+import au.com.mineauz.dynmazes.misc.ConfirmationPrompt;
 import au.com.mineauz.dynmazes.styles.Piece;
 import au.com.mineauz.dynmazes.styles.PieceType;
 import au.com.mineauz.dynmazes.styles.Style;
@@ -30,7 +34,7 @@ public class DesignManager implements Listener
 	private Style mStyle;
 	private Player mPlayer;
 	
-	private Location[] mPieceLocations;
+	private PieceDefinition[] mDefinitions;
 	
 	private BlockVector mMin;
 	private BlockVector mMax;
@@ -115,7 +119,7 @@ public class DesignManager implements Listener
 			left = BlockFace.WEST;
 		}
 		
-		mPieceLocations = new Location[PieceType.values().length];
+		mDefinitions = new PieceDefinition[PieceType.values().length];
 		
 		int rows = (int)Math.ceil(PieceType.values().length / (double)columns);
 		int width = columns * (mStyle.getPieceSize() + 2);
@@ -133,7 +137,11 @@ public class DesignManager implements Listener
 			int minX = (minCorner.getBlockX() + 1 + xx * (mStyle.getPieceSize() + 2));
 			int minZ = (minCorner.getBlockZ() + 1 + zz * (mStyle.getPieceSize() + 2));
 			
-			mPieceLocations[type.ordinal()] = new Location(mPlayer.getWorld(), minX, minCorner.getBlockY()+1, minZ);
+			PieceDefinition def = new PieceDefinition(new Location(mPlayer.getWorld(), minX, minCorner.getBlockY()+1, minZ));
+			mDefinitions[type.ordinal()] = def;
+			def.versions.addAll(mStyle.getPieces(type));
+			if (def.versions.isEmpty())
+				def.versions.add(new Piece((byte)mStyle.getPieceSize(), (byte)mStyle.getHeight()));
 			
 			if(front == BlockFace.NORTH || front == BlockFace.SOUTH)
 			{
@@ -170,7 +178,8 @@ public class DesignManager implements Listener
 		
 		for(PieceType type : PieceType.values())
 		{
-			Location loc = mPieceLocations[type.ordinal()];
+			PieceDefinition def = mDefinitions[type.ordinal()];
+			Location loc = def.location;
 			
 			int minX = loc.getBlockX();
 			int minZ = loc.getBlockZ();
@@ -178,9 +187,8 @@ public class DesignManager implements Listener
 			int maxZ = minZ + mStyle.getPieceSize() - 1;
 			
 			// Print the piece if any
-			Piece piece = mStyle.getPiece(type);
-			if(piece != null)
-				piece.place(loc);
+			if (def.index < def.versions.size())
+				def.versions.get(def.index).place(loc);
 			
 			// Print the area borders
 			for(int i = 0; i < mStyle.getPieceSize(); ++i)
@@ -223,6 +231,36 @@ public class DesignManager implements Listener
 				sign.update(true);
 			}
 			
+			// Previous sign
+			{
+				Block b = loc.getWorld().getBlockAt(minX - 1, loc.getBlockY(), minZ);
+				b.setType(Material.SIGN_POST);
+				Sign sign = (Sign)b.getState();
+				((org.bukkit.material.Sign)sign.getData()).setFacingDirection(BlockFace.WEST);
+				
+				sign.setLine(0, "Right Click:");
+				sign.setLine(1, "Previous");
+				sign.setLine(2, "+Shift");
+				sign.setLine(3, "Remove");
+				
+				sign.update(true);
+			}
+			
+			// Next sign
+			{
+				Block b = loc.getWorld().getBlockAt(minX - 1, loc.getBlockY(), maxZ);
+				b.setType(Material.SIGN_POST);
+				Sign sign = (Sign)b.getState();
+				((org.bukkit.material.Sign)sign.getData()).setFacingDirection(BlockFace.WEST);
+				
+				sign.setLine(0, "Right Click:");
+				sign.setLine(1, "Next");
+				sign.setLine(2, "+Shift");
+				sign.setLine(3, "Add");
+				
+				sign.update(true);
+			}
+			
 			// Print the connections
 			for(BlockFace con : type.getConnections())
 			{
@@ -260,7 +298,8 @@ public class DesignManager implements Listener
 				mStyle.setHeight(height);
 				for(PieceType type : PieceType.values())
 				{
-					Location loc = mPieceLocations[type.ordinal()];
+					PieceDefinition def = mDefinitions[type.ordinal()];
+					Location loc = def.location;
 					
 					int minX = loc.getBlockX();
 					int minZ = loc.getBlockZ();
@@ -317,7 +356,7 @@ public class DesignManager implements Listener
 					{
 						mMin = null;
 						mMax = null;
-						mPieceLocations = null;
+						mDefinitions = null;
 						throw new IllegalStateException("Design area is not empty.");
 					}
 				}
@@ -345,7 +384,7 @@ public class DesignManager implements Listener
 			{
 				exception.printStackTrace();
 				mMin = mMax = null;
-				mPieceLocations = null;
+				mDefinitions = null;
 				
 				HandlerList.unregisterAll(DesignManager.this);
 			}
@@ -354,7 +393,7 @@ public class DesignManager implements Listener
 			public void onComplete()
 			{
 				mMin = mMax = null;
-				mPieceLocations = null;
+				mDefinitions = null;
 				
 				HandlerList.unregisterAll(DesignManager.this);
 			}
@@ -371,9 +410,18 @@ public class DesignManager implements Listener
 		
 		for(PieceType type : PieceType.values())
 		{
-			Piece piece = new Piece((byte)mStyle.getPieceSize(), (byte)mStyle.getHeight());
-			piece.setFrom(mPieceLocations[type.ordinal()]);
-			mStyle.setPiece(type, piece);
+			PieceDefinition def = mDefinitions[type.ordinal()];
+			Piece piece;
+			if (def.index >= def.versions.size())
+			{
+				piece = new Piece((byte)mStyle.getPieceSize(), (byte)mStyle.getHeight());
+				def.versions.add(piece);
+			}
+			else
+				piece = def.versions.get(def.index);
+			
+			piece.setFrom(def.location);
+			mStyle.setPieces(type, def.versions);
 		}
 		
 		StyleManager.saveStyle(mStyle);
@@ -414,5 +462,149 @@ public class DesignManager implements Listener
 		}
 	}
 	
+	@EventHandler(priority=EventPriority.HIGHEST, ignoreCancelled=true)
+	private void onSignClick(PlayerInteractEvent event)
+	{
+		if(mMin == null || event.getPlayer().getWorld() != mWorld)
+			return;
+		
+		if (event.getAction() != Action.RIGHT_CLICK_BLOCK)
+			return;
+		
+		if(event.getClickedBlock().getLocation().toVector().isInAABB(mMin, mMax))
+		{
+			for(PieceType type : PieceType.values())
+			{
+				final PieceDefinition def = mDefinitions[type.ordinal()];
+				Location loc = def.location;
+
+				int minX = loc.getBlockX();
+				int minZ = loc.getBlockZ();
+				int maxZ = minZ + mStyle.getPieceSize() - 1;
+				
+				// Check previous sign
+				if (event.getClickedBlock().equals(loc.getWorld().getBlockAt(minX - 1, loc.getBlockY(), minZ)))
+				{
+					// Remove item
+					if (event.getPlayer().isSneaking())
+					{
+						if (def.versions.size() <= 1)
+							event.getPlayer().sendMessage(ChatColor.RED + "There are no variants of " + ChatColor.YELLOW + type.name() + ChatColor.RED + " available to remove");
+						else
+						{
+							final Player player = event.getPlayer();
+							ConfirmationPrompt prompt = new ConfirmationPrompt();
+							prompt.setPlayer(player);
+							prompt.setText("This will remove the current variant of " + ChatColor.YELLOW + type.name() + ChatColor.WHITE + ". Do you wish to continue?");
+							prompt.setCallback(new Callback()
+							{
+								@Override
+								public void onFailure( Throwable exception )
+								{
+								}
+								
+								@Override
+								public void onComplete()
+								{
+									player.sendMessage(ChatColor.GOLD + "The variant has been removed");
+									// Remove it
+									def.versions.remove(def.index);
+									if (def.index == 0)
+										def.index++;
+									else
+										def.index--;
+									
+									if (def.index >= def.versions.size())
+										def.index = 0;
+									
+									// Place the other one
+									if (!def.versions.isEmpty())
+										def.versions.get(def.index).place(def.location);
+								}
+							});
+							prompt.launch();
+						}
+					}
+					// Previous
+					else
+					{
+						if (def.versions.size() > 1)
+						{
+							// Save current piece
+							Piece piece = def.versions.get(def.index);
+							piece.setFrom(loc);
+							
+							// Change index
+							def.index--;
+							if (def.index < 0)
+								def.index = def.versions.size() - 1;
+							
+							// Place
+							def.versions.get(def.index).place(loc);
+							
+							event.getPlayer().sendMessage("Switched to variant " + ChatColor.YELLOW + (def.index + 1));
+						}
+						else
+							event.getPlayer().sendMessage(ChatColor.RED + "There are no other variants");
+					}
+				}
+				// Check next sign
+				else if (event.getClickedBlock().equals(loc.getWorld().getBlockAt(minX - 1, loc.getBlockY(), maxZ)))
+				{
+					// Add
+					if (event.getPlayer().isSneaking())
+					{
+						if (def.versions.size() >= 1)
+						{
+							// Save current piece
+							Piece piece = def.versions.get(def.index);
+							piece.setFrom(loc);
+						}
+
+						Piece piece = new Piece((byte)mStyle.getPieceSize(), (byte)mStyle.getHeight());
+						def.versions.add(piece);
+						def.index = def.versions.size()-1;
+						
+						event.getPlayer().sendMessage("Added and switched new variant of " + ChatColor.YELLOW + type.name() + ChatColor.WHITE + " using the last variant as a template.");
+					}
+					// Next
+					else
+					{
+						if (def.versions.size() > 1)
+						{
+							// Save current piece
+							Piece piece = def.versions.get(def.index);
+							piece.setFrom(loc);
+							
+							// Change index
+							def.index++;
+							if (def.index >= def.versions.size())
+								def.index = 0;
+							
+							// Place
+							def.versions.get(def.index).place(loc);
+							
+							event.getPlayer().sendMessage("Switched to variant " + ChatColor.YELLOW + (def.index + 1));
+						}
+						else
+							event.getPlayer().sendMessage(ChatColor.RED + "There are no other variants");
+					}
+				}
+			}
+		}
+	}
 	
+	private static class PieceDefinition
+	{
+		public final ArrayList<Piece> versions;
+		public int index;
+		public final Location location;
+		
+		public PieceDefinition(Location location)
+		{
+			versions = new ArrayList<Piece>();
+			index = 0;
+			this.location = location;
+		}
+	}
 }

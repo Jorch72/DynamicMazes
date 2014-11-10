@@ -25,6 +25,7 @@ import au.com.mineauz.dynmazes.flags.StyleFlag;
 import au.com.mineauz.dynmazes.misc.BadArgumentException;
 import au.com.mineauz.dynmazes.misc.BlockLocation;
 import au.com.mineauz.dynmazes.misc.Callback;
+import au.com.mineauz.dynmazes.styles.Piece;
 import au.com.mineauz.dynmazes.styles.PieceType;
 import au.com.mineauz.dynmazes.styles.StoredBlock;
 import au.com.mineauz.dynmazes.styles.Style;
@@ -32,6 +33,8 @@ import au.com.mineauz.dynmazes.styles.StyleManager;
 
 public class ModuleMaze extends Maze<ModuleNode> implements GridBased<ModuleNode>
 {
+	private Random rand;
+	
 	int mWidth;
 	int mLength;
 	
@@ -74,11 +77,15 @@ public class ModuleMaze extends Maze<ModuleNode> implements GridBased<ModuleNode
 		
 		mStyle.setValue(style);
 		addFlag("style", mStyle);
+		
+		rand = new Random();
 	}
 	
 	protected ModuleMaze()
 	{
 		super("Module");
+		
+		rand = new Random();
 	}
 	
 	@Override
@@ -120,7 +127,12 @@ public class ModuleMaze extends Maze<ModuleNode> implements GridBased<ModuleNode
 	@Override
 	protected void placeNode(ModuleNode node, List<StoredBlock> blocks)
 	{
-		blocks.addAll(mStyle.getValue().getPiece(node.getType()).getBlocks(node.toLocation()));
+		List<Piece> versions = mStyle.getValue().getPieces(node.getType());
+		if (versions.isEmpty())
+			return;
+		
+		Piece piece = versions.get(rand.nextInt(versions.size()));
+		blocks.addAll(piece.getBlocks(node.toLocation()));
 	}
 	
 	@Override
