@@ -2,29 +2,22 @@ package au.com.mineauz.dynmazes;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.concurrent.TimeUnit;
-
 import org.bukkit.Bukkit;
 import org.bukkit.World;
-import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.BlockVector;
 
 import au.com.mineauz.dynmazes.misc.Callback;
-import au.com.mineauz.dynmazes.misc.NotifiableTask;
+import au.com.mineauz.dynmazes.misc.MassBlockUpdater;
+import au.com.mineauz.dynmazes.misc.Notifiable;
 import au.com.mineauz.dynmazes.styles.StoredBlock;
 
-public class FillTask<T extends INode> extends NotifiableTask implements Runnable
+public class FillTask<T extends INode> extends Notifiable
 {
-	private Iterator<BlockVector> mIt;
-	
-	private BukkitTask mTask;
-	
-	private long mIntervalLimit;
-	
 	private World mWorld;
 	private BlockVector mMin;
 	private BlockVector mMax;
 	private StoredBlock mType;
+	private MassBlockUpdater mUpdater;
 	
 	public FillTask(BlockVector min, BlockVector max, World world, StoredBlock type)
 	{
@@ -41,31 +34,41 @@ public class FillTask<T extends INode> extends NotifiableTask implements Runnabl
 		
 		mType = type;
 
-		mIt = new BlockIterator();
+		mUpdater = MassBlockUpdater.create();
 	}
 	
 	public void start()
 	{
-		mTask = Bukkit.getScheduler().runTaskTimer(DynamicMazePlugin.getInstance(), this, 0, 1);
-		mIntervalLimit = TimeUnit.NANOSECONDS.convert(10, TimeUnit.MILLISECONDS);
-	}
-	
-	@Override
-	public void run()
-	{
-		long time = System.nanoTime();
-		
-		while(mIt.hasNext())
+		Bukkit.getScheduler().runTaskAsynchronously(DynamicMazePlugin.getInstance(), new Runnable()
 		{
-			if(System.nanoTime() - time >= mIntervalLimit)
-				return;
-			
-			BlockVector node = mIt.next();
-			mType.apply(mWorld.getBlockAt(node.getBlockX(), node.getBlockY(), node.getBlockZ()));
-		}
-		
-		mTask.cancel();
-		setCompleted();
+			@Override
+			public void run()
+			{
+				Iterator<BlockVector> it = new BlockIterator();
+				while(it.hasNext())
+				{
+					BlockVector vector = it.next();
+					mUpdater.setBlock(mWorld, vector, mType.clone());
+				}
+				
+				mUpdater.setCompletionCallback(new Callback()
+				{
+					@Override
+					public void onFailure( Throwable exception )
+					{
+						setFailed(exception);
+					}
+					
+					@Override
+					public void onComplete()
+					{
+						setCompleted();
+					}
+				});
+				
+				mUpdater.execute();
+			}
+		});
 	}
 	
 	private class BlockIterator implements Iterator<BlockVector>

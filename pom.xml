@@ -6,24 +6,25 @@
   <name>DynamicMazes</name>
 
   <repositories>
-    <!-- Repository for Bukkit -->
+    <!-- For spigot -->
     <repository>
-      <id>bukkit-repo</id>
-      <url>http://repo.bukkit.org/content/groups/public/</url>
-    </repository>
-
-    <repository>
-      <id>bukkit-maven</id>
-      <url>http://repo.bukkit.org/content/repositories/releases/</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
+      <id>md5-repo</id>
+      <url>http://repo.md-5.net/content/groups/public/</url>
+      <releases><enabled>true</enabled></releases>
+      <snapshots><enabled>true</enabled></snapshots>
     </repository>
     
     <!-- Addstar repo -->
     <repository>
       <id>addstar-repo</id>
       <url>http://maven.addstar.com.au/artifactory/ext-release-local</url>
+    </repository>
+    <repository>
+      <id>addstar-snapshot-repo</id>
+      <url>http://maven.addstar.com.au/artifactory/ext-snapshot-local</url>
+      <snapshots>
+      	<enabled>true</enabled>
+      </snapshots>
     </repository>
     
     <!-- Other repositories -->
@@ -42,30 +43,50 @@
       <url>http://repo.citizensnpcs.co/</url>
     </repository>
     
-    
+    <!-- For DHUtils -->
+    <repository>
+      <id>hawkfalcon-repo</id>
+      <name>Hawkfalcon Repository</name>
+      <url>http://ci.hawkfalcon.com/plugin/repository/everything</url>
+   </repository>
   </repositories>
 
   <dependencies>
-    <!-- Bukkit -->
     <dependency>
-      <groupId>org.bukkit</groupId>
-      <artifactId>bukkit</artifactId>
-      <version>1.7.2-R0.1-SNAPSHOT</version>
-    </dependency>        
+    	<groupId>org.spigotmc</groupId>
+    	<artifactId>spigot</artifactId>
+    	<version>1.7.10-R0.1-SNAPSHOT</version>
+    	<exclusions>
+          <exclusion>
+            <groupId>org.spigotmc</groupId>
+            <artifactId>sneaky-throw</artifactId>
+          </exclusion>
+        </exclusions>
+        <scope>provided</scope>
+    </dependency>
     <dependency>
     	<groupId>net.milkbowl</groupId>
     	<artifactId>vault</artifactId>
     	<version>1.2.24</version>
+    	<scope>provided</scope>
     </dependency>
     <dependency>
     	<groupId>com.sk89q</groupId>
     	<artifactId>worldedit</artifactId>
     	<version>5.5.3</version>
+    	<scope>provided</scope>
     </dependency>
     <dependency>
     	<groupId>au.com.mineauz</groupId>
     	<artifactId>Minigames</artifactId>
     	<version>1.7.0-SNAPSHOT</version>
+    	<scope>provided</scope>
+    </dependency>
+    <dependency>
+    	<groupId>me.desht</groupId>
+    	<artifactId>dhutils-lib</artifactId>
+    	<version>2.17.0-SNAPSHOT</version>
+    	<scope>compile</scope>
     </dependency>
   </dependencies>
 
@@ -82,6 +103,7 @@
     </resources>
 
     <sourceDirectory>src</sourceDirectory>
+    <finalName>${project.name}</finalName>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -92,6 +114,28 @@
           <target>1.6</target>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>1.5</version>
+        <executions>
+            <execution>
+                <phase>package</phase>
+                <goals>
+                    <goal>shade</goal>
+                </goals>
+                <configuration>
+                    <minimizeJar>true</minimizeJar>
+                    <relocations>
+                        <relocation>
+                            <pattern>me.desht.dhutils</pattern>
+                            <shadedPattern>au.com.mineauz.dynmazes.dhutils</shadedPattern>
+                        </relocation>
+                    </relocations>
+                </configuration>
+            </execution>
+        </executions>
+    </plugin>
     </plugins>
   </build>
 </project>

@@ -2,6 +2,8 @@ package au.com.mineauz.dynmazes;
 
 import java.io.File;
 
+import me.desht.dhutils.nms.NMSHelper;
+
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -55,6 +57,15 @@ public class DynamicMazePlugin extends JavaPlugin
 		
 		if(Bukkit.getPluginManager().isPluginEnabled("Minigames"))
 			MinigamesCompat.initialize(this);
+		
+		try
+		{
+			NMSHelper.init(this);
+		}
+		catch ( Exception e )
+		{
+			e.printStackTrace();
+		}
 		
 		Bukkit.getScheduler().runTask(this, new Runnable()
 		{

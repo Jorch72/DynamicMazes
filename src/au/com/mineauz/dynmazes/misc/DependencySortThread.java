@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -16,7 +17,7 @@ import com.google.common.collect.HashMultimap;
 
 import au.com.mineauz.dynmazes.styles.StoredBlock;
 
-public class DependencySortThread extends Thread
+public class DependencySortThread implements Runnable, Callable<List<StoredBlock>>
 {
 	private final List<StoredBlock> mList;
 	private final SortFuture mFuture;
@@ -35,46 +36,55 @@ public class DependencySortThread extends Thread
 	}
 	
 	@Override
+	public List<StoredBlock> call()
+	{
+		Collections.sort(mList, new ChunkGroupingComparator());
+		HashMultimap<BlockVector, StoredBlock> dependencies = HashMultimap.create();
+		ArrayList<StoredBlock> blocksToAdd = new ArrayList<StoredBlock>(mList.size());
+		
+		// Place non dependent blocks and list dependent ones
+		for(int i = 0; i < mList.size(); ++i)
+		{
+			StoredBlock block = mList.get(i);
+			if(block.isAir())
+			{
+				blocksToAdd.add(block);
+				continue;
+			}
+			
+			BlockFace face = block.getDependantFace();
+					
+			if(!block.isLiquid() && (face == BlockFace.SELF || (face == BlockFace.DOWN && block.getLocation().getBlockY() == mFloorLevel)))
+				blocksToAdd.add(block);
+			else
+				dependencies.put(block.getLocationRelative(face), block);
+		}
+
+		// Insert dependent blocks after their dependencies
+		for(int i = 0; i < blocksToAdd.size(); ++i)
+		{
+			Set<StoredBlock> dependents = dependencies.get(blocksToAdd.get(i).getLocation());
+			if(dependents != null)
+			{
+				for(StoredBlock dependent : dependents)
+					blocksToAdd.add(i+1, dependent);
+				
+				dependencies.removeAll(blocksToAdd.get(i));
+			}
+		}
+		
+		// Add any that are dependent on something that doesnt exist (or depedency loops)
+		blocksToAdd.addAll(dependencies.values());
+		
+		return blocksToAdd;
+	}
+	
+	@Override
 	public void run()
 	{
 		try
 		{
-			Collections.sort(mList, new ChunkGroupingComparator());
-			HashMultimap<BlockVector, StoredBlock> dependencies = HashMultimap.create();
-			ArrayList<StoredBlock> blocksToAdd = new ArrayList<StoredBlock>(mList.size());
-			
-			// Place non dependent blocks and list dependent ones
-			for(int i = 0; i < mList.size(); ++i)
-			{
-				StoredBlock block = mList.get(i);
-				if(block.isAir())
-					continue;
-				
-				BlockFace face = block.getDependantFace();
-						
-				if(!block.isLiquid() && (face == BlockFace.SELF || (face == BlockFace.DOWN && block.getLocation().getBlockY() == mFloorLevel)))
-					blocksToAdd.add(block);
-				else
-					dependencies.put(block.getLocationRelative(face), block);
-			}
-
-			// Insert dependent blocks after their dependencies
-			for(int i = 0; i < blocksToAdd.size(); ++i)
-			{
-				Set<StoredBlock> dependents = dependencies.get(blocksToAdd.get(i).getLocation());
-				if(dependents != null)
-				{
-					for(StoredBlock dependent : dependents)
-						blocksToAdd.add(i+1, dependent);
-					
-					dependencies.removeAll(blocksToAdd.get(i));
-				}
-			}
-			
-			// Add any that are dependent on something that doesnt exist (or depedency loops)
-			blocksToAdd.addAll(dependencies.values());
-			
-			mFuture.setCompleted(blocksToAdd);
+			mFuture.setCompleted(call());
 		}
 		catch(Throwable e)
 		{

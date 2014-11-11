@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -26,8 +25,8 @@ import au.com.mineauz.dynmazes.flags.Flag;
 import au.com.mineauz.dynmazes.flags.FlagIO;
 import au.com.mineauz.dynmazes.misc.BlockLocation;
 import au.com.mineauz.dynmazes.misc.Callback;
+import au.com.mineauz.dynmazes.misc.MassBlockUpdater;
 import au.com.mineauz.dynmazes.styles.StoredBlock;
-
 
 public abstract class Maze<T extends INode>
 {
@@ -297,9 +296,9 @@ public abstract class Maze<T extends INode>
 	
 	protected abstract T findStart();
 
-	protected abstract void placeNode( T node, List<StoredBlock> blocks );
+	protected abstract void placeNode( T node, MassBlockUpdater updater );
 	
-	protected void placeOther(List<StoredBlock> blocks) {}
+	protected void placeOther(MassBlockUpdater updater) {}
 
 	
 	public final void save(File file)

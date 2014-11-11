@@ -23,6 +23,7 @@ import au.com.mineauz.dynmazes.flags.BlockTypeFlag;
 import au.com.mineauz.dynmazes.flags.BooleanFlag;
 import au.com.mineauz.dynmazes.misc.BadArgumentException;
 import au.com.mineauz.dynmazes.misc.BlockLocation;
+import au.com.mineauz.dynmazes.misc.MassBlockUpdater;
 import au.com.mineauz.dynmazes.styles.StoredBlock;
 
 public class GridMaze extends Maze<GridNode> implements GridBased<GridNode>
@@ -199,7 +200,7 @@ public class GridMaze extends Maze<GridNode> implements GridBased<GridNode>
 	}
 
 	@Override
-	protected void placeNode( GridNode node, List<StoredBlock> blocks )
+	protected void placeNode( GridNode node, MassBlockUpdater updater )
 	{
 		BlockVector origin = node.toLocation();
 		
@@ -212,8 +213,7 @@ public class GridMaze extends Maze<GridNode> implements GridBased<GridNode>
 				BlockVector vec = origin.clone();
 				vec.setX(vec.getX() + x);
 				vec.setZ(vec.getZ() + z);
-				block.setLocation(vec);
-				blocks.add(block);
+				updater.setBlock(getWorld(), vec, block);
 			}
 		}
 		
@@ -259,8 +259,7 @@ public class GridMaze extends Maze<GridNode> implements GridBased<GridNode>
 						vec.setZ(vec.getZ() + w);
 					}
 					
-					block.setLocation(vec);
-					blocks.add(block);
+					updater.setBlock(getWorld(), vec, block);
 				}
 			}
 		}
@@ -296,8 +295,7 @@ public class GridMaze extends Maze<GridNode> implements GridBased<GridNode>
 						vec.setX(vec.getX() + x);
 						vec.setY(vec.getY() + y);
 						vec.setZ(vec.getZ() + z);
-						block.setLocation(vec);
-						blocks.add(block);
+						updater.setBlock(getWorld(), vec, block);
 					}
 				}
 			}
@@ -346,8 +344,7 @@ public class GridMaze extends Maze<GridNode> implements GridBased<GridNode>
 						}
 						vec.setY(vec.getY() + y);
 						
-						block.setLocation(vec);
-						blocks.add(block);
+						updater.setBlock(getWorld(), vec, block);
 					}
 				}
 			}
@@ -355,7 +352,7 @@ public class GridMaze extends Maze<GridNode> implements GridBased<GridNode>
 	}
 	
 	@Override
-	protected void placeOther( List<StoredBlock> blocks )
+	protected void placeOther( MassBlockUpdater updater )
 	{
 		for(int x = getMinCorner().getBlockX(); x < getMaxCorner().getBlockX(); ++x)
 		{
@@ -366,16 +363,15 @@ public class GridMaze extends Maze<GridNode> implements GridBased<GridNode>
 				{
 					StoredBlock block = mOutFillMaterial.getValue().clone();
 					BlockVector vec = new BlockVector(x, getMinCorner().getBlockY(), z);
-					block.setLocation(vec);
-					blocks.add(block);
+					updater.setBlock(getWorld(), vec, block);
 				}
 			}
 		}
 		
 		if(mGenStartRoom.getValue())
-			placeNode(mEntrance, blocks);
+			placeNode(mEntrance, updater);
 		if(mGenFinishRoom.getValue())
-			placeNode(mExit, blocks);
+			placeNode(mExit, updater);
 	}
 	
 	@MazeCommand(command="new")

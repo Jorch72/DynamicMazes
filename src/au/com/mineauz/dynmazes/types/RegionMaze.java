@@ -29,6 +29,7 @@ import au.com.mineauz.dynmazes.flags.BlockTypeFlag;
 import au.com.mineauz.dynmazes.flags.BooleanFlag;
 import au.com.mineauz.dynmazes.misc.BadArgumentException;
 import au.com.mineauz.dynmazes.misc.BlockLocation;
+import au.com.mineauz.dynmazes.misc.MassBlockUpdater;
 import au.com.mineauz.dynmazes.misc.WorldEditUtil;
 import au.com.mineauz.dynmazes.styles.StoredBlock;
 
@@ -214,7 +215,7 @@ public class RegionMaze extends Maze<RegionNode> implements GridBased<RegionNode
 	}
 
 	@Override
-	protected void placeNode( RegionNode node, List<StoredBlock> blocks )
+	protected void placeNode( RegionNode node, MassBlockUpdater updater )
 	{
 		if(node == null)
 			return;
@@ -230,8 +231,7 @@ public class RegionMaze extends Maze<RegionNode> implements GridBased<RegionNode
 				BlockVector vec = origin.clone();
 				vec.setX(vec.getX() + x);
 				vec.setZ(vec.getZ() + z);
-				block.setLocation(vec);
-				blocks.add(block);
+				updater.setBlock(getWorld(), vec, block);
 			}
 		}
 		
@@ -277,8 +277,7 @@ public class RegionMaze extends Maze<RegionNode> implements GridBased<RegionNode
 						vec.setZ(vec.getZ() + w);
 					}
 					
-					block.setLocation(vec);
-					blocks.add(block);
+					updater.setBlock(getWorld(), vec, block);
 				}
 			}
 		}
@@ -314,8 +313,7 @@ public class RegionMaze extends Maze<RegionNode> implements GridBased<RegionNode
 						vec.setX(vec.getX() + x);
 						vec.setY(vec.getY() + y);
 						vec.setZ(vec.getZ() + z);
-						block.setLocation(vec);
-						blocks.add(block);
+						updater.setBlock(getWorld(), vec, block);
 					}
 				}
 			}
@@ -364,8 +362,7 @@ public class RegionMaze extends Maze<RegionNode> implements GridBased<RegionNode
 						}
 						vec.setY(vec.getY() + y);
 						
-						block.setLocation(vec);
-						blocks.add(block);
+						updater.setBlock(getWorld(), vec, block);
 					}
 				}
 			}
@@ -373,7 +370,7 @@ public class RegionMaze extends Maze<RegionNode> implements GridBased<RegionNode
 	}
 	
 	@Override
-	protected void placeOther( List<StoredBlock> blocks )
+	protected void placeOther( MassBlockUpdater updater )
 	{
 		float size = (mPathWidth + mWallWidth);
 		
@@ -405,8 +402,7 @@ public class RegionMaze extends Maze<RegionNode> implements GridBased<RegionNode
 							
 							StoredBlock block = mExtFillMaterial.getValue().clone();
 							BlockVector vec = new BlockVector(xx, getMinCorner().getBlockY(), zz);
-							block.setLocation(vec);
-							blocks.add(block);
+							updater.setBlock(getWorld(), vec, block);
 						}
 					}
 				}
@@ -414,9 +410,9 @@ public class RegionMaze extends Maze<RegionNode> implements GridBased<RegionNode
 		}
 		
 		if(mGenStartRoom.getValue())
-			placeNode(mEntrance, blocks);
+			placeNode(mEntrance, updater);
 		if(mGenFinishRoom.getValue())
-			placeNode(mExit, blocks);
+			placeNode(mExit, updater);
 	}
 	
 	@Override

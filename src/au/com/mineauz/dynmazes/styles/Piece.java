@@ -6,9 +6,12 @@ import java.util.List;
 import java.util.Set;
 
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.util.BlockVector;
+
+import au.com.mineauz.dynmazes.misc.MassBlockUpdater;
 
 import com.google.common.collect.HashMultimap;
 
@@ -85,6 +88,21 @@ public class Piece
 		
 		for(BlockVector loc : blocksToAdd)
 			mBlocks[loc.getBlockX() + loc.getBlockZ() * (mSize) + loc.getBlockY() * (mSize * mSize)].apply(minCorner.getWorld().getBlockAt(minCorner.getBlockX() + loc.getBlockX(), minCorner.getBlockY() + loc.getBlockY(), minCorner.getBlockZ() + loc.getBlockZ()));
+	}
+	
+	public void place(World world, BlockVector origin, MassBlockUpdater updater)
+	{
+		for(int y = 0; y < mHeight; ++y)
+		{
+			for(int x = 0; x < mSize; ++x)
+			{
+				for(int z = 0; z < mSize; ++z)
+				{
+					StoredBlock block = mBlocks[x + z * (mSize) + y * (mSize * mSize)].clone();
+					updater.setBlock(world, origin.getBlockX() + x, origin.getBlockY() + y, origin.getBlockZ() + z, block);
+				}
+			}
+		}
 	}
 	
 	public List<StoredBlock> getBlocks(BlockVector origin)

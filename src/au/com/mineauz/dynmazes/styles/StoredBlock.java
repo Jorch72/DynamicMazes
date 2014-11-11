@@ -126,6 +126,11 @@ public class StoredBlock
 		block.setType(mType);
 		block.setData((byte)mData, false);
 		
+		applyExtra(block);
+	}
+	
+	public void applyExtra(Block block)
+	{
 		BlockState state = block.getState();
 		
 		if(state instanceof InventoryHolder)

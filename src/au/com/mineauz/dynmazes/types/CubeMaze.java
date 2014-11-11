@@ -23,6 +23,7 @@ import au.com.mineauz.dynmazes.flags.BlockTypeFlag;
 import au.com.mineauz.dynmazes.flags.BooleanFlag;
 import au.com.mineauz.dynmazes.misc.BadArgumentException;
 import au.com.mineauz.dynmazes.misc.BlockLocation;
+import au.com.mineauz.dynmazes.misc.MassBlockUpdater;
 import au.com.mineauz.dynmazes.styles.StoredBlock;
 
 public class CubeMaze extends Maze<CubeNode> implements CubeBased<CubeNode>
@@ -212,7 +213,7 @@ public class CubeMaze extends Maze<CubeNode> implements CubeBased<CubeNode>
 	}
 
 	@Override
-	protected void placeNode( CubeNode node, List<StoredBlock> blocks )
+	protected void placeNode( CubeNode node, MassBlockUpdater updater )
 	{
 		BlockVector origin = node.toLocation();
 	
@@ -237,16 +238,14 @@ public class CubeMaze extends Maze<CubeNode> implements CubeBased<CubeNode>
 				BlockVector vec = origin.clone();
 				vec.setX(vec.getX() + x);
 				vec.setZ(vec.getZ() + z);
-				block.setLocation(vec);
-				blocks.add(block);
+				updater.setBlock(getWorld(), vec, block);
 				
 				if(isStandalone)
 				{
 					block = mRoofMaterial.getValue().clone();
 					vec = vec.clone();
 					vec.setY(vec.getY() - 1);
-					block.setLocation(vec);
-					blocks.add(block);
+					updater.setBlock(getWorld(), vec, block);
 				}
 			}
 		}
@@ -265,8 +264,7 @@ public class CubeMaze extends Maze<CubeNode> implements CubeBased<CubeNode>
 					vec.setX(vec.getX() + x);
 					vec.setY(vec.getY() + mWallHeight + 1);
 					vec.setZ(vec.getZ() + z);
-					block.setLocation(vec);
-					blocks.add(block);
+					updater.setBlock(getWorld(), vec, block);
 				}
 			}
 		}
@@ -284,8 +282,7 @@ public class CubeMaze extends Maze<CubeNode> implements CubeBased<CubeNode>
 						vec.setX(vec.getX() + x + holeOffset);
 						vec.setY(vec.getY() + y);
 						vec.setZ(vec.getZ() + z + holeOffset);
-						block.setLocation(vec);
-						blocks.add(block);
+						updater.setBlock(getWorld(), vec, block);
 					}
 				}
 			}
@@ -331,8 +328,7 @@ public class CubeMaze extends Maze<CubeNode> implements CubeBased<CubeNode>
 						vec.setZ(vec.getZ() + w);
 					}
 					
-					block.setLocation(vec);
-					blocks.add(block);
+					updater.setBlock(getWorld(), vec, block);
 				}
 			}
 			
@@ -358,8 +354,7 @@ public class CubeMaze extends Maze<CubeNode> implements CubeBased<CubeNode>
 							vec.setZ(vec.getZ() + w);
 						}
 						
-						block.setLocation(vec);
-						blocks.add(block);
+						updater.setBlock(getWorld(), vec, block);
 					}
 				}
 			}
@@ -396,8 +391,7 @@ public class CubeMaze extends Maze<CubeNode> implements CubeBased<CubeNode>
 						vec.setX(vec.getX() + x);
 						vec.setY(vec.getY() + y);
 						vec.setZ(vec.getZ() + z);
-						block.setLocation(vec);
-						blocks.add(block);
+						updater.setBlock(getWorld(), vec, block);
 					}
 				}
 			}
@@ -448,8 +442,7 @@ public class CubeMaze extends Maze<CubeNode> implements CubeBased<CubeNode>
 						}
 						vec.setY(vec.getY() + y);
 						
-						block.setLocation(vec);
-						blocks.add(block);
+						updater.setBlock(getWorld(), vec, block);
 					}
 				}
 			}
@@ -457,12 +450,12 @@ public class CubeMaze extends Maze<CubeNode> implements CubeBased<CubeNode>
 	}
 	
 	@Override
-	protected void placeOther( List<StoredBlock> blocks )
+	protected void placeOther( MassBlockUpdater updater )
 	{
 		if(mGenStartRoom.getValue())
-			placeNode(mEntrance, blocks);
+			placeNode(mEntrance, updater);
 		if(mGenFinishRoom.getValue())
-			placeNode(mExit, blocks);
+			placeNode(mExit, updater);
 	}
 	
 	@MazeCommand(command="new")

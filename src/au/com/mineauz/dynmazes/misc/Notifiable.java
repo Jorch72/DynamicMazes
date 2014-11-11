@@ -1,15 +1,13 @@
 package au.com.mineauz.dynmazes.misc;
 
-public abstract class NotifiableTask implements Runnable
+public abstract class Notifiable
 {
 	private final Callback mCallback;
 	
-	public NotifiableTask(Callback callback)
+	public Notifiable(Callback callback)
 	{
 		mCallback = callback;
 	}
-	
-	public abstract void run();
 	
 	protected void setCompleted()
 	{
