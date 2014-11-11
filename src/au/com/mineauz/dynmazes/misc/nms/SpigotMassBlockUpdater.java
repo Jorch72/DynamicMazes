@@ -7,8 +7,10 @@ import java.util.concurrent.TimeUnit;
 
 import me.desht.dhutils.block.CraftMassBlockUpdate;
 import me.desht.dhutils.block.MassBlockUpdate.RelightingStrategy;
+import net.minecraft.server.v1_7_R4.WorldServer;
 
 import org.bukkit.World;
+import org.bukkit.craftbukkit.v1_7_R4.CraftWorld;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.BlockVector;
 
@@ -76,7 +78,6 @@ public class SpigotMassBlockUpdater extends MassBlockUpdater
 				
 				// Sort the blocks
 				blocks = new DependencySortThread(blocks, minY).call();
-				System.out.println("Blocks: " + blocks.size());
 				// Place the blocks
 				new BlockPlacer(blocks, world, 10, TimeUnit.MILLISECONDS, new Callback()
 				{
@@ -99,13 +100,17 @@ public class SpigotMassBlockUpdater extends MassBlockUpdater
 	private static class BlockPlacer extends TimeDividedTask<StoredBlock>
 	{
 		private CraftMassBlockUpdate mMBU;
+		private Iterable<StoredBlock> mBlocks;
+		private World mWorld;
 		
 		public BlockPlacer( Iterable<StoredBlock> collection, World world, long maxTime, TimeUnit unit, Callback callback )
 		{
 			super(collection, maxTime, unit, callback);
+			mBlocks = collection;
+			mWorld = world;
 			
 			mMBU = new CraftMassBlockUpdate(DynamicMazePlugin.getInstance(), world);
-			mMBU.setRelightingStrategy(RelightingStrategy.DEFERRED);
+			mMBU.setRelightingStrategy(RelightingStrategy.NEVER);
 		}
 
 		@SuppressWarnings( "deprecation" )
@@ -113,6 +118,45 @@ public class SpigotMassBlockUpdater extends MassBlockUpdater
 		protected void process( StoredBlock block )
 		{
 			mMBU.setBlock(block.getLocation().getBlockX(), block.getLocation().getBlockY(), block.getLocation().getBlockZ(), block.getType().getId(), block.getData().getData());
+		}
+		
+		@Override
+		protected void done()
+		{
+			new RelightTask(mBlocks, mWorld, 10, TimeUnit.MILLISECONDS, mMBU, new Callback()
+			{
+				@Override
+				public void onFailure( Throwable exception )
+				{
+					setFailed(exception);
+				}
+				
+				@Override
+				public void onComplete()
+				{
+				}
+			}).start(DynamicMazePlugin.getInstance());
+		}
+	}
+	
+	private static class RelightTask extends TimeDividedTask<StoredBlock>
+	{
+		private CraftMassBlockUpdate mMBU;
+		private World mWorld;
+		private WorldServer mIntWorld;
+		public RelightTask( Iterable<StoredBlock> collection, World world, long maxTime, TimeUnit unit, CraftMassBlockUpdate mbu, Callback callback )
+		{
+			super(collection, maxTime, unit, callback);
+			mMBU = mbu;
+			mWorld = world;
+			mIntWorld = ((CraftWorld)mWorld).getHandle();
+		}
+		
+		@Override
+		protected void process( StoredBlock block )
+		{
+			// recalculateLight
+			mIntWorld.t(block.getLocation().getBlockX(), block.getLocation().getBlockY(), block.getLocation().getBlockZ());
 		}
 		
 		@Override
