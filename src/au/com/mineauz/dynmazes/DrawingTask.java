@@ -33,6 +33,8 @@ public class DrawingTask<T extends INode> extends Notifiable
 				for(T node : mNodes)
 					mMaze.placeNode(node, mUpdater);
 				
+				mMaze.placeOther(mUpdater);
+				
 				doPlace();
 			}
 		});
